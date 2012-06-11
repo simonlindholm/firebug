@@ -13,7 +13,7 @@ define([
     "firebug/lib/css",
     "firebug/lib/dom",
     "firebug/lib/string",
-    "firebug/js/fbs",
+    "firebug/js/fbs"
 ],
 function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, Url, StackFrame, Events,
     Css, Dom, Str, FBS) {
@@ -44,7 +44,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         if (FBTrace.DBG_PROFILER)
             FBTrace.sysout("Profiler.onPanelEnable panelName: "+panelName+"\n");
 
-        if (panelName == "console" || panelName == "script")
+        if (panelName === "console" || panelName === "script")
             this.setEnabled();
     },
 
@@ -53,7 +53,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         if (FBTrace.DBG_PROFILER)
             FBTrace.sysout("Profiler.onPanelDisable panelName: "+panelName+"\n");
 
-        if (panelName == "console" || panelName == "script")
+        if (panelName === "console" || panelName === "script")
             this.setEnabled();
     },
 
@@ -130,7 +130,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
     stopProfiling: function(context, cancelReport)
     {
         var totalTime = FBS.stopProfiling();
-        if (totalTime == -1)
+        if (totalTime === -1)
             return;
 
         Firebug.chrome.setGlobalAttribute("cmd_toggleProfiling", "checked", "false");
@@ -147,7 +147,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
     isProfiling: function()
     {
-        return (Firebug.chrome.getGlobalAttribute("cmd_toggleProfiling", "checked") === "true")
+        return (Firebug.chrome.getGlobalAttribute("cmd_toggleProfiling", "checked") === "true");
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -172,7 +172,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         var sourceFileMap = context.sourceFileMap;
         if (FBTrace.DBG_PROFILER)
         {
-            for (url in sourceFileMap)
+            for (var url in sourceFileMap)
                 FBTrace.sysout("logProfileReport: "+sourceFileMap[url]+"\n");
         }
 
@@ -210,9 +210,8 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
         totalTime = Math.round(totalTime * 1000) / 1000;
 
-        var groupRow = context.profileRow && context.profileRow.ownerDocument
-            ? context.profileRow
-            : this.logProfileRow(context, "");
+        var groupRow = (context.profileRow && context.profileRow.ownerDocument ?
+            context.profileRow : this.logProfileRow(context, ""));
         delete context.profileRow;
 
         Css.removeClass(groupRow, "profilerRunning");
@@ -249,6 +248,149 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
         Events.dispatch(this.fbListeners, "stopProfiling", [context,
             groupRow.originalTitle, calls, cancelReport]);
+    },
+
+    /**
+     * Time execution of a piece of code, with a user-provided number 'iterations'
+     * of samples, or if 'iterations' is null, just one.
+     */
+    timeExecution: function(context, code, iterations)
+    {
+        var userGiven = true;
+        if (iterations === null)
+        {
+            userGiven = false;
+            iterations = 1;
+        }
+
+        // In FF15 and up, performance.now() provides submillisecond precision;
+        // for older versions we will have to fall back to Date.now().
+        var precise = ("performance" in window && "now" in window.performance);
+
+        // Build up JavaScript code that evaluates and times 'code'.
+        var getTimingCode = function(code)
+        {
+            var nowF = (precise ? "performance.now()" : "Date.now()");
+            var ret = "{ ";
+
+            var timingOverhead = "0";
+            if (precise)
+            {
+                // Warm up timer/JavaScript engine. (This helps a tiny bit, I
+                // think. Can't hurt, at least.)
+                ret += [nowF, nowF].join("; ") + "; ";
+                ret += "document.getElementById('dummy'); ";
+
+                // Declare a container for the timing state. We'd ideally
+                // declare it with 'let', but when stopped in the debugger,
+                // this is often impossible due to the script being run with
+                // an older JavaScript version (issue 2244). Thus, use the
+                // (hidden, used for rerun) '_firebug' global instead.
+                if (context.stopped)
+                    ret += "if (!window._firebug) window._firebug = {}; ";
+                else
+                    ret += "let _firebug = {}; ";
+
+                // performance.now() takes some time to run (~0.02ms on my
+                // machine); thus, save some consecutive timings so we can
+                // account for that.  The actual overhead fluctuates, so use
+                // the most reasonable value.
+                ret += "_firebug.t0 = " + nowF + "; try {} ";
+                ret += "finally { if (_firebug.t1 = " + nowF + ") {} } ";
+                ret += "_firebug.t2 = " + nowF + "; try {} ";
+                ret += "finally { if (_firebug.t3 = " + nowF + ") {} } ";
+                timingOverhead = "Math.min(_firebug.t3 - _firebug.t2, " +
+                                          "_firebug.t1 - _firebug.t0)";
+            }
+            ret += "_firebug.T0 = " + nowF + "; ";
+
+            // Add a default return value, to avoid printing a random float if
+            // the evaluated code lacks statements.
+            ret += "void 0; ";
+
+            // Actually evaluate the code.
+            ret += "try {\n" + code + "\n} finally {\n";
+
+            // Save the time taken in window.__fbTiming. To retain the last
+            // evaluated value for display, wrap the timing calculation/
+            // assignment in an expression.
+            ret += "if (_firebug.T1 = " + nowF + ", window.__fbTiming = " +
+                    "(_firebug.T1 - _firebug.T0) - " + timingOverhead + ") {} ";
+
+            ret += "} }";
+
+            return ret;
+        };
+
+        var win = (context.baseWindow ? context.baseWindow : context.window);
+        var timeCode = getTimingCode(code);
+
+        var times = [], resArgs;
+        for (var i = 0; i < iterations; ++i)
+        {
+            var save = function() { resArgs = arguments; };
+            Firebug.CommandLine.evaluate(timeCode, context, context.thisValue,
+                win, save, save);
+
+            // Get the timing out from the global.
+            var timing = NaN;
+            try
+            {
+                timing = +win.wrappedJSObject.__fbTiming;
+                delete win.wrappedJSObject.__fbTiming;
+            }
+            catch (e) {}
+            times.push(timing);
+
+            // In case of e.g. syntax errors, we have no data to display. Just
+            // print the last result/error.
+            if (isNaN(timing))
+            {
+                Firebug.Console.log.apply(Firebug.Console, resArgs);
+                return;
+            }
+        }
+
+        // Print the result of the last iteration.
+        Firebug.Console.log.apply(Firebug.Console, resArgs);
+
+        if (precise && ((times.length >= 5 && times[0] < 0.2) ||
+            (times.length >= 10 && times[0] < 1.0)))
+        {
+            // The first ~3 results are slightly too high, on my machine. Throw
+            // them away.
+            times.splice(0, 3);
+        }
+
+        if (times.length >= 10)
+        {
+            // We have enough data to be able to throw out outliers.
+            var edge = Math.floor(times.length * 0.2);
+            times.sort(function(a, b) { return a - b; });
+            times = times.slice(edge, -edge);
+        }
+
+        // Calculate a simple average. If it is negative (from incorrect timing
+        // overhead correction - most commonly from timing something empty),
+        // show it as 0 instead.
+        var average = 0;
+        for (var i = 0; i < times.length; ++i)
+            average += times[i];
+        average /= times.length;
+        if (average < 0)
+            average = 0;
+
+        // Truncate the result to 2 decimals, or more for more iterations.
+        var decimals = (precise ? 2 : 0);
+        for (var order = 2; order <= iterations; order *= 10)
+            ++decimals;
+        var str = average.toFixed(decimals);
+
+        if (userGiven)
+            str = Locale.$STRF("commandline.TimeUsageAverage", [str, iterations]);
+        else
+            str = Locale.$STRF("commandline.TimeUsage", [str]);
+        Firebug.Console.logFormatted([str], context, "log");
     }
 });
 
@@ -334,7 +476,7 @@ Firebug.Profiler.ProfileTable = domplate(
 
     sort: function(table, colIndex, numerical)
     {
-        sortAscending = function()
+        var sortAscending = function()
         {
             Css.removeClass(header, "sortedDescending");
             Css.setClass(header, "sortedAscending");
@@ -344,19 +486,19 @@ Firebug.Profiler.ProfileTable = domplate(
 
             for (var i = 0; i < values.length; ++i)
                 tbody.appendChild(values[i].row);
-        },
+        };
 
-        sortDescending = function()
+        var sortDescending = function()
         {
           Css.removeClass(header, "sortedAscending");
           Css.setClass(header, "sortedDescending");
-          header.setAttribute("aria-sort", "descending")
+          header.setAttribute("aria-sort", "descending");
 
           header.sorted = 1;
 
           for (var i = values.length-1; i >= 0; --i)
               tbody.appendChild(values[i].row);
-        }
+        };
 
         var tbody = Dom.getChildByClass(table, "profileTbody");
         var thead = Dom.getChildByClass(table, "profileThead");
@@ -382,25 +524,17 @@ Firebug.Profiler.ProfileTable = domplate(
 
         if (numerical)
         {
-            if (!header.sorted || header.sorted == -1)
-            {
+            if (!header.sorted || header.sorted === -1)
                 sortDescending();
-            }
             else
-            {
                 sortAscending();
-            }
         }
         else
         {
-            if (!header.sorted || header.sorted == -1)
-            {
+            if (!header.sorted || header.sorted === -1)
                 sortAscending();
-            }
             else
-            {
                 sortDescending();
-            }
         }
     }
 });

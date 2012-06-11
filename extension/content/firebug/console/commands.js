@@ -86,6 +86,18 @@ var commandHandlers =
         Firebug.Console.clear(context);
     },
 
+    time: function(context, value)
+    {
+        var iterations = null;
+        var match = /,\s*([1-9][0-9]*)$/.exec(value);
+        if (match)
+        {
+            iterations = +match[1];
+            value = value.slice(0, -match[0].length);
+        }
+        Firebug.Profiler.timeExecution(context, value, iterations);
+    },
+
     profile: function(context, value)
     {
         Firebug.Profiler.startProfiling(context);
@@ -181,6 +193,7 @@ Firebug.CommandLineCommands = {
         ":monitor-events",
         ":profile",
         ":table",
+        ":time",
         ":undebug",
         ":unmonitor",
         ":unmonitor-events",

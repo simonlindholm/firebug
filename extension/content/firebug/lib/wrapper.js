@@ -110,7 +110,6 @@ Wrapper.unwrapIValueObject = function(scope, viewChrome)
 
 Wrapper.ignoreVars =
 {
-    "__firebug__": 1,
     "eval": 1,
 
     // We are forced to ignore Java-related variables, because
@@ -125,9 +124,7 @@ Wrapper.ignoreVars =
     "JavaPackage": 1,
     // internal firebug things XXXjjb todo we should privatize these
     "_firebug": 1,
-    "_createFirebugConsole": 1,
     "_FirebugCommandLine": 1,
-    "loadFirebugConsole": 1,
 };
 
 Wrapper.shouldIgnore = function(name)
