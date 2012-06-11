@@ -1583,7 +1583,7 @@ var fbs =
                 for (var i = 0; i < urlBreakpoints.length; ++i)
                 {
                     var bp = urlBreakpoints[i];
-                    if (bp.type & BP_MONITOR)
+                    if (bp.type & BP_MONITOR && !(bp.type & BP_TRACE))
                         cb.call(url, bp.lineNo, bp);
                 }
             }
@@ -1591,7 +1591,29 @@ var fbs =
         else
         {
             for (var url in breakpoints)
-                this.enumerateBreakpoints(url, cb);
+                this.enumerateMonitors(url, cb);
+        }
+    },
+
+    enumerateTraces: function(url, cb)
+    {
+        if (url)
+        {
+            var urlBreakpoints = fbs.getBreakpoints(url);
+            if (urlBreakpoints)
+            {
+                for (var i = 0; i < urlBreakpoints.length; ++i)
+                {
+                    var bp = urlBreakpoints[i];
+                    if (bp.type & BP_TRACE)
+                        cb.call(url, bp.lineNo, bp);
+                }
+            }
+        }
+        else
+        {
+            for (var url in breakpoints)
+                this.enumerateTraces(url, cb);
         }
     },
 

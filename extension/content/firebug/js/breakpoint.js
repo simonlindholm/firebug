@@ -278,6 +278,8 @@ Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
             FBS.clearErrorBreakpoint(href, lineNumber);
         else if (groupName == "monitors")
             FBS.unmonitor(href, lineNumber);
+        else if (groupName == "traces")
+            FBS.untraceCalls(href, lineNumber);
     },
 
     enableBreakpoint: function(href, lineNumber)
@@ -440,6 +442,7 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
         var breakpoints = extracted.breakpoints;
         var errorBreakpoints = extracted.errorBreakpoints;
         var monitors = extracted.monitors;
+        var traces = extracted.traces;
 
         if (FBTrace.DBG_BP)
             FBTrace.sysout("breakpoints.refresh extracted " +
@@ -457,6 +460,7 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
         breakpoints.sort(sortBreakpoints);
         errorBreakpoints.sort(sortBreakpoints);
         monitors.sort(sortBreakpoints);
+        traces.sort(sortBreakpoints);
 
         if (FBTrace.DBG_BP)
             FBTrace.sysout("breakpoints.refresh sorted "+breakpoints.length+
@@ -475,6 +479,10 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
         if (monitors.length)
             groups.push({name: "monitors", title: Locale.$STR("LoggedFunctions"),
                 breakpoints: monitors});
+
+        if (traces.length)
+            groups.push({name: "traces", title: Locale.$STR("TracedFunctions"),
+                breakpoints: traces});
 
         Firebug.connection.dispatch("getBreakpoints", [this.context, groups]);
 
@@ -507,6 +515,7 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
         var breakpoints = [];
         var errorBreakpoints = [];
         var monitors = [];
+        var traces = [];
 
         var renamer = new SourceFileRenamer(context);
         var self = this;
@@ -529,8 +538,8 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
                     var script = scripts[0];
                     var analyzer = Firebug.SourceFile.getScriptAnalyzer(context, script);
                     if (FBTrace.DBG_BP)
-                        FBTrace.sysout("breakpoints.refresh enumerateBreakpoints for script="+
-                            script.tag+(analyzer?" has analyzer":" no analyzer")+" in context "+
+                        FBTrace.sysout("breakpoints.refresh enumerateBreakpoints for script=" +
+                            script.tag + (analyzer ? " has" : " no") + " analyzer in context " +
                             context.getName());
 
                     if (analyzer)
@@ -573,6 +582,16 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
                 var name = Firebug.SourceFile.guessEnclosingFunctionName(url, line, context);
                 monitors.push(new Breakpoint(name, url, line, true, ""));
             }});
+
+            FBS.enumerateTraces(url, {call: function(url, line, props)
+            {
+                // some url in this sourceFileMap has changed, we'll be back.
+                if (renamer.checkForRename(url, line, props))
+                    return;
+
+                var name = Firebug.SourceFile.guessEnclosingFunctionName(url, line, context);
+                traces.push(new Breakpoint(name, url, line, true, ""));
+            }});
         }
 
         var result = null;
@@ -587,7 +606,8 @@ Firebug.Breakpoint.BreakpointsPanel.prototype = Obj.extend(Firebug.Panel,
             result = {
                 breakpoints: breakpoints,
                 errorBreakpoints: errorBreakpoints,
-                monitors: monitors
+                monitors: monitors,
+                traces: traces
             };
         }
 
