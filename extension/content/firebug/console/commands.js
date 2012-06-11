@@ -40,9 +40,22 @@ function needObject(args)
         return "Object required.";
 }
 
+function requireScriptPanel(handler, name)
+{
+    return function(context, value)
+    {
+        var emsg = Locale.$STRF("commandline.CommandNeedsScriptPanel", [name]);
+        var scriptPanel = context.getPanel("script");
+        if (!scriptPanel || !scriptPanel.isEnabled())
+            Firebug.Console.logFormatted([new Error(emsg)], context, "error");
+        else
+            handler(context, value);
+    };
+}
+
 function monitorHandler(func, action, name)
 {
-    return exprHandler(function(context, obj, args)
+    var handler = exprHandler(function(context, obj, args)
     {
         if (typeof obj === "function")
         {
@@ -60,6 +73,7 @@ function monitorHandler(func, action, name)
         if (args.length !== 1 || (typeof args[0] !== "function" && !Arr.isArray(args[0])))
             return "\"" + name + "\" needs a function, or an array of functions, as parameter.";
     });
+    return requireScriptPanel(handler, name);
 }
 
 function monitorEventsHandler(add)
@@ -98,7 +112,7 @@ var commandHandlers =
         Firebug.Profiler.timeExecution(context, value, iterations);
     },
 
-    profile: function(context, value)
+    profile: requireScriptPanel(function(context, value)
     {
         Firebug.Profiler.startProfiling(context);
         if (!/^ *$/.test(value))
@@ -107,7 +121,7 @@ var commandHandlers =
             Firebug.CommandLine.evaluate(value, context, null, null, log, log);
             Firebug.Profiler.stopProfiling(context);
         }
-    },
+    }, "profile"),
 
     unprofile: function(context, value)
     {
@@ -139,23 +153,23 @@ var commandHandlers =
     "trace": monitorHandler("traceCalls", undefined, "trace"),
     "untrace": monitorHandler("untraceCalls", undefined, "untrace"),
 
-    "trace-all": function(context, value)
+    "trace-all": requireScriptPanel(function(context, value)
     {
         Firebug.Debugger.traceAll(context);
-    },
+    }, "trace-all"),
 
     "untrace-all": function(context, value)
     {
         Firebug.Debugger.untraceAll(context);
     },
 
-    "trace-execution": function(context, value)
+    "trace-execution": requireScriptPanel(function(context, value)
     {
         Firebug.Debugger.traceAll(context);
         var log = Obj.bind(Firebug.Console.log, Firebug.Console);
         Firebug.CommandLine.evaluate(value, context, null, null, log, log);
         Firebug.Debugger.untraceAll(context);
-    },
+    }, "trace-execution"),
 
     inspect: exprHandler(function(context, obj, args)
     {
@@ -202,31 +216,40 @@ var commandHandlers =
 Firebug.CommandLineCommands = {
     commandHandlers: commandHandlers,
 
-    list: [
-        ":cd",
-        ":clear",
-        ":copy",
-        ":debug",
-        ":dir",
-        ":inspect",
-        ":keys",
-        ":monitor",
-        ":monitor-events",
-        ":profile",
-        ":table",
-        ":time",
-        ":trace",
-        ":trace-all",
-        ":trace-execution",
-        ":undebug",
-        ":unmonitor",
-        ":unmonitor-events",
-        ":unprofile",
-        ":untrace-all",
-        ":untrace",
-        ":values",
-        ":xml"
-    ],
+    getList: function(context)
+    {
+        var list = [
+            "cd",
+            "clear",
+            "copy",
+            "debug",
+            "dir",
+            "inspect",
+            "keys",
+            "monitor-events",
+            "table",
+            "time",
+            "unmonitor-events",
+            "values",
+            "xml"
+        ];
+
+        var scriptPanel = context.getPanel("script");
+        if (scriptPanel && scriptPanel.isEnabled())
+        {
+            list.push((Firebug.Debugger.traceAllActive(context) ? "un" : "") + "trace-all");
+            list.push((Firebug.Profiler.isProfiling() ? "un" : "") + "profile");
+            list.push("monitor", "unmonitor");
+            list.push("debug", "undebug");
+            list.push("trace", "untrace");
+            list.push("trace-execution");
+        }
+
+        return list.sort().map(function(command)
+        {
+            return ":" + command;
+        });
+    },
 
     hasCommand: function(value)
     {

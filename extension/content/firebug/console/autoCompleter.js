@@ -165,7 +165,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 this.completionBase = {
                     pre: "",
                     expr: "",
-                    candidates: Commands.list,
+                    candidates: Commands.getList(context),
                     commandCompletion: true
                 };
                 this.createCompletions(value);

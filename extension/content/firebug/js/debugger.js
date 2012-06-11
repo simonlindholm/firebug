@@ -842,6 +842,11 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
         delete context.traceAllHandle;
     },
 
+    traceAllActive: function(context)
+    {
+        return !!context.traceAllHandle;
+    },
+
     monitorFunction: function(context, fn, mode)
     {
         if (typeof(fn) == "function" || fn instanceof Function)
