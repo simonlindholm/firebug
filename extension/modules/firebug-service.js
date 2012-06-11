@@ -1,6 +1,5 @@
 /* See license.txt for terms of usage */
 
-// Debug lines are marked with  at column 120
 // Use variable name "fileName" for href returned by JSD, file:/ not same as DOM
 // Use variable name "url" for normalizedURL, file:/// comparable to DOM
 // Convert from fileName to URL with normalizeURL
@@ -111,8 +110,6 @@ var EXPORTED_SYMBOLS = ["fbs"];
 var jsd, prefs;
 var observerService;
 
-var contextCount = 0;
-
 var urlFilters = [
     'chrome://',
     'XStringBundle',
@@ -123,8 +120,6 @@ var clients = [];
 var debuggers = [];
 var netDebuggers = [];
 var scriptListeners = [];
-
-var hookFrameCount = 0;
 
 var haltObject = null;  // For reason unknown, fbs.haltDebugger will not work.
 
@@ -230,23 +225,20 @@ var jsdHandlers =
         }
     },
 
-    unhook: function(frame)
+    unhook: function()
     {
         if (FBTrace.DBG_FBS_STEP)
-            FBTrace.sysout("fbs.stop hooks "+this.hooks.length+" hooks active", this);
+            FBTrace.sysout("fbs.jsdHandlers.unhook "+this.hooks.length+" hooks active", this);
 
-        this.checkForUnhookFunctions(frame);
-        this.checkForUnhookInterrupts(frame);
+        this.checkForUnhookFunctions();
+        this.checkForUnhookInterrupts();
     },
 
-    checkForUnhookFunctions: function(frame)
+    checkForUnhookFunctions: function()
     {
         for (var i = 0; i < this.hooks.length; i++)
         {
             var aHook = this.hooks[i];
-
-            aHook.unhook(frame);
-
             if ("onFunctionCall" in aHook || "onFunctionReturn" in aHook)
                 return;
         }
@@ -254,17 +246,16 @@ var jsdHandlers =
         fbs.unhookFunctions();
     },
 
-    checkForUnhookInterrupts: function(frame)
+    checkForUnhookInterrupts: function()
     {
         for (var i = 0; i < this.hooks.length; i++)
         {
             var aHook = this.hooks[i];
-
             if ("onInterrupt" in aHook)
                 return;
         }
 
-        fbs.unhookInterrupts();   // none found
+        fbs.unhookInterrupts();
     },
 
     dispatch: function(methodName, frame, type, rv)
@@ -303,10 +294,6 @@ BreakOnNextCall.prototype =
     mode: "BON",
 
     hook: function(frame)
-    {
-    },
-
-    unhook: function(frame)
     {
     },
 
@@ -458,8 +445,7 @@ OutStepper.prototype =
                     FBTrace.sysout("fbs.OutStepper.onFunctionReturn no calling frame " +
                         frameToString(frame) + ", " + getCallFromType(type), this);
 
-                jsdHandlers.unhook(frame);  // we are done here
-                jsdHandlers.remove(this);
+                fbs.removeHandler(this); // we are done here
                 return;
             }
         }
@@ -487,10 +473,6 @@ OutStepper.prototype =
                 callingFrameId + " called frame " + frameToString(frame), this)
     },
 
-    unhook: function(frame)
-    {
-    },
-
     hit: function(frame, type, rv)
     {
         if (FBTrace.DBG_FBS_STEP)
@@ -500,8 +482,7 @@ OutStepper.prototype =
         var debuggr = fbs.reFindDebugger(frame, this.debuggr);
         if (debuggr)
         {
-            jsdHandlers.unhook(frame);
-            jsdHandlers.remove(this);
+            fbs.removeHandler(this);
 
             rv = {};
 
@@ -525,7 +506,7 @@ OutStepper.prototype =
 // Stepper: Step Over Implementation
 
 /**
- * @class This oject implements "step over". I's like {@link OutStepper}, but run a single
+ * @class This object implements "step over". It's like {@link OutStepper}, but run a single
  * line in this function.
  */
 function LineStepper(debuggr, context)
@@ -549,12 +530,6 @@ LineStepper.prototype = extend(OutStepper.prototype,
         if (FBTrace.DBG_FBS_STEP)
             FBTrace.sysout("fbs." + this.mode + ".hook " + frameToString(frame) +
                 " with lineFrameId " + this.lineFrameId, this);
-    },
-
-    unhook: function unhookLineStepper(frame)
-    {
-        if (FBTrace.DBG_FBS_STEP)
-            FBTrace.sysout("fbs." + this.mode + ".hook; unhook " + frameToString(frame));
     },
 
     // jsdIExecutionHook, onExecute
@@ -596,7 +571,7 @@ LineStepper.prototype = extend(OutStepper.prototype,
 // Stepper: Step In Implementation
 
 /**
- * @class This oject implements "step in". I's like {@link OutStepper}, but if the line
+ * @class This oject implements "step in". It's like {@link OutStepper}, but if the line
  * calls a function, stop on its first line
  */
 function IntoStepper(debuggr, context)
@@ -721,6 +696,91 @@ LogFunctionStepper.prototype =
             " running "+frame.script.tag+" of "+frame.script.fileName+" at "+
             frame.line+"."+frame.pc);
     },
+};
+
+/**
+ * @class This object implements the various ":trace" commands, which log
+ * function execution to the console.
+ */
+function TraceStepper(debuggr, context, functionLocal)
+{
+    this.debuggr = debuggr;
+    this.context = context;
+    this.depth = 0;
+    this.functionLocal = functionLocal;
+}
+
+TraceStepper.prototype =
+/** @lends TraceStepper */
+{
+    mode: "TRACE",
+
+    hook: function(frame)
+    {
+    },
+
+    verifyContext: function(frame, topLevel)
+    {
+        return (this.functionLocal ||
+            !!this.context.getSourceFileByTag(frame.script.tag));
+    },
+
+    visibleDepth: function()
+    {
+        return this.depth + (this.functionLocal ? 1 : 0);
+    },
+
+    sendBaseFrame: function(frame, called)
+    {
+        this.debuggr.onFunctionCall(this.context, frame, 1, called);
+    },
+
+    // the frame will be running the called script
+    onFunctionCall: function traceFunctionCall(frame, type)
+    {
+        if (!this.verifyContext(frame))
+        {
+            // Non-context frames are skipped, but their depths are still
+            // counted if we have a context-relevant frame on the stack.
+            if (this.depth > 0)
+                this.depth++;
+            return;
+        }
+
+        this.depth++;
+        this.debuggr.onFunctionCall(this.context, frame, this.visibleDepth(), true);
+    },
+
+    // the frame will be running the called script
+    onFunctionReturn: function traceFunctionReturn(frame, type)
+    {
+        if (this.depth === 0)
+        {
+            if (this.functionLocal)
+            {
+                // We are no longer needed; remove ourselves.
+                this.sendBaseFrame(frame, false);
+                fbs.removeHandler(this);
+                return;
+            }
+            else
+            {
+                // If the context is wrong, just do nothing; if it isn't, set
+                // the returned-to function as depth = 0.
+                return;
+            }
+        }
+        this.depth--;
+        if (!this.verifyContext(frame))
+            return;
+        this.debuggr.onFunctionCall(this.context, frame, this.visibleDepth(), false);
+    },
+
+    toString: function()
+    {
+        return "TraceStepper" +
+            (this.context.getName ? " for " + this.context.getName() : "");
+    }
 };
 
 // ********************************************************************************************* //
@@ -849,7 +909,7 @@ var fbs =
         }
 
         // make sure to unregister all the hooks
-        var hookNames = ["error", "script", "breakpoint", "debugger", "debug", "interrupt", 
+        var hookNames = ["error", "script", "breakpoint", "debugger", "debug", "interrupt",
             "throw", "topLevel", "function", "debug"];
         for each (var hook in hookNames)
         {
@@ -1085,7 +1145,7 @@ var fbs =
     /**
      * We are running JS code for Firebug, but we want to break into the debugger with
      * a stack frame.
-     * 
+     *
      * @param debuggr Debugger object asking for break
      * @param fnOfFrame, function(frame) to run on break
      */
@@ -1133,14 +1193,12 @@ var fbs =
 
         context.breakOnNextHook = new BreakOnNextCall(debuggr, context);
 
-        jsdHandlers.add(context.breakOnNextHook);
-        jsdHandlers.hook(); // no frame arg
+        fbs.addHandler(context.breakOnNextHook);
     },
 
     cancelBreakOnNextCall: function(debuggr, context)
     {
-        jsdHandlers.unhook(/* no frame argument */);
-        jsdHandlers.remove(context.breakOnNextHook);
+        fbs.removeHandler(context.breakOnNextHook);
         delete context.breakOnNextHook;
     },
 
@@ -1411,14 +1469,58 @@ var fbs =
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    traceAll: function(urls, debuggr)
+    traceAll: function(context, debuggr)
     {
-        this.hookCalls(debuggr.onFunctionCall, false);  // call on all passed urls
+        if (!context || !debuggr)
+        {
+            if (FBTrace.DBG_FBS_ERRORS)
+                FBTrace.sysout("fbs.traceAll missing arguments: " + context + " " + debuggr);
+            return;
+        }
+        var stepper = new TraceStepper(debuggr, context, false);
+        fbs.addHandler(stepper);
+        return stepper;
     },
 
-    untraceAll: function(debuggr)
+    untraceAll: function(traceAllHandle)
     {
-        this.unhookFunctions(); // undo hookCalls()
+        var stepper = traceAllHandle;
+        fbs.removeHandler(stepper);
+    },
+
+    traceLocal: function(debuggr, context, frame)
+    {
+        if (!context)
+        {
+            var dbg = this.findDebugger(frame); // sets dbg.breakContext
+            if (dbg !== debuggr)
+            {
+                if (FBTrace.DBG_FBS_ERRORS)
+                    FBTrace.sysout("fbs.traceLocal got conflicting debuggers");
+                if (dbg)
+                    delete dbg.breakContext;
+                return;
+            }
+            context = debuggr.breakContext;
+            delete debuggr.breakContext;
+        }
+
+        for (var i = 0; i < jsdHandlers.hooks.length; i++)
+        {
+            var handler = jsdHandlers.hooks[i];
+            if (handler.mode === "TRACE" && handler.context === context)
+            {
+                // We are already tracing from outwards; assume that that tracing
+                // won't go away within this function's execution and simply do
+                // nothing here.
+                return;
+            }
+        }
+
+        var stepper = new TraceStepper(debuggr, context, true);
+        if (frame)
+            stepper.sendBaseFrame(frame, true);
+        fbs.addHandler(stepper);
     },
 
     traceCalls: function(sourceFile, lineNo, debuggr)
@@ -1426,17 +1528,18 @@ var fbs =
         // set a breakpoint on the starting point
         var bp = this.monitor(sourceFile, lineNo, debuggr);
         bp.type |= BP_TRACE;
+        this.saveBreakpoints(sourceFile.href);
 
         // when we hit the bp in onBreakPoint we being tracing.
     },
 
-    untraceCalls: function(sourceFile, lineNo, debuggr)
+    untraceCalls: function(href, lineNo)
     {
-        var bp = lineNo != -1 ? this.findBreakpoint(url, lineNo) : null;
+        var bp = lineNo != -1 ? this.findBreakpoint(href, lineNo) : null;
         if (bp)
         {
             bp.type &= ~BP_TRACE;
-            this.unmonitor(sourceFile.href, lineNo);
+            this.unmonitor(href, lineNo);
         }
     },
 
@@ -1546,13 +1649,13 @@ var fbs =
 
     /**
      * Do not activate JSD, which is broken in Firefox 9 on Mac and Linux 32 bit
-     * This method is checking the current platform & browser configuration and 
+     * This method is checking the current platform & browser configuration and
      * return false for Mac/Linux 32 bit
      *
      * See: https://bugzilla.mozilla.org/show_bug.cgi?id=712289
      *
      * Can be removed when the min Firefox version is 10
-     * 
+     *
      * Search for 'bug712289' within the source code to remove all find all related
      * parts of this workaround.
      */
@@ -1732,13 +1835,11 @@ var fbs =
         if (FBTrace.DBG_FBS_FUNCTION)
         {
             fbs.loggingFunctionCalls = new LogFunctionStepper();
-            jsdHandlers.add(fbs.loggingFunctionCalls);
-            jsdHandlers.hook(); // no frame argument
+            fbs.addHandler(fbs.loggingFunctionCalls);
         }
         else if (fbs.loggingFunctionCalls)
         {
-            jsdHandlers.unhook("no frame argument");
-            fbs.jsdHandler.remove(fbs.loggingFunctionCalls);
+            fbs.removeHandler(fbs.loggingFunctionCalls);
             delete fbs.loggingFunctionCalls;
         }
 
@@ -2083,7 +2184,7 @@ var fbs =
                 if (bp.type & BP_MONITOR && !(bp.disabled & BP_MONITOR))
                 {
                     if (bp.type & BP_TRACE && !(bp.disabled & BP_TRACE) )
-                        this.hookCalls(theDebugger.onFunctionCall, true);  // TODO
+                        this.traceLocal(theDebugger, null, frame);
                     else
                         theDebugger.onMonitorScript(frame);
                 }
@@ -2183,18 +2284,6 @@ var fbs =
         if (this.showStackTrace)  // store these in case the throw is not caught
         {
             var debuggr = this.findDebugger(frame);  // sets debuggr.breakContext
-            if (debuggr)
-            {
-                // https://bugzilla.mozilla.org/show_bug.cgi?id=669730
-                //fbs._lastErrorScript = frame.script;
-                //fbs._lastErrorLine = frame.line;
-                //fbs._lastErrorDebuggr = debuggr;
-                //fbs._lastErrorContext = debuggr.breakContext; // XXXjjb this is bad API
-            }
-            else
-            {
-                delete fbs._lastErrorDebuggr;
-            }
         }
 
         if (fbs.trackThrowCatch)
@@ -3307,6 +3396,8 @@ var fbs =
                 if (FBTrace.DBG_FBS_BP)
                     FBTrace.sysout("fbs.addBreakpoint with no debuggr:");
             }
+
+            this.saveBreakpoints(url);
         }
         else
         {
@@ -3941,7 +4032,6 @@ var fbs =
 
     stopStepping: function(frame, context)
     {
-        jsdHandlers.unhook(frame);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -4044,63 +4134,6 @@ var fbs =
 
         if (FBTrace.DBG_FBS_STEP || FBTrace.DBG_FBS_TRACKFILES)
             FBTrace.sysout("fbs.unset scriptHook\n");
-    },
-
-    // TODO rewrite as a Stepper
-    // xxxJJB: perhaps xxxHonza could implement the stepper, but what the code is responsible for?
-    // xxxhonza: traceAll and trace a function. I don't think these work anyway, a good start is to remove the old code.
-    hookCalls: function(callBack, unhookAtBottom)
-    {
-        var contextCached = null;
-
-        function callHook(frame, type)
-        {
-            switch (type)
-            {
-                case TYPE_FUNCTION_CALL:
-                {
-                    ++hookFrameCount;
-
-                    if (FBTrace.DBG_FBS_STEP)
-                        FBTrace.sysout("fbs.callHook TYPE_FUNCTION_CALL "+frame.script.fileName);
-
-                    contextCached = callBack(contextCached, frame, hookFrameCount, true);
-
-                    break;
-                }
-                case TYPE_FUNCTION_RETURN:
-                {
-                    if (hookFrameCount <= 0)  // ignore returns until we have started back in
-                        return;
-
-                    --hookFrameCount;
-
-                    if (FBTrace.DBG_FBS_STEP)
-                        FBTrace.sysout("fbs.functionHook TYPE_FUNCTION_RETURN " +
-                            frame.script.fileName);
-
-                    // stack empty
-                    if (unhookAtBottom && hookFrameCount == 0)
-                       this.unhookFunctions();
-
-                    contextCached = callBack(contextCached, frame, hookFrameCount, false);
-                    break;
-                }
-            }
-        }
-
-        if (jsd.functionHook)
-        {
-            if (FBTrace.DBG_FBS_ERRORS)
-                FBTrace.sysout("fbs.hookCalls cannot set functionHook, one is already set");
-            return;
-        }
-
-        if (FBTrace.DBG_FBS_STEP)
-            FBTrace.sysout("fbs.set callHook");
-
-        hookFrameCount = 0;
-        jsd.functionHook = { onCall: callHook };
     },
 
     getJSD: function()
@@ -4519,7 +4552,7 @@ function ERROR(text, exc)
         fbs.unhookInterrupts(); // Stop and clear everything
         fbs.unhookFunctions();
         fbs.disableDebugger();
-        jsdHandlers.list = [];
+        jsdHandlers.hooks = [];
         consoleService.logStringMessage("ERROR: "+text);
 
         var frame = Components.stack;

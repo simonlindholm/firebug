@@ -46,13 +46,13 @@ function monitorHandler(func, action, name)
     {
         if (typeof obj === "function")
         {
-            Firebug.Debugger[func](obj, action);
+            Firebug.Debugger[func](context, obj, action);
             return;
         }
         Array.prototype.forEach.call(obj, function(o)
         {
             if (typeof o === "function")
-                Firebug.Debugger[func](o, action);
+                Firebug.Debugger[func](context, o, action);
         });
     },
     function(args)
@@ -136,6 +136,27 @@ var commandHandlers =
     "monitor-events": monitorEventsHandler(true),
     "unmonitor-events": monitorEventsHandler(false),
 
+    "trace": monitorHandler("traceCalls", undefined, "trace"),
+    "untrace": monitorHandler("untraceCalls", undefined, "untrace"),
+
+    "trace-all": function(context, value)
+    {
+        Firebug.Debugger.traceAll(context);
+    },
+
+    "untrace-all": function(context, value)
+    {
+        Firebug.Debugger.untraceAll(context);
+    },
+
+    "trace-execution": function(context, value)
+    {
+        Firebug.Debugger.traceAll(context);
+        var log = Obj.bind(Firebug.Console.log, Firebug.Console);
+        Firebug.CommandLine.evaluate(value, context, null, null, log, log);
+        Firebug.Debugger.untraceAll(context);
+    },
+
     inspect: exprHandler(function(context, obj, args)
     {
         Firebug.chrome.select(obj, args[1]);
@@ -194,10 +215,15 @@ Firebug.CommandLineCommands = {
         ":profile",
         ":table",
         ":time",
+        ":trace",
+        ":trace-all",
+        ":trace-execution",
         ":undebug",
         ":unmonitor",
         ":unmonitor-events",
         ":unprofile",
+        ":untrace-all",
+        ":untrace",
         ":values",
         ":xml"
     ],
@@ -209,7 +235,8 @@ Firebug.CommandLineCommands = {
 
     takesNoParams: function(value)
     {
-        return ([":clear", ":unprofile"].indexOf(value) !== -1);
+        var paramLess = [":clear", ":unprofile", ":trace-all", ":untrace-all"];
+        return (paramLess.indexOf(value) !== -1);
     },
 
     execute: function(value, context)

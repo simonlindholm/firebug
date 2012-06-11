@@ -487,7 +487,6 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
         // this will cause us to return to just after the enterNestedEventLoop call
         var depth = FBS.exitNestedEventLoop();
 
-
         if (FBTrace.DBG_UI_LOOP)
             FBTrace.sysout("debugger.resume, depth:"+depth+"\n");
     },
@@ -830,20 +829,25 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
 
     traceAll: function(context)
     {
-        FBS.traceAll(Firebug.SourceFile.sourceURLsAsArray(context), this);
+        if (context.traceAllHandle)
+            return;
+        context.traceAllHandle = FBS.traceAll(context, this);
     },
 
     untraceAll: function(context)
     {
-        FBS.untraceAll(this);
+        if (!context.traceAllHandle)
+            return;
+        FBS.untraceAll(context.traceAllHandle);
+        delete context.traceAllHandle;
     },
 
-    monitorFunction: function(fn, mode)
+    monitorFunction: function(context, fn, mode)
     {
         if (typeof(fn) == "function" || fn instanceof Function)
         {
             var script = Firebug.SourceFile.findScriptForFunctionInContext(
-                Firebug.currentContext, fn);
+                context, fn);
 
             if (script)
             {
@@ -853,23 +857,23 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
             {
                 Firebug.Console.logFormatted(
                     ["Firebug unable to locate jsdIScript for function", fn],
-                    Firebug.currentContext, "info");
+                    context, "info");
             }
         }
         else
         {
             Firebug.Console.logFormatted(
                 ["Firebug.Debugger.monitorFunction requires a function", fn],
-                Firebug.currentContext, "info");
+                context, "info");
         }
     },
 
-    unmonitorFunction: function(fn, mode)
+    unmonitorFunction: function(context, fn, mode)
     {
         if (typeof(fn) == "function" || fn instanceof Function)
         {
             var script = Firebug.SourceFile.findScriptForFunctionInContext(
-                Firebug.currentContext, fn);
+                context, fn);
 
             if (script)
                 this.unmonitorScript(fn, script, mode);
@@ -940,7 +944,7 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
     {
         var scriptInfo = Firebug.SourceFile.getSourceFileAndLineByScript(context, script);
         if (scriptInfo)
-            FBS.untraceCalls(scriptInfo.sourceFile, scriptInfo.lineNo, Firebug.Debugger);
+            FBS.untraceCalls(scriptInfo.sourceFile.href, scriptInfo.lineNo);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -1332,17 +1336,9 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
 
     onFunctionCall: function(context, frame, depth, calling)
     {
-        if (!context)
-            context = this.getContextByFrame(frame);
-
-        if (!context)
-            return RETURN_CONTINUE;
-
         frame = StackFrame.getStackFrame(frame, context);
 
-        Firebug.connection.dispatch("onFunctionCall",[context, frame, depth, calling]);
-
-        return context;  // returned as first arg on next call from same trace
+        Firebug.connection.dispatch("onFunctionCall", [context, frame, depth, calling]);
     },
 
     onError: function(frame, error, hitErrorBreakpoint)
@@ -2600,6 +2596,8 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
             else
                 delete persistedState.dynamicURLhasBP;
         }
+
+        this.untraceAll(context);
     },
 
     updateOption: function(name, value)

@@ -1101,8 +1101,8 @@ function FirebugCommandLineAPI(context)
             "cd": "cd", "clear": "clear", "copy": "copy", "inspect": "inspect",
             "debug": "debug", "undebug": "undebug",
             "monitor": "monitor", "unmonitor": "unmonitor",
-            "traceCalls": null, "untraceCalls": null,
-            "traceAll": null, "untraceAll": null,
+            "traceCalls": "trace", "untraceCalls": "untrace",
+            "traceAll": "trace-all", "untraceAll": "untrace-all",
             "memoryProfile": null, "memoryProfileEnd": null,
             "monitorEvents": "monitor-events", "unmonitorEvents": "unmonitor-events",
             "profile": "profile", "profileEnd": "unprofile"
@@ -1139,49 +1139,49 @@ function FirebugCommandLineAPI(context)
 
     this.debug = function(fn)
     {
-        Firebug.Debugger.monitorFunction(fn, "debug");
+        Firebug.Debugger.monitorFunction(context, fn, "debug");
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.undebug = function(fn)
     {
-        Firebug.Debugger.unmonitorFunction(fn, "debug");
+        Firebug.Debugger.unmonitorFunction(context, fn, "debug");
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.monitor = function(fn)
     {
-        Firebug.Debugger.monitorFunction(fn, "monitor");
+        Firebug.Debugger.monitorFunction(context, fn, "monitor");
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.unmonitor = function(fn)
     {
-        Firebug.Debugger.unmonitorFunction(fn, "monitor");
+        Firebug.Debugger.unmonitorFunction(context, fn, "monitor");
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.traceAll = function()
     {
-        Firebug.Debugger.traceAll(Firebug.currentContext);
+        Firebug.Debugger.traceAll(context);
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.untraceAll = function()
     {
-        Firebug.Debugger.untraceAll(Firebug.currentContext);
+        Firebug.Debugger.untraceAll(context);
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.traceCalls = function(fn)
     {
-        Firebug.Debugger.traceCalls(Firebug.currentContext, fn);
+        Firebug.Debugger.traceCalls(context, fn);
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
     this.untraceCalls = function(fn)
     {
-        Firebug.Debugger.untraceCalls(Firebug.currentContext, fn);
+        Firebug.Debugger.untraceCalls(context, fn);
         return Firebug.Console.getDefaultReturnValue(context.window);
     };
 
