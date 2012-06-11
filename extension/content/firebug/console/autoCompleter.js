@@ -11,9 +11,11 @@ define([
     "firebug/lib/dom",
     "firebug/lib/string",
     "firebug/lib/array",
-    "firebug/editor/editor"
+    "firebug/editor/editor",
+    "firebug/console/commands"
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, Wrapper, Dom, Str, Arr, Editor) {
+function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, Wrapper, Dom, Str, Arr, Editor,
+    Commands) {
 
 // ********************************************************************************************* //
 // Constants
@@ -105,7 +107,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
      */
     this.acceptReturn = function()
     {
-        if (!this.completions)
+        if (!this.hasCompletion())
             return true;
 
         if (this.getCompletionValue() === this.textBox.value)
@@ -113,6 +115,14 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             // The user wouldn't see a difference if we completed. This can
             // happen for example if you type 'alert' and press enter,
             // regardless of whether or not there exist other completions.
+            return true;
+        }
+        
+        if (this.completionBase.commandCompletion &&
+            this.getCurrentCompletion() === this.textBox.value)
+        {
+            // Pressing return when only the space is left to complete should
+            // also be acceptable.
             return true;
         }
 
@@ -144,6 +154,46 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         }
 
         var value = this.textBox.value;
+
+        // Handle commands.
+        if (Commands.hasCommand(value))
+        {
+            var sp = value.indexOf(" ");
+            if (sp === -1)
+            {
+                // Complete from the list of possible commands.
+                this.completionBase = {
+                    pre: "",
+                    expr: "",
+                    candidates: Commands.list,
+                    commandCompletion: true
+                };
+                this.createCompletions(value);
+
+                if (this.completions)
+                {
+                    // Customize the default completion a bit.
+                    var ind = this.completions.list.indexOf(":clear");
+                    if (this.showCompletionPopup && value === ":")
+                        this.completions.index = -1;
+                    else if (ind !== -1)
+                        this.completions.index = ind;
+                }
+
+                return;
+            }
+            else
+            {
+                if (Commands.takesNoParams(value.substr(0, sp)))
+                {
+                    // No parameters supported for the command.
+                    this.hide();
+                    return;
+                }
+                // All the other commands take JavaScript input. Just continue, since
+                // regular completions work regardless of the ":command " prefix.
+            }
+        }
 
         // Create a simplified expression by redacting contents/normalizing
         // delimiters of strings and regexes, to make parsing easier.
@@ -305,15 +355,15 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
      */
     this.getCurrentCompletion = function()
     {
-        return (this.completions ? this.completions.list[this.completions.index] : null);
+        return (this.hasCompletion() ? this.completions.list[this.completions.index] : null);
     };
 
     /**
-     * See if we have any completions.
+     * See if we have a selected completion.
      */
-    this.hasCompletions = function()
+    this.hasCompletion = function()
     {
-        return !!this.completions;
+        return !!(this.completions && this.completions.index !== -1);
     };
 
     /**
@@ -362,7 +412,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             !Events.isControl(event) && !Events.isControlShift(event) &&
             this.textBox.value !== "")
         {
-            if (this.completions)
+            if (this.hasCompletion())
             {
                 this.acceptCompletion();
                 Events.cancelEvent(event);
@@ -388,7 +438,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             Events.cancelEvent(event);
             return true;
         }
-        else if (event.keyCode === KeyEvent.DOM_VK_RIGHT && this.completions &&
+        else if (event.keyCode === KeyEvent.DOM_VK_RIGHT && this.hasCompletion() &&
             this.textBox.selectionStart === this.textBox.value.length)
         {
             // Complete on right arrow at end of line.
@@ -444,6 +494,16 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 Events.cancelEvent(event);
                 return true;
             }
+        }
+        else if (event.charCode === ";".charCodeAt(0) &&
+            Events.noKeyModifiers(event) && !this.textBox.value)
+        {
+            // ";" is a shortcut for ":".
+            this.textBox.value = ":";
+            this.textBox.setSelectionRange(1, 1);
+            this.complete(context);
+            Events.cancelEvent(event);
+            return true;
         }
         return false;
     };
@@ -505,6 +565,9 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         var preParsed = this.completionBase.pre, preExpr = this.completionBase.expr;
         var res = preParsed + preExpr + property;
 
+        if (this.completionBase.commandCompletion)
+            return res + (Commands.takesNoParams(property) ? "" : " ");
+
         // Don't adjust index completions.
         if (/^\[['"]$/.test(preExpr.slice(-2)))
             return res;
@@ -545,6 +608,8 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
     this.pageCycle = function(dir)
     {
         var list = this.completions.list, selIndex = this.completions.index;
+        if (selIndex === -1)
+            selIndex = 0;
 
         if (!this.isPopupOpen())
         {

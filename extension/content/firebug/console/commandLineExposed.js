@@ -41,6 +41,7 @@ function createFirebugCommandLine(context, win)
         "values", "debug", "undebug", "monitor", "unmonitor", "traceCalls", "untraceCalls",
         "traceAll", "untraceAll", "monitorEvents", "unmonitorEvents", "profile", "profileEnd",
         "copy", "memoryProfile", "memoryProfileEnd"];
+    var notDeprecated = ["$", "$$", "$x", "$n", "keys", "values"];
 
     // Define command line methods
     for (var i=0; i<commands.length; i++)
@@ -51,13 +52,17 @@ function createFirebugCommandLine(context, win)
         if (command in contentView)
             continue;
 
-        function createCommandHandler(cmd) {
+        var isDeprecated = (notDeprecated.indexOf(command) === -1);
+
+        function createCommandHandler(cmd, depr) {
             return function() {
-                return notifyFirebug(arguments, cmd, 'firebugExecuteCommand');
+                if (depr)
+                    notifyFirebug([cmd], "warnDeprecated", "firebugExecuteCommand");
+                return notifyFirebug(arguments, cmd, "firebugExecuteCommand");
             }
         }
 
-        commandLine[command] = createCommandHandler(command);
+        commandLine[command] = createCommandHandler(command, isDeprecated);
         commandLine.__exposedProps__[command] = "rw";
     }
 
@@ -73,7 +78,9 @@ function createFirebugCommandLine(context, win)
 
         function createShortcutHandler(cmd) {
             return function() {
-                return contentView.console[cmd].apply(contentView.console, arguments);
+                var args = [].slice.call(arguments);
+                args.__exposedProps__ = {};
+                return contentView.console[cmd].apply(contentView.console, args);
             }
         }
 

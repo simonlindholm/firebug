@@ -21,12 +21,13 @@ define([
     "firebug/console/eventMonitor",
     "firebug/lib/keywords",
     "firebug/console/console",
+    "firebug/console/commands",
     "firebug/console/commandLineExposed",
     "firebug/console/autoCompleter",
     "firebug/console/commandHistory"
 ],
 function(Obj, Firebug, FirebugReps, Locale, Events, Wrapper, Url, Css, Dom, Firefox, Win, System,
-    Xpath, Str, Xml, Arr, Persist, EventMonitor, Keywords, Console) {
+    Xpath, Str, Xml, Arr, Persist, EventMonitor, Keywords, Console, Commands) {
 
 // ********************************************************************************************* //
 // Constants
@@ -396,9 +397,22 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         return result;
     },
 
-    isSandbox: function (context)
+    isSandbox: function(context)
     {
         return (context.global && context.global+"" === "[object Sandbox]");
+    },
+
+    cd: function(context, object)
+    {
+        // We need XPCNativeWrapper-wrapped windows ('object' is an XPCSafeJSObjectWrapper).
+        var win = new XPCNativeWrapper(object);
+
+        // Make sure the command line is attached into the target frame.
+        var consoleReady = Firebug.Console.isReadyElsePreparing(context, win);
+        if (FBTrace.DBG_COMMANDLINE)
+            FBTrace.sysout("CommandLine.cd; console ready: " + consoleReady);
+
+        context.baseWindow = win;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -443,8 +457,15 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         if (noscript && noScriptURI)
             noscript.setJSEnabled(noScriptURI, true);
 
-        var goodOrBad = Obj.bind(Firebug.Console.log, Firebug.Console);
-        this.evaluate(expr, context, null, null, goodOrBad, goodOrBad);
+        if (Commands.hasCommand(expr))
+        {
+            Commands.execute(expr, context);
+        }
+        else
+        {
+            var goodOrBad = Obj.bind(Firebug.Console.log, Firebug.Console);
+            this.evaluate(expr, context, null, null, goodOrBad, goodOrBad);
+        }
 
         if (noscript && noScriptURI)
             noscript.setJSEnabled(noScriptURI, false);
@@ -1068,20 +1089,30 @@ function FirebugCommandLineAPI(context)
         if (!(object instanceof window.Window))
             throw "Object must be a window.";
 
-        // Make sure the command line is attached into the target iframe.
-        var consoleReady = Firebug.Console.isReadyElsePreparing(context, object);
-        if (FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("commandLine.cd; console ready: " + consoleReady);
+        Firebug.CommandLine.cd(context, object);
 
-        // The window object parameter uses XPCSafeJSObjectWrapper, but we need XPCNativeWrapper
-        // So, look within all registered consoleHandlers for
-        // the same window (from tabWatcher) that uses uses XPCNativeWrapper (operator "==" works).
-        var entry = Firebug.Console.injector.getConsoleHandler(context, object);
-        if (entry)
-            context.baseWindow = entry.win;
-
-        Firebug.Console.log(["Current window:", context.baseWindow], context, "info");
+        Firebug.Console.logFormatted(["Current window: %o", context.baseWindow], context, "info");
         return Firebug.Console.getDefaultReturnValue(context.window);
+    };
+
+    this.warnDeprecated = function(name)
+    {
+        var replacements = {
+            "cd": "cd", "clear": "clear", "copy": "copy", "inspect": "inspect",
+            "debug": "debug", "undebug": "undebug",
+            "monitor": "monitor", "unmonitor": "unmonitor",
+            "traceCalls": null, "untraceCalls": null,
+            "traceAll": null, "untraceAll": null,
+            "memoryProfile": null, "memoryProfileEnd": null,
+            "monitorEvents": "monitor-events", "unmonitorEvents": "unmonitor-events",
+            "profile": "profile", "profileEnd": "unprofile"
+        };
+        var rep = replacements[name], msg;
+        if (rep)
+            msg = Locale.$STRF("commandline.MethodDeprecatedReplacement", [name, rep]);
+        else
+            msg = Locale.$STRF("commandline.MethodDeprecated", [name]);
+        Firebug.Console.logFormatted([msg], context, "warn");
     };
 
     this.clear = function()  // no web page interaction
