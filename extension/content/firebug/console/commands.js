@@ -1,4 +1,5 @@
 /* See license.txt for terms of usage */
+/*global define: true */
 
 define([
     "firebug/lib/object",
@@ -12,6 +13,11 @@ define([
 ],
 function(Obj, Firebug, Locale, Reps, Str, Arr, System, EventMonitor) {
 "use strict";
+
+// Signal used to designate that a command should not be shown in the
+// completion box, but still works. (Used e.g. for ":unprofile" when
+// not profiling.)
+var DISCOURAGED = {};
 
 // Create a handler which parses the value as a comma-separated list of
 // expressions, evaluates those, tests for error, and then finally
@@ -40,17 +46,63 @@ function needObject(args)
         return "Object required.";
 }
 
+function require(handler, checker)
+{
+    var oldReq = handler._require;
+    handler._require = function(context)
+    {
+        var ret = checker(context);
+        if (ret)
+        {
+            // The command is disallowed/discouraged. Pass on the strongest signal
+            // from the chain.
+            if (ret === DISCOURAGED)
+                return (oldReq && oldReq(context)) || ret;
+            else
+                return ret;
+        }
+        return oldReq && oldReq(context);
+    };
+    return handler;
+}
+
 function requireScriptPanel(handler, name)
 {
-    return function(context, value)
+    return require(handler, function(context)
     {
-        var emsg = Locale.$STRF("commandline.CommandNeedsScriptPanel", [name]);
         var scriptPanel = context.getPanel("script");
         if (!scriptPanel || !scriptPanel.isEnabled())
-            Firebug.Console.logFormatted([new Error(emsg)], context, "error");
-        else
-            handler(context, value);
-    };
+        {
+            if (name)
+                return Locale.$STRF("commandline.CommandNeedsScriptPanel", [name]);
+            else
+                return DISCOURAGED;
+        }
+    });
+}
+
+function requireTraceAllActive(handler, on)
+{
+    return require(handler, function(context)
+    {
+        if (Firebug.Debugger.traceAllActive(context) !== on)
+            return DISCOURAGED;
+    });
+}
+
+function requireProfiling(handler, on)
+{
+    return require(handler, function(context)
+    {
+        if (Firebug.Profiler.isProfiling() !== on)
+            return DISCOURAGED;
+    });
+}
+
+function noParams(handler)
+{
+    handler._noparams = 1;
+    return handler;
 }
 
 function monitorHandler(func, action, name)
@@ -95,12 +147,12 @@ function monitorEventsHandler(add)
 
 var commandHandlers =
 {
-    clear: function(context, value)
+    "clear": noParams(function(context)
     {
         Firebug.Console.clear(context);
-    },
+    }),
 
-    time: function(context, value)
+    "time": function(context, value)
     {
         var iterations = null;
         var match = /,\s*([1-9][0-9]*)$/.exec(value);
@@ -112,7 +164,7 @@ var commandHandlers =
         Firebug.Profiler.timeExecution(context, value, iterations);
     },
 
-    profile: requireScriptPanel(function(context, value)
+    "profile": requireScriptPanel(requireProfiling(function(context, value)
     {
         Firebug.Profiler.startProfiling(context);
         if (!/^ *$/.test(value))
@@ -121,14 +173,14 @@ var commandHandlers =
             Firebug.CommandLine.evaluate(value, context, null, null, log, log);
             Firebug.Profiler.stopProfiling(context);
         }
-    }, "profile"),
+    }, false), "profile"),
 
-    unprofile: function(context, value)
+    "unprofile": requireScriptPanel(requireProfiling(noParams(function(context)
     {
         Firebug.Profiler.stopProfiling(context);
-    },
+    }), true)),
 
-    cd: exprHandler(function(context, obj, args)
+    "cd": exprHandler(function(context, obj, args)
     {
         var win = (args.length === 0 ? context.window.wrappedJSObject : obj);
         Firebug.CommandLine.cd(context, win);
@@ -142,63 +194,71 @@ var commandHandlers =
             return "Object must be a window.";
     }),
 
-    debug: monitorHandler("monitorFunction", "debug", "debug"),
-    undebug: monitorHandler("unmonitorFunction", "debug", "undebug"),
-    monitor: monitorHandler("monitorFunction", "monitor", "monitor"),
-    unmonitor: monitorHandler("unmonitorFunction", "monitor", "unmonitor"),
+    "debug": monitorHandler("monitorFunction", "debug", "debug"),
+    "undebug": monitorHandler("unmonitorFunction", "debug", "undebug"),
+    "monitor": monitorHandler("monitorFunction", "monitor", "monitor"),
+    "unmonitor": monitorHandler("unmonitorFunction", "monitor", "unmonitor"),
 
     "monitor-events": monitorEventsHandler(true),
     "unmonitor-events": monitorEventsHandler(false),
 
-    "trace": monitorHandler("traceCalls", undefined, "trace"),
-    "untrace": monitorHandler("untraceCalls", undefined, "untrace"),
+    "trace": requireScriptPanel({
+        "all": requireTraceAllActive(noParams(function(context)
+        {
+            Firebug.Debugger.traceAll(context);
+        }), false),
 
-    "trace-all": requireScriptPanel(function(context, value)
-    {
-        Firebug.Debugger.traceAll(context);
-    }, "trace-all"),
+        "function": monitorHandler("traceCalls", undefined, "trace function"),
 
-    "untrace-all": function(context, value)
-    {
-        Firebug.Debugger.untraceAll(context);
-    },
+        "execution": function(context, value)
+        {
+            Firebug.Debugger.traceAll(context);
+            var log = Obj.bind(Firebug.Console.log, Firebug.Console);
+            Firebug.CommandLine.evaluate(value, context, null, null, log, log);
+            Firebug.Debugger.untraceAll(context);
+        },
 
-    "trace-execution": requireScriptPanel(function(context, value)
-    {
-        Firebug.Debugger.traceAll(context);
-        var log = Obj.bind(Firebug.Console.log, Firebug.Console);
-        Firebug.CommandLine.evaluate(value, context, null, null, log, log);
-        Firebug.Debugger.untraceAll(context);
-    }, "trace-execution"),
+        _suggestions: ["execution"]
+    }, "trace"),
 
-    inspect: exprHandler(function(context, obj, args)
+    "untrace": requireScriptPanel({
+        "all": requireTraceAllActive(noParams(function(context)
+        {
+            Firebug.Debugger.untraceAll(context);
+        }), true),
+
+        "function": monitorHandler("untraceCalls", undefined, "untrace function")
+    }, "untrace"),
+
+
+    "inspect": exprHandler(function(context, obj, args)
     {
         Firebug.chrome.select(obj, args[1]);
     }, needObject),
 
-    copy: exprHandler(function(context, obj, args)
+    "copy": exprHandler(function(context, obj, args)
     {
         System.copyToClipboard(obj);
         var str = Locale.$STR("commandline.CopiedToClipboard");
         Firebug.Console.logFormatted([str], context, "info");
     }, needObject),
 
-    keys: exprHandler(function(context, obj, args)
+    "keys": exprHandler(function(context, obj, args)
     {
         Firebug.Console.log(Arr.keys(obj), context);
     }, needObject),
 
-    values: exprHandler(function(context, obj, args)
+    "values": exprHandler(function(context, obj, args)
     {
         Firebug.Console.log(Arr.values(obj), context);
     }, needObject),
 
-    dir: exprHandler(function(context, obj, args)
+    "dir": exprHandler(function(context, obj, args)
     {
         Firebug.Console.log(obj, context, "dir", Firebug.DOMPanel.DirTable);
     }, needObject),
 
-    xml: exprHandler(function(context, obj, args)
+    "xml": exprHandler(function(context, obj, args)
     {
         if (obj instanceof window.Window)
             obj = obj.document;
@@ -207,48 +267,27 @@ var commandHandlers =
         Firebug.Console.log(obj, context, "dirxml", Firebug.HTMLPanel.SoloElement);
     }, needObject),
 
-    table: exprHandler(function(context, obj, args)
+    "table": exprHandler(function(context, obj, args)
     {
         Reps.Table.log(obj, args[1], context);
-    }, needObject)
+    }, needObject),
+
+    _suggestions: ["clear"]
 };
 
 Firebug.CommandLineCommands = {
-    commandHandlers: commandHandlers,
+    // Public API for adding new commands.
+    API: {
+        DISCOURAGED: DISCOURAGED,
+        handlers: commandHandlers,
+        exprHandler: exprHandler,
+        require: require,
+        noParams: noParams
+    },
 
-    getList: function(context)
+    getParts: function(value)
     {
-        var list = [
-            "cd",
-            "clear",
-            "copy",
-            "debug",
-            "dir",
-            "inspect",
-            "keys",
-            "monitor-events",
-            "table",
-            "time",
-            "unmonitor-events",
-            "values",
-            "xml"
-        ];
-
-        var scriptPanel = context.getPanel("script");
-        if (scriptPanel && scriptPanel.isEnabled())
-        {
-            list.push((Firebug.Debugger.traceAllActive(context) ? "un" : "") + "trace-all");
-            list.push((Firebug.Profiler.isProfiling() ? "un" : "") + "profile");
-            list.push("monitor", "unmonitor");
-            list.push("debug", "undebug");
-            list.push("trace", "untrace");
-            list.push("trace-execution");
-        }
-
-        return list.sort().map(function(command)
-        {
-            return ":" + command;
-        });
+        return value.substr(1).split(" ");
     },
 
     hasCommand: function(value)
@@ -256,26 +295,158 @@ Firebug.CommandLineCommands = {
         return (value.charAt(0) === ":");
     },
 
-    takesNoParams: function(value)
+    // Returns null for no completions, or an structure consisting of the
+    // command handler to complete for and which index in 'parts' follows it.
+    findCompletionHandler: function(parts, context)
     {
-        var paramLess = [":clear", ":unprofile", ":trace-all", ":untrace-all"];
-        return (paramLess.indexOf(value) !== -1);
+        var node = commandHandlers, i = 0;
+        for (; i < parts.length; ++i)
+        {
+            if (typeof node === "function")
+                break;
+            var prop = parts[i];
+            if (prop.charAt(0) === "_" || !node.hasOwnProperty(prop))
+                return null;
+            node = node[prop];
+            if (node._noparams)
+                return null;
+            if (context && node._require && node._require(context))
+                return null;
+        }
+        return {
+            handler: node,
+            level: i
+        };
+    },
+
+    findExecuteHandler: function(parts, context)
+    {
+        var node = commandHandlers, i = 0, err;
+        for (; i < parts.length; ++i)
+        {
+            if (typeof node === "function" || parts[i] === "")
+                break;
+            err = null;
+            if (parts[i].charAt(0) !== "_" && node.hasOwnProperty(parts[i]))
+            {
+                node = node[parts[i]];
+                if (!node._require)
+                    continue;
+                err = node._require(context);
+                if (!err || err === DISCOURAGED)
+                    continue;
+            }
+
+            // The command up to here is invalid.
+            if (!err)
+            {
+                var command = parts.slice(0, i+1).join(" ");
+                err = Locale.$STRF("commandline.InvalidCommand", [command]);
+            }
+            Firebug.Console.logFormatted([new Error(err)], context, "error");
+            return null;
+        }
+
+        if (typeof node !== "function")
+        {
+            var command = parts.slice(0, i).join(" ");
+            err = Locale.$STRF("commandline.AdditionalParametersRequired", [command]);
+            Firebug.Console.logFormatted([new Error(err)], context, "error");
+            return null;
+        }
+
+        return {
+            handler: node,
+            level: i
+        };
     },
 
     execute: function(value, context)
     {
-        var sp = (value + " ").indexOf(" ");
-        var command = value.substring(1, sp);
-        var rest = value.substr(sp+1);
-        if (this.commandHandlers.hasOwnProperty(command))
+        var parts = this.getParts(value);
+        var h = this.findExecuteHandler(parts, context);
+        if (h)
         {
-            this.commandHandlers[command](context, rest);
+            var commandText = parts.slice(0, h.level).join(" ");
+            h.handler(context, value.substr(commandText.length + 1));
+        }
+    },
+
+    getDefaultCompletion: function(list, value, prefix, ac)
+    {
+        if (ac.showCompletionPopup && value === ":" && !prefix)
+            return -1;
+
+        var parts = this.getParts(value).slice(0, -1);
+        var h = this.findCompletionHandler(parts);
+        if (h && h.handler.hasOwnProperty("_suggestions"))
+        {
+            var suggestions = h.handler._suggestions;
+            for (var i = 0; i < suggestions.length; ++i)
+            {
+                var ind = list.indexOf(suggestions[i]);
+                if (ind !== -1)
+                    return ind;
+            }
+        }
+        return null;
+    },
+
+    getCompletionValue: function(value)
+    {
+        var parts = this.getParts(value);
+        var more = !!this.findCompletionHandler(parts);
+        return value + (more ? " " : "");
+    },
+
+    complete: function(value, context)
+    {
+        if (!this.hasCommand(value))
+        {
+            return {
+                expr: "",
+                candidates: null
+            };
+        }
+
+        var parts = this.getParts(value), pre = parts.slice(0, -1);
+        var h = this.findCompletionHandler(pre, context);
+        if (!h)
+        {
+            // No such command, or no parameters - give an empty completion list.
+            return {
+                expr: value,
+                candidates: []
+            };
+        }
+
+        var usedList, candidates;
+        if (typeof h.handler === "function")
+        {
+            // The handler takes JavaScript input from parts[h.level] and up.
+            usedList = pre.slice(0, h.level);
+            candidates = null;
         }
         else
         {
-            var e = Locale.$STRF("commandline.InvalidCommand", [command]);
-            Firebug.Console.logFormatted([e], context, "error");
+            // Complete to a list of commands.
+            var handler = h.handler, list = [];
+            for (var command in handler)
+            {
+                if (!handler.hasOwnProperty(command) || command.charAt(0) === "_")
+                    continue;
+                var h2 = handler[command];
+                if (!h2._require || !h2._require(context))
+                    list.push(command);
+            }
+            usedList = pre;
+            candidates = list.sort();
         }
+
+        return {
+            expr: ":" + (usedList.length > 0 ? usedList.join(" ") + " " : ""),
+            candidates: candidates
+        };
     }
 };
 

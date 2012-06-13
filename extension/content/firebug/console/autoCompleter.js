@@ -119,7 +119,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         }
         
         if (this.completionBase.commandCompletion &&
-            this.getCurrentCompletion() === this.textBox.value)
+            this.getCompletionBoxValue() === this.textBox.value)
         {
             // Pressing return when only the space is left to complete should
             // also be acceptable.
@@ -156,56 +156,32 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         var value = this.textBox.value;
 
         // Handle commands.
-        if (Commands.hasCommand(value))
+        var commandsCompletion = Commands.complete(value, context);
+        if (commandsCompletion.candidates)
         {
-            var sp = value.indexOf(" ");
-            if (sp === -1)
-            {
-                // Complete from the list of possible commands.
-                this.completionBase = {
-                    pre: "",
-                    expr: "",
-                    candidates: Commands.getList(context),
-                    commandCompletion: true
-                };
-                this.createCompletions(value);
-
-                if (this.completions)
-                {
-                    // Customize the default completion a bit.
-                    var ind = this.completions.list.indexOf(":clear");
-                    if (this.showCompletionPopup && value === ":")
-                        this.completions.index = -1;
-                    else if (ind !== -1)
-                        this.completions.index = ind;
-                }
-
-                return;
-            }
-            else
-            {
-                if (Commands.takesNoParams(value.substr(0, sp)))
-                {
-                    // No parameters supported for the command.
-                    this.hide();
-                    return;
-                }
-                // All the other commands take JavaScript input. Just continue, since
-                // regular completions work regardless of the ":command " prefix.
-            }
+            this.completionBase.pre = "";
+            this.completionBase.expr = commandsCompletion.expr;
+            this.completionBase.candidates = commandsCompletion.candidates;
+            this.completionBase.commandCompletion = true;
+            var prop = value.substr(commandsCompletion.expr.length);
+            this.createCompletions(prop);
+            return;
         }
+
+        // Extract the part of the value that is JavaScript.
+        var jsValue = value.substr(commandsCompletion.expr.length);
 
         // Create a simplified expression by redacting contents/normalizing
         // delimiters of strings and regexes, to make parsing easier.
         // Give up if the syntax is too weird.
-        var svalue = simplifyExpr(value);
+        var svalue = simplifyExpr(jsValue);
         if (svalue === null)
         {
             this.hide();
             return;
         }
 
-        if (killCompletions(svalue, value))
+        if (killCompletions(svalue, jsValue))
         {
             this.hide();
             return;
@@ -213,7 +189,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
 
         // Find the expression to be completed.
         var parseStart = getExpressionOffset(svalue);
-        var parsed = value.substr(parseStart);
+        var parsed = jsValue.substr(parseStart);
         var sparsed = svalue.substr(parseStart);
 
         // Find which part of it represents the property access.
@@ -222,7 +198,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         var spreExpr = sparsed.substr(0, propertyStart);
         var preExpr = parsed.substr(0, propertyStart);
 
-        this.completionBase.pre = value.substr(0, parseStart);
+        this.completionBase.pre = value.substr(0, value.length - parsed.length);
 
         if (FBTrace.DBG_COMMANDLINE)
         {
@@ -316,14 +292,27 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
     };
 
     /**
-     * Chose a default candidate from the list of completions. This is currently
-     * selected as the shortest completion, to make completions disappear when
-     * typing a variable name that is also the prefix of another.
+     * Choose a default candidate from the list of completions. The standard way
+     * of doing this is currently to select the shortest completion (this has
+     * the advantages of choosing simple things and making completions disappear
+     * when typing a variable name that is also the prefix of another).
+     * Commands can have their own selection methods.
      */
     this.pickDefaultCandidate = function()
     {
-        var pick = 0;
-        var ar = this.completions.list;
+        var ar = this.completions.list, pick;
+        if (this.completionBase.commandCompletion)
+        {
+            var expr = this.completionBase.expr, prefix = this.completions.prefix;
+            pick = Commands.getDefaultCompletion(ar, expr, prefix, this);
+            if (pick !== null)
+            {
+                this.completions.index = pick;
+                return;
+            }
+        }
+
+        pick = 0;
         for (var i = 1; i < ar.length; i++)
         {
             if (ar[i].length < ar[pick].length)
@@ -414,7 +403,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         {
             if (this.hasCompletion())
             {
-                this.acceptCompletion();
+                this.acceptCompletion(context);
                 Events.cancelEvent(event);
                 return true;
             }
@@ -431,18 +420,27 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 return true;
             }
         }
-        else if (event.keyCode === KeyEvent.DOM_VK_RETURN && !this.acceptReturn())
+        else if (event.keyCode === KeyEvent.DOM_VK_RETURN)
         {
-            // Completion on return, when one is user-visible.
-            this.acceptCompletion();
-            Events.cancelEvent(event);
-            return true;
+            if (!this.acceptReturn())
+            {
+                // Completion on return, when one is user-visible.
+                this.acceptCompletion(context);
+                Events.cancelEvent(event);
+                return true;
+            }
+            else if (this.textBox.value === ":")
+            {
+                // Don't accept ":" as input, at all.
+                Events.cancelEvent(event);
+                return true;
+            }
         }
         else if (event.keyCode === KeyEvent.DOM_VK_RIGHT && this.hasCompletion() &&
             this.textBox.selectionStart === this.textBox.value.length)
         {
             // Complete on right arrow at end of line.
-            this.acceptCompletion();
+            this.acceptCompletion(context);
             Events.cancelEvent(event);
             return true;
         }
@@ -501,8 +499,8 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             // ";" is a shortcut for ":".
             this.textBox.value = ":";
             this.textBox.setSelectionRange(1, 1);
-            this.complete(context);
             Events.cancelEvent(event);
+            this.complete(context);
             return true;
         }
         return false;
@@ -566,7 +564,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         var res = preParsed + preExpr + property;
 
         if (this.completionBase.commandCompletion)
-            return res + (Commands.takesNoParams(property) ? "" : " ");
+            return Commands.getCompletionValue(res);
 
         // Don't adjust index completions.
         if (/^\[['"]$/.test(preExpr.slice(-2)))
@@ -594,14 +592,19 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
     /**
      * Accept the current completion into the text box.
      */
-    this.acceptCompletion = function()
+    this.acceptCompletion = function(context)
     {
         var completion = this.getCompletionValue();
         var originalValue = this.textBox.value;
         this.textBox.value = completion;
         setCursorToEOL(this.textBox);
 
-        this.hide();
+        // Commands can have completions directly following each other.
+        if (Commands.hasCommand(completion))
+            this.complete(context);
+        else
+            this.hide();
+
         this.revertValue = originalValue;
     };
 
@@ -818,7 +821,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             return;
 
         this.completions.index = el.completionIndex;
-        this.acceptCompletion();
+        this.acceptCompletion(Firebug.currentContext);
     };
 
     this.popupMousedown = Obj.bind(this.popupMousedown, this);
