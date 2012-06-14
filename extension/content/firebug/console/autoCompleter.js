@@ -135,6 +135,12 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
      */
     this.complete = function(context)
     {
+        if (this.textBox.value === ";")
+        {
+            // ";" automatically converts to ":".
+            this.textBox.value = ":";
+            this.textBox.setSelectionRange(1, 1);
+        }
         this.revertValue = null;
         this.createCandidates(context);
         this.showCompletions(false);
@@ -492,16 +498,6 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 Events.cancelEvent(event);
                 return true;
             }
-        }
-        else if (event.charCode === ";".charCodeAt(0) &&
-            Events.noKeyModifiers(event) && !this.textBox.value)
-        {
-            // ";" is a shortcut for ":".
-            this.textBox.value = ":";
-            this.textBox.setSelectionRange(1, 1);
-            Events.cancelEvent(event);
-            this.complete(context);
-            return true;
         }
         return false;
     };
