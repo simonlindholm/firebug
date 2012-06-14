@@ -1104,7 +1104,7 @@ function FirebugCommandLineAPI(context)
             "traceCalls": "trace", "untraceCalls": "untrace",
             "traceAll": "trace-all", "untraceAll": "untrace-all",
             "memoryProfile": null, "memoryProfileEnd": null,
-            "monitorEvents": "monitor-events", "unmonitorEvents": "unmonitor-events",
+            "monitorEvents": "log-events", "unmonitorEvents": "unlog-events",
             "profile": "profile", "profileEnd": "unprofile"
         };
         var rep = replacements[name], msg;

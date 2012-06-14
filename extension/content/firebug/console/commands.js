@@ -199,8 +199,8 @@ var commandHandlers =
     "monitor": monitorHandler("monitorFunction", "monitor", "monitor"),
     "unmonitor": monitorHandler("unmonitorFunction", "monitor", "unmonitor"),
 
-    "monitor-events": monitorEventsHandler(true),
-    "unmonitor-events": monitorEventsHandler(false),
+    "log-events": monitorEventsHandler(true),
+    "unlog-events": monitorEventsHandler(false),
 
     "trace": requireScriptPanel({
         "all": requireTraceAllActive(noParams(function(context)
