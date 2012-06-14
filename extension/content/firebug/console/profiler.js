@@ -273,6 +273,16 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
             var nowF = (precise ? "performance.now()" : "Date.now()");
             var ret = "{ ";
 
+            // Declare a container for the timing state. We'd ideally declare
+            // it with 'let', but when stopped in the debugger, this is often
+            // impossible due to the script being run with an older JavaScript
+            // version (issue 2244). Thus, use the (hidden, used for rerun)
+            // '_firebug' global instead.
+            if (context.stopped)
+                ret += "if (!window._firebug) window._firebug = {}; ";
+            else
+                ret += "let _firebug = {}; ";
+
             var timingOverhead = "0";
             if (precise)
             {
@@ -280,16 +290,6 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
                 // think. Can't hurt, at least.)
                 ret += [nowF, nowF].join("; ") + "; ";
                 ret += "document.getElementById('dummy'); ";
-
-                // Declare a container for the timing state. We'd ideally
-                // declare it with 'let', but when stopped in the debugger,
-                // this is often impossible due to the script being run with
-                // an older JavaScript version (issue 2244). Thus, use the
-                // (hidden, used for rerun) '_firebug' global instead.
-                if (context.stopped)
-                    ret += "if (!window._firebug) window._firebug = {}; ";
-                else
-                    ret += "let _firebug = {}; ";
 
                 // performance.now() takes some time to run (~0.02ms on my
                 // machine); thus, save some consecutive timings so we can
@@ -362,10 +362,11 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
             times.splice(0, 3);
         }
 
-        if (times.length >= 10)
+        if (times.length >= 10 && times[0] >= (precise ? 0.03 : 5))
         {
-            // We have enough data to be able to throw out outliers.
-            var edge = Math.floor(times.length * 0.2);
+            // We have enough data and relative precision to be able to throw
+            // out outliers.
+            var edge = Math.floor(times.length * 0.15);
             times.sort(function(a, b) { return a - b; });
             times = times.slice(edge, -edge);
         }
