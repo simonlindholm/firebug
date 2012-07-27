@@ -253,53 +253,37 @@ var classNameReCache={};
 
 Css.hasClass = function(node, name)
 {
-    if (!node || node.nodeType != 1 || !node.className || name == '')
+    if (!node || node.nodeType != 1 || !name)
         return false;
 
     if (name.indexOf(" ") != -1)
     {
-        var classes = name.split(" "), len = classes.length, found=false;
-        for (var i = 0; i < len; i++)
+        return name.split(" ").every(function(cls)
         {
-            var cls = classes[i].trim();
-            if (cls != "")
-            {
-                if (Css.hasClass(node, cls) == false)
-                    return false;
-                found = true;
-            }
-        }
-        return found;
+            return !cls || node.classList.contains(cls);
+        });
     }
 
-    var re;
-    if (name.indexOf("-") == -1)
-        re = classNameReCache[name] = classNameReCache[name] || new RegExp('(^|\\s)' + name + '(\\s|$)', "g");
-    else // XXXsroussey don't cache these, they are often setting values. Should be using setUserData/getUserData???
-        re = new RegExp('(^|\\s)' + name + '(\\s|$)', "g")
-    return node.className.search(re) != -1;
+    return node.classList.contains(name);
 };
 
 Css.setClass = function(node, name)
 {
-    if (!node || node.nodeType != 1 || name == '')
+    if (!node || node.nodeType != 1 || !name)
         return;
 
     if (name.indexOf(" ") != -1)
     {
-        var classes = name.split(" "), len = classes.length;
-        for (var i = 0; i < len; i++)
+        name.split(" ").forEach(function(cls)
         {
-            var cls = classes[i].trim();
-            if (cls != "")
-            {
-                Css.setClass(node, cls);
-            }
-        }
-        return;
+            if (cls)
+                node.classList.add(cls);
+        });
     }
-    if (!Css.hasClass(node, name))
-        node.className = node.className.trim() + " " + name;
+    else
+    {
+        node.classList.add(name);
+    }
 };
 
 Css.getClassValue = function(node, name)
@@ -311,32 +295,21 @@ Css.getClassValue = function(node, name)
 
 Css.removeClass = function(node, name)
 {
-    if (!node || node.nodeType != 1 || node.className == '' || name == '')
+    if (!node || node.nodeType != 1 || !name)
         return;
 
     if (name.indexOf(" ") != -1)
     {
-        var classes = name.split(" "), len = classes.length;
-        for (var i = 0; i < len; i++)
+        name.split(" ").forEach(function(cls)
         {
-            var cls = classes[i].trim();
-            if (cls != "")
-            {
-                if (Css.hasClass(node, cls) == false)
-                    Css.removeClass(node, cls);
-            }
-        }
-        return;
+            if (cls)
+                node.classList.remove(cls);
+        });
     }
-
-    var re;
-    if (name.indexOf("-") == -1)
-        re = classNameReCache[name] = classNameReCache[name] || new RegExp('(^|\\s)' + name + '(\\s|$)', "g");
-    else // XXXsroussey don't cache these, they are often setting values. Should be using setUserData/getUserData???
-        re = new RegExp('(^|\\s)' + name + '(\\s|$)', "g")
-
-    node.className = node.className.replace(re, " ");
-
+    else
+    {
+        node.classList.remove(name);
+    }
 };
 
 Css.toggleClass = function(elt, name)

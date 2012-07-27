@@ -8,6 +8,7 @@ function(FBTrace) {
 // ********************************************************************************************* //
 // Constants
 
+var proto = Array.prototype;
 var Arr = {};
 
 // ********************************************************************************************* //
@@ -69,39 +70,25 @@ Arr.values = function(map)
 
 Arr.remove = function(list, item)
 {
-    for (var i = 0; i < list.length; ++i)
-    {
-        if (list[i] == item)
-        {
-            list.splice(i, 1);
-            return true;
-        }
-    }
-    return false;
+    var ind = list.indexOf(item);
+    if (ind === -1)
+        return false;
+    list.splice(item, 1);
+    return true;
 };
 
 Arr.sliceArray = function(array, index)
 {
-    var slice = [];
-    for (var i = index; i < array.length; ++i)
-        slice.push(array[i]);
-
-    return slice;
+    return proto.slice.call(array, index);
 };
 
 Arr.cloneArray = function(array, fn)
 {
-   var newArray = [];
-
-   if (fn)
-       for (var i = 0; i < array.length; ++i)
-           newArray.push(fn(array[i]));
-   else
-       for (var i = 0; i < array.length; ++i)
-           newArray.push(array[i]);
-
-   return newArray;
-}
+    if (fn)
+        return proto.map.call(array, fn);
+    else
+        return proto.slice.call(array);
+};
 
 Arr.extendArray = function(array, array2)
 {
@@ -163,6 +150,7 @@ Arr.sortUnique = function(ar, sortFunc)
 
 /**
  * Merge together two arrays, sort the result, and eliminate any duplicates.
+ * Deprecated.
  */
 Arr.merge = function(arr1, arr2, sortFunc)
 {
