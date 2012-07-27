@@ -393,6 +393,40 @@ Firebug.CSSModule = Obj.extend(Obj.extend(Firebug.Module, Firebug.EditorSelector
         return m ? m[0] : "";
     },
 
+    parseCSSProps: function(style, expandShorthandProps)
+    {
+        var ret = [];
+        if (expandShorthandProps)
+        {
+            var count = style.length-1;
+            var index = style.length;
+
+            while (index--)
+            {
+                var propName = style.item(count - index);
+                ret.push({name: propName, value: style.getPropertyValue(propName),
+                        important: !!style.getPropertyPriority(propName)});
+            }
+        }
+        else
+        {
+            var lines = style.cssText.match(/(?:[^;\(]*(?:\([^\)]*?\))?[^;\(]*)*;?/g);
+            var propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! important)?;?$/;
+            var line;
+            var i = 0;
+            while (line = lines[i++])
+            {
+                var m = propRE.exec(line);
+                if(!m)
+                    continue;
+
+                if (m[2])
+                    ret.push({name: m[1], value: m[2], important: !!m[3]});
+            }
+        }
+        return ret;
+    },
+
     getPropertyInfo: function(computedStyle, propName)
     {
         var propInfo = {

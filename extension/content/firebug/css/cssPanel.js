@@ -431,7 +431,8 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
                 }
                 else if (rule instanceof window.CSSFontFaceRule)
                 {
-                    props = this.parseCSSProps(rule.style);
+                    props = [];
+                    this.addCSSProps(rule.style, false, props);
                     this.sortProperties(props);
                     rules.push({
                         tag: CSSFontFaceRuleTag.tag, rule: rule,
@@ -467,42 +468,14 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         return rules;
     },
 
-    parseCSSProps: function(style, inheritMode)
+    addCSSProps: function(style, inheritMode, props)
     {
-        var m;
-        var props = [];
-
-        if (Firebug.expandShorthandProps)
+        var parsed = CSSModule.parseCSSProps(style, Firebug.expandShorthandProps);
+        for (var i = 0; i < parsed.length; ++i)
         {
-            var count = style.length-1;
-            var index = style.length;
-
-            while (index--)
-            {
-                var propName = style.item(count - index);
-                this.addProperty(propName, style.getPropertyValue(propName),
-                    !!style.getPropertyPriority(propName), false, inheritMode, props);
-            }
+            this.addProperty(parsed[i].name, parsed[i].value,
+                parsed[i].important, false, inheritMode, props);
         }
-        else
-        {
-            var lines = style.cssText.match(/(?:[^;\(]*(?:\([^\)]*?\))?[^;\(]*)*;?/g);
-            var propRE = /\s*([^:\s]*)\s*:\s*(.*?)\s*(! important)?;?$/;
-            var line;
-            var i=0;
-            while(line = lines[i++])
-            {
-                m = propRE.exec(line);
-                if(!m)
-                    continue;
-
-                //var name = m[1], value = m[2], important = !!m[3];
-                if (m[2])
-                    this.addProperty(m[1], m[2], !!m[3], false, inheritMode, props);
-            }
-        }
-
-        return props;
     },
 
     sortProperties: function(props)
@@ -515,8 +488,8 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
 
     getRuleProperties: function(context, rule, inheritMode)
     {
-        var props = this.parseCSSProps(rule.style, inheritMode);
-
+        var props = [];
+        this.addCSSProps(rule.style, inheritMode, props);
         this.addDisabledProperties(context, rule, inheritMode, props);
         this.sortProperties(props);
 

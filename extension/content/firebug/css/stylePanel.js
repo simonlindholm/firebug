@@ -440,7 +440,8 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
 
     getStyleProperties: function(element, rules, usedProps, inheritMode)
     {
-        var props = this.parseCSSProps(element.style, inheritMode);
+        var props = [];
+        this.addCSSProps(element.style, inheritMode, props);
         this.addDisabledProperties(this.context, element, inheritMode, props);
 
         this.sortProperties(props);
