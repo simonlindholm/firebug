@@ -519,10 +519,22 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         var ruleData = CSSModule.getRuleData(context, rule);
         if (ruleData.disabledMap)
         {
+            var propMap = {};
+            for (var i = 0; i < props.length; ++i)
+                propMap[props[i].name] = 1;
+
             var moreProps = ruleData.disabledMap;
             for (var i = 0; i < moreProps.length; ++i)
             {
                 var prop = moreProps[i];
+                if (propMap.hasOwnProperty(prop.name))
+                {
+                    // An enabled property with the same name as the disabled
+                    // one has appeared - remove the disabled one entirely.
+                    moreProps.splice(i, 1);
+                    --i;
+                    continue;
+                }
                 this.addProperty(prop.name, prop.value, prop.important, true, inheritMode, props);
             }
         }
