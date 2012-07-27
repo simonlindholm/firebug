@@ -50,6 +50,13 @@ var CSSDomplateBase =
     isSelectorEditable: function(rule)
     {
         return rule.isSelectorEditable && this.isEditable(rule);
+    },
+
+    isSaveable: function(rule)
+    {
+        // XXX saving
+        return Math.random() < 0.1;
+        // return true;
     }
 };
 
@@ -158,12 +165,14 @@ var CSSStyleRuleTag = domplate(CSSDomplateBase,
             $cssEditableRule: "$rule|isEditable",
             $insertInto: "$rule|isEditable",
             $editGroup: "$rule|isSelectorEditable",
+            $saveable: "$rule|isSaveable",
             _repObject: "$rule.rule",
             role: "presentation"},
             DIV({"class": "cssHead focusRow", role: "listitem"},
                 SPAN({"class": "cssSelector", $editable: "$rule|isSelectorEditable"},
                     "$rule.selector"),
-                " {"
+                " {",
+                SPAN({"class": "cssSaveButton", role: "button"})
             ),
             DIV({role: "group"},
                 DIV({"class": "cssPropertyListBox", _rule: "$rule", role: "listbox"},

@@ -204,6 +204,24 @@
     white-space: nowrap;
 }
 
+.cssSaveButton {
+    display: none;
+}
+.saveable .cssSaveButton {
+    background: url(chrome://firebug/skin/save.png) no-repeat;
+    height: 14px;
+    width: 14px;
+    display: inline-block;
+    margin-left: 4px;
+    position: relative;
+    top: 2px;
+    cursor: pointer;
+}
+.saveable .cssSaveButton:not(:hover) {
+    filter: url("chrome://mozapps/skin/extensions/extensions.svg#greyscale");
+    opacity: 0.6;
+}
+
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 .useA11y .a11yCSSView .focusRow:focus {
