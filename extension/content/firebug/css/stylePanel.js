@@ -20,10 +20,12 @@ define([
     "firebug/lib/options",
     "firebug/css/cssModule",
     "firebug/css/cssPanel",
+    "firebug/css/saving/manager",
     "firebug/chrome/menu"
 ],
 function(Obj, Firebug, Firefox, Domplate, FirebugReps, Xpcom, Locale, Events, Url, Arr,
-    SourceLink, Dom, Css, Xpath, Arr, Fonts, Options, CSSModule, CSSStyleSheetPanel, Menu) {
+    SourceLink, Dom, Css, Xpath, Arr, Fonts, Options, CSSModule, CSSStyleSheetPanel,
+    CSSSaveManager, Menu) {
 
 with (Domplate) {
 
@@ -33,9 +35,6 @@ with (Domplate) {
 const Cc = Components.classes;
 const Ci = Components.interfaces;
 const nsIDOMCSSStyleRule = Ci.nsIDOMCSSStyleRule;
-
-// before firefox 6 getCSSStyleRules accepted only one argument
-const DOMUTILS_SUPPORTS_PSEUDOELEMENTS = Dom.domUtils.getCSSStyleRules.length > 1;
 
 // See: http://mxr.mozilla.org/mozilla1.9.2/source/content/events/public/nsIEventStateManager.h#153
 const STATE_ACTIVE  = 0x01;
@@ -220,13 +219,9 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
     // All calls to this method must call cleanupSheets first
     getElementRules: function(element, rules, usedProps, inheritMode)
     {
-        var pseudoElements = [""];
-        var inspectedRules, displayedRules = {};
-
-        // Firefox 6+ allows inspecting of pseudo-elements (see issue 537)
-        if (DOMUTILS_SUPPORTS_PSEUDOELEMENTS && !inheritMode)
-            pseudoElements = Arr.extendArray(pseudoElements,
-                [":first-letter", ":first-line", ":before", ":after"]);
+        var inspectedRules, displayedRules = {}, pseudoElements = [""];
+        if (!inheritMode)
+            pseudoElements.push(":first-letter", ":first-line", ":before", ":after");
 
         for (var p in pseudoElements)
         {
@@ -251,10 +246,11 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 if (inheritMode && !props.length)
                     continue;
 
-                var isPseudoElementSheet = (pseudoElements[p] != "");
                 var sourceLink = this.getSourceLink(null, rule);
+                var isSaveable = CSSSaveManager.isSaveable(this.context, rule);
 
-                if (!isPseudoElementSheet)
+                var isPseudoElement = (pseudoElements[p] != "");
+                if (!isPseudoElement)
                     this.markOverriddenProps(element, props, usedProps, inheritMode);
 
                 rules.unshift({
@@ -263,7 +259,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                     sourceLink: sourceLink,
                     props: props, inherited: inheritMode,
                     isSystemSheet: isSystemSheet,
-                    isPseudoElementSheet: isPseudoElementSheet,
+                    isSaveable: isSaveable,
                     isSelectorEditable: true
                 });
             }

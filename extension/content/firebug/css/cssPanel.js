@@ -23,12 +23,14 @@ define([
     "firebug/lib/options",
     "firebug/css/cssModule",
     "firebug/css/cssReps",
+    "firebug/css/saving/manager",
     "firebug/editor/editor",
     "firebug/editor/editorSelector",
     "firebug/chrome/searchBox"
 ],
 function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, Url, SourceLink, Css, Dom, Win,
-    Search, Str, Arr, Fonts, Xml, Persist, System, Menu, Options, CSSModule, CSSInfoTip) {
+    Search, Str, Arr, Fonts, Xml, Persist, System, Menu, Options, CSSModule, CSSInfoTip,
+    CSSSaveManager) {
 
 with (Domplate) {
 
@@ -50,13 +52,6 @@ var CSSDomplateBase =
     isSelectorEditable: function(rule)
     {
         return rule.isSelectorEditable && this.isEditable(rule);
-    },
-
-    isSaveable: function(rule)
-    {
-        // XXX saving
-        return Math.random() < 0.1;
-        // return true;
     }
 };
 
@@ -165,7 +160,7 @@ var CSSStyleRuleTag = domplate(CSSDomplateBase,
             $cssEditableRule: "$rule|isEditable",
             $insertInto: "$rule|isEditable",
             $editGroup: "$rule|isSelectorEditable",
-            $saveable: "$rule|isSaveable",
+            $saveable: "$rule.isSaveable",
             _repObject: "$rule.rule",
             role: "presentation"},
             DIV({"class": "cssHead focusRow", role: "listitem"},
@@ -404,15 +399,15 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
                 var rule = cssRules[i];
                 if (rule instanceof window.CSSStyleRule)
                 {
+                    var isSaveable = CSSSaveManager.isSaveable(context, rule);
                     props = this.getRuleProperties(context, rule);
                     rules.push({
                         tag: CSSStyleRuleTag.tag,
                         rule: rule,
-                        // Show universal selectors with pseudo-class
-                        // (http://code.google.com/p/fbug/issues/detail?id=3683)
-                        selector: rule.selectorText.replace(/ :/g, " *:"),
+                        selector: rule.selectorText.replace(/ :/g, " *:"), // (issue 3683)
                         props: props,
                         isSystemSheet: isSystemSheet,
+                        isSaveable: isSaveable,
                         isSelectorEditable: true
                     });
                 }
