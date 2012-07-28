@@ -211,10 +211,9 @@
     background: url(chrome://firebug/skin/save.png) no-repeat;
     height: 14px;
     width: 14px;
-    display: inline-block;
-    margin-left: 4px;
-    position: relative;
-    top: 2px;
+    position: absolute;
+    display: inline;
+    margin: -1px 0 0 1ch;
     cursor: pointer;
 }
 .saveable .cssSaveButton:not(:hover) {

@@ -399,7 +399,7 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
                 var rule = cssRules[i];
                 if (rule instanceof window.CSSStyleRule)
                 {
-                    var isSaveable = CSSSaveManager.isSaveable(context, rule);
+                    var isSaveable = CSSSaveManager.testSaveable(context, rule);
                     props = this.getRuleProperties(context, rule);
                     rules.push({
                         tag: CSSStyleRuleTag.tag,
@@ -750,6 +750,7 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         CSSModule.disableProperty(Css.hasClass(row, "disabledStyle"), rule,
             propName, parsedValue, map, this.context);
 
+        CSSSaveManager.ruleChanged(this.context, rule);
         this.markChange(this.name == "stylesheet");
     },
 
@@ -1622,7 +1623,6 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         {
             if (Css.hasClass(target, "cssPropName"))
             {
-  
                 if (value && previousValue != value)  // name of property has changed.
                 {
                     // Record the original CSS text for the inline case so we can reconstruct at a later
@@ -1735,6 +1735,14 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 
         if (FBTrace.DBG_CSS)
             FBTrace.sysout("CSSEditor.saveEdit (ending) " + this.panel.name, value);
+    },
+
+    endEditing: function(target, value, cancel)
+    {
+        var rule = Firebug.getRepObject(target);
+        if (rule instanceof window.CSSStyleRule)
+            CSSSaveManager.ruleChanged(this.panel.context, rule);
+        return true;
     },
 
     advanceToNext: function(target, charCode)
@@ -2269,6 +2277,8 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
                 this.box.setAttribute('saveSuccess', false);
 
                 row.repObject = rule;
+                if (oldRule)
+                    CSSModule.remapRuleData(context, oldRule, rule);
                 return;
             }
         }
@@ -2279,10 +2289,18 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 
         // Update the rep object
         row.repObject = rule;
-        if (oldRule)
+        if (oldRule && rule)
             CSSModule.remapRuleData(context, oldRule, rule);
 
         this.panel.markChange(this.panel.name == "stylesheet");
+    },
+
+    endEditing: function(target, value, cancel)
+    {
+        var rule = Firebug.getRepObject(target);
+        if (rule)
+            CSSSaveManager.ruleChanged(this.panel.context, rule);
+        return true;
     },
 
     getAutoCompleteRange: function(value, offset)
@@ -2508,7 +2526,7 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 // StyleSheetEditor
 
 /**
- * StyleSheetEditor represents an inline editor and is used when editing CSS
+ * StyleSheetEditor represents the full-sized editor used for Source/Live Edit
  * within the CSS panel.
  */
 function StyleSheetEditor(doc)

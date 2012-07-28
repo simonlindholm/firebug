@@ -247,7 +247,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                     continue;
 
                 var sourceLink = this.getSourceLink(null, rule);
-                var isSaveable = CSSSaveManager.isSaveable(this.context, rule);
+                var isSaveable = CSSSaveManager.testSaveable(this.context, rule);
 
                 var isPseudoElement = (pseudoElements[p] != "");
                 if (!isPseudoElement)
