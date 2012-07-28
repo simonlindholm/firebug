@@ -628,7 +628,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
         },
         {
             label: "AddRule",
-            tooltiptext: "style.tip.Add_Rule",
+            tooltiptext: "style.tip.AddRule",
             command: Obj.bindFixed(this.addRelatedRule, this)
         });
 
