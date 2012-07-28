@@ -319,6 +319,18 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
+    userSetProperty: function(context, rule, name, value, priority)
+    {
+        // XXX saving handle other prefixes
+        CSSMediaRule.setProperty(rule, name, value, priority);
+    },
+
+    userRemoveProperty: function(context, rule, name)
+    {
+        // XXX saving handle other prefixes
+        CSSMediaRule.removeProperty(rule, name);
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     loadOriginalSource: function()
@@ -1670,22 +1682,24 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
                    // FBTrace.sysout("CSSEditor.saveEdit BEFORE style:",style);
                 }
   
+                var context = this.panel.context;
                 if (value && value != "null")
                 {
                     parsedValue = parsePriority(value);
-                    CSSModule.setProperty(rule, propName, parsedValue.value,
-                        parsedValue.priority);
+                    this.panel.userSetProperty(context, rule, propName,
+                        parsedValue.value, parsedValue.priority);
                 }
                 else if (previousValue && previousValue != "null")
                 {
-                    CSSModule.removeProperty(rule, propName);
+                    this.panel.userRemoveProperty(context, rule, propName);
                 }
             }
   
             if (value)
             {
+                // XXX saving handle other prefixes
                 var saveSuccess = !!rule.style.getPropertyValue(propName || value);
-                if(!saveSuccess && !propName)
+                if (!saveSuccess && !propName)
                 {
                     propName = value.replace(/-./g, function(match)
                     {
