@@ -512,18 +512,9 @@ Str.splitLines = function(text)
 {
     if (!text)
         return [];
-
-    const reSplitLines2 = /.*(:?\r\n|\n|\r)?/mg;
-    var lines;
-    if (text.match)
-    {
-        lines = text.match(reSplitLines2);
-    }
-    else
-    {
-        var str = text+"";
-        lines = str.match(reSplitLines2);
-    }
+    if (!text.match)
+        text = text + "";
+    var lines = text.match(/.*(:?\r\n|\n|\r)?/mg);
     lines.pop();
     return lines;
 };
