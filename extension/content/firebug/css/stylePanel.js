@@ -269,8 +269,10 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
             this.getStyleProperties(element, rules, usedProps, inheritMode);
 
         if (FBTrace.DBG_CSS)
+        {
             FBTrace.sysout("getElementRules " + rules.length + " rules for " +
                 Xpath.getElementXPath(element), rules);
+        }
     },
 
     markOverriddenProps: function(element, props, usedProps, inheritMode)

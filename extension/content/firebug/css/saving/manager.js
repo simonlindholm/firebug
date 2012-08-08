@@ -22,15 +22,16 @@ var Manager =
         return ruleData.saveable;
     },
 
-    ruleChanged: function(context, rule)
+    markRuleChanged: function(context, rule)
     {
         if (!isInCSSFile(rule))
-            return;
+            return false;
         var ruleData = CSSModule.getRuleData(context, rule);
         var previousInfo = ruleData.previousSave;
         if (!previousInfo)
-            return;
+            return false;
         ruleData.saveable = !previousInfo.verySimilar(new RuleInfo(rule));
+        return ruleData.saveable;
     }
 };
 

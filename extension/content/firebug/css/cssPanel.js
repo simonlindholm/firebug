@@ -319,16 +319,27 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
-    userSetProperty: function(context, rule, name, value, priority)
+    userSetProperty: function(rule, name, value, priority)
     {
         // XXX saving handle other prefixes
         CSSModule.setProperty(rule, name, value, priority);
     },
 
-    userRemoveProperty: function(context, rule, name)
+    userRemoveProperty: function(rule, name)
     {
         // XXX saving handle other prefixes
         CSSModule.removeProperty(rule, name);
+    },
+
+    updateRuleForSaving: function(rule, row)
+    {
+        if (!rule)
+            return;
+        var isSaveable = CSSSaveManager.markRuleChanged(this.context, rule);
+        if (isSaveable)
+            row.classList.add("saveable");
+        else
+            row.classList.remove("saveable");
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -762,7 +773,8 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         CSSModule.disableProperty(Css.hasClass(row, "disabledStyle"), rule,
             propName, parsedValue, map, this.context);
 
-        CSSSaveManager.ruleChanged(this.context, rule);
+        var ruleRow = Dom.getAncestorByClass(row, "cssRule");
+        this.updateRuleForSaving(rule, ruleRow);
         this.markChange(this.name == "stylesheet");
     },
 
@@ -1626,8 +1638,7 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         target.innerHTML = Str.escapeForCss(value);
 
         var row = Dom.getAncestorByClass(target, "cssProp");
-        if (Css.hasClass(row, "disabledStyle"))
-            Css.toggleClass(row, "disabledStyle");
+        row.classList.remove("disabledStyle");
 
         var rule = Firebug.getRepObject(target);
 
@@ -1686,12 +1697,12 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
                 if (value && value != "null")
                 {
                     parsedValue = parsePriority(value);
-                    this.panel.userSetProperty(context, rule, propName,
+                    this.panel.userSetProperty(rule, propName,
                         parsedValue.value, parsedValue.priority);
                 }
                 else if (previousValue && previousValue != "null")
                 {
-                    this.panel.userRemoveProperty(context, rule, propName);
+                    this.panel.userRemoveProperty(rule, propName);
                 }
             }
   
@@ -1754,8 +1765,9 @@ CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
     endEditing: function(target, value, cancel)
     {
         var rule = Firebug.getRepObject(target);
+        var row = Dom.getAncestorByClass(target, "cssRule");
         if (rule instanceof window.CSSStyleRule)
-            CSSSaveManager.ruleChanged(this.panel.context, rule);
+            this.panel.updateRuleForSaving(rule, row);
         return true;
     },
 
@@ -2171,8 +2183,10 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         var context = this.panel.context;
 
         if (FBTrace.DBG_CSS)
+        {
             FBTrace.sysout("CSSRuleEditor.saveEdit: '" + value + "'  '" + previousValue +
                 "'", target);
+        }
 
         target.innerHTML = Str.escapeForCss(value);
 
@@ -2312,8 +2326,8 @@ CSSRuleEditor.prototype = domplate(Firebug.InlineEditor.prototype,
     endEditing: function(target, value, cancel)
     {
         var rule = Firebug.getRepObject(target);
-        if (rule)
-            CSSSaveManager.ruleChanged(this.panel.context, rule);
+        var row = Dom.getAncestorByClass(target, "cssRule");
+        this.panel.updateRuleForSaving(rule, row);
         return true;
     },
 
