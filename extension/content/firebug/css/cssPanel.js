@@ -563,37 +563,16 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
     translateName: function(name, value)
     {
         // Don't show these proprietary Mozilla properties
-        if ((value == "-moz-initial"
-            && (name == "-moz-background-clip" || name == "-moz-background-origin"
-                || name == "-moz-background-inline-policy"))
-        || (value == "physical"
-            && (name == "margin-left-ltr-source" || name == "margin-left-rtl-source"
-                || name == "margin-right-ltr-source" || name == "margin-right-rtl-source"))
-        || (value == "physical"
-            && (name == "padding-left-ltr-source" || name == "padding-left-rtl-source"
-                || name == "padding-right-ltr-source" || name == "padding-right-rtl-source")))
+        if (value == "-moz-initial" && /^-moz-background-(clip|origin|inline-policy)$/.test(name))
+            return null;
+        if (value == "physical" && /^(margin|padding)-(left|right)-(ltr|rtl)-source$/.test(name))
             return null;
 
         // Translate these back to the form the user probably expects
-        if (name == "margin-left-value")
-            return "margin-left";
-        else if (name == "margin-right-value")
-            return "margin-right";
-        else if (name == "margin-top-value")
-            return "margin-top";
-        else if (name == "margin-bottom-value")
-            return "margin-bottom";
-        else if (name == "padding-left-value")
-            return "padding-left";
-        else if (name == "padding-right-value")
-            return "padding-right";
-        else if (name == "padding-top-value")
-            return "padding-top";
-        else if (name == "padding-bottom-value")
-            return "padding-bottom";
-        // XXXjoe What about border!
-        else
-            return name;
+        if (/^(margin|padding)-(left|right)-value$/.test(name))
+            name = name.slice(0, -6);
+
+        return name;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
