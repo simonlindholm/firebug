@@ -2,9 +2,10 @@
 
 define([
     "firebug/firebug",
+    "firebug/lib/css",
     "firebug/css/cssModule",
 ],
-function(Firebug, CSSModule) {
+function(Firebug, Css, CSSModule) {
 
 var Manager =
 {
@@ -53,7 +54,7 @@ function RuleInfo(rule)
     for (var i = 0, len = style.length; i < len; ++i)
     {
         var propName = style.item(i);
-        propSet.push(propName + ":" + style.getPropertyValue(propName) +
+        propSet.push(propName + ":" + Css.stripUnits(style.getPropertyValue(propName)) +
                 " " + style.getPropertyPriority(propName));
     }
     this.text = propSet.sort().join(";");
@@ -61,8 +62,8 @@ function RuleInfo(rule)
 RuleInfo.prototype.verySimilar = function(other)
 {
     // Treat rules as very similar to the original (-> unsaveable) if the
-    // unordered set of properties is the same.
-    return this.text === other.text;
+    // unordered set of properties, and the selector, are the same.
+    return (this.selector === other.selector && this.text === other.text);
 };
 RuleInfo.prototype.strCompare = function(other)
 {
