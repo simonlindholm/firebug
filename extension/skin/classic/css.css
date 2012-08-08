@@ -218,7 +218,7 @@
 }
 .saveable .cssSaveButton:not(:hover) {
     filter: url("chrome://mozapps/skin/extensions/extensions.svg#greyscale");
-    opacity: 0.6;
+    opacity: 0.45;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
