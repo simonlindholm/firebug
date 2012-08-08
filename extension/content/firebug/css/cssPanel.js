@@ -322,13 +322,13 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
     userSetProperty: function(context, rule, name, value, priority)
     {
         // XXX saving handle other prefixes
-        CSSMediaRule.setProperty(rule, name, value, priority);
+        CSSModule.setProperty(rule, name, value, priority);
     },
 
     userRemoveProperty: function(context, rule, name)
     {
         // XXX saving handle other prefixes
-        CSSMediaRule.removeProperty(rule, name);
+        CSSModule.removeProperty(rule, name);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

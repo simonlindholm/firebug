@@ -14,6 +14,8 @@ var Manager =
      */
     testSaveable: function(context, rule)
     {
+        if (!isInCSSFile(rule))
+            return;
         var ruleData = CSSModule.getRuleData(context, rule);
         if (!ruleData.previousSave)
             ruleData.previousSave = new RuleInfo(rule);
@@ -22,28 +24,43 @@ var Manager =
 
     ruleChanged: function(context, rule)
     {
+        if (!isInCSSFile(rule))
+            return;
         var ruleData = CSSModule.getRuleData(context, rule);
         var previousInfo = ruleData.previousSave;
         if (!previousInfo)
             return;
-        ruleData.saveable = !previousInfo.equals(new RuleInfo(rule));
+        ruleData.saveable = !previousInfo.verySimilar(new RuleInfo(rule));
     }
 };
 
+function isInCSSFile(rule)
+{
+    return !!rule.parentStyleSheet.href;
+}
+
 function RuleInfo(rule)
 {
-    // XXX order somehow (CSS panel should keep it, clearly, HTML panel shouldn't; but internally it's there)
-    // order change isn't a save-worthy change, I think! (but is still saved)
-    this.text = rule.cssText; // WRONG
     this.selector = rule.selectorText;
 
     // Note: This is actually wrong in the case where the "expand shorthand
     // properties" option changes in between comparisons. However, that happens
     // only seldomly and the effect of it is harmless, so it's not worth fixing.
-    this.props = CSSModule.parseCSSProps(rule.style, Firebug.expandShorthandProps);
+    //this.props = CSSModule.parseCSSProps(rule.style, Firebug.expandShorthandProps);
+
+    var style = rule.style, propSet = [];
+    for (var i = 0, len = style.length; i < len; ++i)
+    {
+        var propName = style.item(i);
+        propSet.push(propName + ":" + style.getPropertyValue(propName) +
+                " " + style.getPropertyPriority(propName));
+    }
+    this.text = propSet.sort().join(";");
 }
-RuleInfo.prototype.equals = function(other)
+RuleInfo.prototype.verySimilar = function(other)
 {
+    // Treat rules as very similar to the original (-> unsaveable) if the
+    // unordered set of properties is the same.
     return this.text === other.text;
 };
 RuleInfo.prototype.strCompare = function(other)
