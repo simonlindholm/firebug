@@ -241,17 +241,21 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
 
         if (position == "absolute" || position == "fixed" || position == "relative")
         {
-            function getStyle(style, name) { var v = style.getPropertyCSSValue(name); return (v && v.cssText) ? parseInt(v.cssText) : ' '; }
+            function getStyle(style, name)
+            {
+                var v = style.getPropertyCSSValue(name);
+                return (v && v.cssText) ? parseInt(v.cssText, 10) : ' ';
+            }
 
             args.outerLabel = Locale.$STR("LayoutPosition");
 
-            args.outerLeft = getStyle(style,'left');
-            args.outerTop = getStyle(style,'top');
-            args.outerRight = getStyle(style,'right');
-            args.outerBottom = getStyle(style,'bottom');
+            args.outerLeft   = getStyle(style, 'left');
+            args.outerTop    = getStyle(style, 'top');
+            args.outerRight  = getStyle(style, 'right');
+            args.outerBottom = getStyle(style, 'bottom');
 
-            args.outerLeftMode = args.outerRightMode = args.outerTopMode
-                = args.outerBottomMode = "absoluteEdge";
+            args.outerLeftMode = args.outerRightMode = args.outerTopMode =
+                args.outerBottomMode = "absoluteEdge";
         }
 
         var node = this.template.tag.replace(args, this.panelNode);
