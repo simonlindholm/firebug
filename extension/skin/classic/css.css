@@ -205,10 +205,7 @@
     white-space: nowrap;
 }
 
-.cssSaveButton {
-    display: none;
-}
-.saveable .cssSaveButton {
+.saveable .cssSaveButton, .cssRule.saveable + .objectLink::before {
     background: url(chrome://firebug/skin/save.png) no-repeat;
     height: 14px;
     width: 14px;
@@ -217,9 +214,17 @@
     margin: -1px 0 0 1ch;
     cursor: pointer;
 }
-.saveable .cssSaveButton:not(:hover) {
+.saveable .cssSaveButton:not(:hover), .cssRule.saveable + .objectLink:not(:hover)::before {
     filter: url("chrome://mozapps/skin/extensions/extensions.svg#greyscale");
     opacity: 0.45;
+}
+.cssSaveButton, .cssElementRuleContainer .cssSaveButton {
+    display: none;
+}
+
+.cssRule.saveable + .objectLink::before {
+    content: "";
+    margin: 1px 0 0 -18px;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
