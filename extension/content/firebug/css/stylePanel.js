@@ -459,6 +459,15 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // extends CSSStyleSheetPanel
+
+    stripUnits: function(value)
+    {
+        // Convert all kinds of zeroes to just "0", for a nicer display.
+        return Css.stripUnits(value);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // extends Panel
 
     name: "css",

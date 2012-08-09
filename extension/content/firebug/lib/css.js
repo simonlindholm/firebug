@@ -657,10 +657,22 @@ Css.getDocumentForStyleSheet = function(styleSheet)
 
 // ********************************************************************************************* //
 
-Css.stripUnits = function(value)
+Css.stripUnits = function(value, onlyPt)
 {
-    // remove units from '0px', '0em' etc. leave non-zero units in-tact.
-    return value.replace(/(url\(.*?\)|[^0]\S*\s*)|0(%|em|ex|px|in|cm|mm|pt|pc)(\s|$)/gi,
+    var re;
+    if (onlyPt)
+    {
+        // Only undo Firefox's conversion 0 -> 0pt ("0pt" seems uncommon, so we
+        // assume that all its occurrances come from unitless zeroes).
+        re = /(url\(.*?\)|[^0]\S*\s*)|0(pt)(\s|$)/gi;
+    }
+    else
+    {
+        // Remove units from '0px', '0em' etc. Leave non-zero units intact.
+        re = /(url\(.*?\)|[^0]\S*\s*)|0(%|em|ex|px|in|cm|mm|pt|pc)(\s|$)/gi;
+    }
+
+    return value.replace(re,
         function(_, skip, remove, whitespace)
         {
             return skip || ('0' + whitespace);

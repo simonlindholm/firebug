@@ -552,12 +552,18 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
                 value = Css.rgbToHex(value);
             else if (Options.get("colorDisplay") == "hsl")
                 value = Css.rgbToHSL(value);
-            value = Css.stripUnits(value);
+            value = this.stripUnits(value);
             important = important ? " !important" : "";
 
             var prop = {name: name, value: value, important: important, disabled: disabled};
             props.push(prop);
         }
+    },
+
+    stripUnits: function(value)
+    {
+        // Strip only what's necessary, to try to retain the authored text.
+        return Css.stripUnits(value, true);
     },
 
     translateName: function(name, value)
