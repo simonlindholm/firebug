@@ -38,6 +38,7 @@ var Manager =
 
 function isInCSSFile(rule)
 {
+    // XXX also test against chrome and ignored stylesheets
     return !!rule.parentStyleSheet.href;
 }
 
@@ -74,6 +75,5 @@ RuleInfo.prototype.strCompare = function(other)
     // |modified selector "body" -> "body:first-child"|
 };
 
-Firebug.CSSSaveManager = Manager;
 return Manager;
 });
