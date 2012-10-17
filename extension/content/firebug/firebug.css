@@ -80,6 +80,9 @@ textbox#fbCommandEditor {
 .completionText {
     color: #666666;
 }
+.completionKeyword {
+    font-style: italic;
+}
 [selected="true"] > .completionText {
     background-color: highlight;
     border-color: highlight;

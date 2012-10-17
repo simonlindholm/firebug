@@ -173,7 +173,8 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         var spreExpr = sparsed.substr(0, propertyStart);
         var preExpr = parsed.substr(0, propertyStart);
 
-        this.completionBase.pre = value.substr(0, parseStart);
+        var spre = svalue.substr(0, parseStart);
+        var pre = value.substr(0, parseStart);
 
         if (FBTrace.DBG_COMMANDLINE)
         {
@@ -183,13 +184,12 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
 
         var prevCompletions = this.completions;
 
-        // We only need to calculate a new candidate list if the expression has
-        // changed (we can ignore completionBase.pre since completions do not
-        // depend upon that).
-        if (preExpr !== this.completionBase.expr)
+        // Only calculate a new candidate list if the expression has changed.
+        if (preExpr !== this.completionBase.expr || pre !== this.completionBase.pre)
         {
             this.completionBase.expr = preExpr;
-            var ev = autoCompleteEval(context, preExpr, spreExpr,
+            this.completionBase.pre = pre;
+            var ev = autoCompleteEval(context, spre, prop.charAt(0), preExpr, spreExpr,
                 this.options.includeCurrentScope);
             prevCompletions = null;
             this.completionBase.candidates = ev.completions;
@@ -229,7 +229,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             {
                 // Mark a candidate as matching if it matches the prefix case-
                 // insensitively, and shares its upper-case characters.
-                var name = candidates[i];
+                var cand = candidates[i], name = cand.value;
                 if (!Str.hasPrefix(name.toLowerCase(), lowPrefix))
                     continue;
 
@@ -245,9 +245,9 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 }
                 if (!fail)
                 {
-                    ciValid.push(name);
+                    ciValid.push(cand);
                     if (Str.hasPrefix(name, prefix))
-                        valid.push(name);
+                        valid.push(cand);
                 }
             }
             ++cind;
@@ -286,20 +286,23 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
      */
     this.pickDefaultCandidate = function(prevCompletions)
     {
-        var list = this.completions.list, ind;
+        var ind, list = this.completions.list.map(function(x)
+        {
+            return x.value;
+        });
 
         // If the typed expression is an extension of the previous completion, keep it.
         if (prevCompletions && Str.hasPrefix(this.completions.prefix, prevCompletions.prefix))
         {
             var lastCompletion = prevCompletions.list[prevCompletions.index];
-            ind = list.indexOf(lastCompletion);
+            ind = list.indexOf(lastCompletion.value);
             if (ind !== -1)
                 return ind;
         }
 
         // Special-case certain expressions.
         var special = {
-            "": ["document", "console", "frames", "window", "parseInt", "undefined"],
+            "": ["document", "console", "function", "window", "parseInt", "undefined", "in", "instanceof"],
             "window.": ["console"],
             "location.": ["href"],
             "document.": ["getElementById", "addEventListener", "createElement",
@@ -373,7 +376,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
      */
     this.getCurrentCompletion = function()
     {
-        return (this.completions ? this.completions.list[this.completions.index] : null);
+        return (this.completions ? this.completions.list[this.completions.index].value : null);
     };
 
     /**
@@ -620,7 +623,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
 
     this.pageCycle = function(dir)
     {
-        var list = this.completions.list, selIndex = this.completions.index;
+        var size = this.completions.list.length, selIndex = this.completions.index;
 
         if (!this.isPopupOpen())
         {
@@ -630,7 +633,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         }
 
         var top = this.popupTop, bottom = this.popupBottom;
-        if (top === 0 && bottom === list.length)
+        if (top === 0 && bottom === size)
         {
             // For a single scroll page, act like home/end.
             this.topCycle(dir);
@@ -641,7 +644,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         if (dir === -1)
             immediateTarget = (top === 0 ? top : top + 2);
         else
-            immediateTarget = (bottom === list.length ? bottom: bottom - 2) - 1;
+            immediateTarget = (bottom === size ? bottom: bottom - 2) - 1;
         if ((selIndex - immediateTarget) * dir < 0)
         {
             // The selection has not yet reached the edge target, so jump to it.
@@ -652,8 +655,8 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             // Show the next page.
             if (dir === -1 && top - popupSize <= 0)
                 selIndex = 0;
-            else if (dir === 1 && bottom + popupSize >= list.length)
-                selIndex = list.length - 1;
+            else if (dir === 1 && bottom + popupSize >= size)
+                selIndex = size - 1;
             else
                 selIndex = immediateTarget + dir*popupSize;
         }
@@ -744,15 +747,17 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
                 createElementNS("http://www.w3.org/1999/xhtml","span");
             var preText = this.textBox.value;
             if (prefixLen)
-                preText = preText.slice(0, -prefixLen) + completion.slice(0, prefixLen);
+                preText = preText.slice(0, -prefixLen) + completion.value.slice(0, prefixLen);
             pre.innerHTML = Str.escapeForTextNode(preText);
             pre.classList.add("userTypedText");
 
             var post = this.completionPopup.ownerDocument.
                 createElementNS("http://www.w3.org/1999/xhtml","span");
-            var postText = completion.substr(prefixLen);
+            var postText = completion.value.substr(prefixLen);
             post.innerHTML = Str.escapeForTextNode(postText);
             post.classList.add("completionText");
+            if (completion.keyword)
+                post.classList.add("completionKeyword");
 
             if (i === selIndex)
                 this.selectedPopupElement = hbox;
@@ -1076,10 +1081,10 @@ function bwFindMatchingParen(expr, from)
 }
 
 /**
- * Check if a '/' at the end of 'expr' would be a regex or a division.
+ * Check if the next token after 'expr' would be an operator or an expression.
  * May also return null if the expression seems invalid.
  */
-function endingDivIsRegex(expr)
+function trailingOperator(expr)
 {
     var kwCont = ["function", "if", "while", "for", "switch", "catch", "with"];
 
@@ -1087,32 +1092,37 @@ function endingDivIsRegex(expr)
     if (reJSChar.test(ch))
     {
         // Test if the previous word is a keyword usable like 'kw <expr>'.
-        // If so, we have a regex, otherwise, we have a division (a variable
-        // or literal being divided by something).
+        // If so, we have an expression, otherwise an operator.
         var w = expr.substring(prevWord(expr, ind), ind+1);
-        return (kwActions.indexOf(w) !== -1 || w === "do" || w === "else");
+        return !(kwActions.indexOf(w) !== -1 || w === "do" || w === "else");
     }
     else if (ch === ")")
     {
-        // We have a regex in the cases 'if (...) /blah/' and 'function name(...) /blah/'.
+        // Expression in cases 'if (...)' and 'function name(...)'.
         ind = bwFindMatchingParen(expr, ind);
         if (ind === -1)
             return null;
         ind = prevNonWs(expr, ind);
         if (ind === -1)
-            return false;
+            return true;
         if (!reJSChar.test(expr.charAt(ind)))
-            return false;
+            return true;
         var wind = prevWord(expr, ind);
         if (kwCont.indexOf(expr.substring(wind, ind+1)) !== -1)
-            return true;
-        return isFunctionName(expr, wind);
+            return false;
+        return !isFunctionName(expr, wind);
     }
-    else if (ch === "]")
+    else if (ch === "]" || ch === "\"")
     {
-        return false;
+        return true;
     }
-    return true;
+    else if (ch === "}")
+    {
+        var bwp = bwFindMatchingParen(expr, ind);
+        if (expr.charAt(bwp) === "{" && isObjectDecl(expr, bwp))
+            return true;
+    }
+    return false;
 }
 
 // Check if a "{" in an expression is an object declaration.
@@ -1202,16 +1212,18 @@ function simplifyExpr(expr)
             }
             else if (ch === "/")
             {
-                var re = endingDivIsRegex(ret);
-                if (re === null)
+                var op = trailingOperator(ret);
+                if (op === null)
                     return null;
-                if (re)
+                if (op)
+                {
+                    ret += "/";
+                }
+                else
                 {
                     inreg = true;
                     ret += '"';
                 }
-                else
-                    ret += "/";
             }
             else
             {
@@ -2020,7 +2032,15 @@ function evalPropChain(out, preExpr, origExpr, context)
     return true;
 }
 
-function autoCompleteEval(context, preExpr, spreExpr, includeCurrentScope)
+/**
+ * Calculate the list of completions for a given expression.
+ * @param context The context.
+ * @param pre The part of the command line that occurs before the expression.
+ * @param firstCh The first character of the property being completed. This is
+ *  part of an optimization hack, and is only valid if preExpr is empty.
+ * @param preExpr The unfiltered com
+ */
+function autoCompleteEval(context, pre, firstCh, preExpr, spreExpr, includeCurrentScope)
 {
     var out = {
         spreExpr: spreExpr,
@@ -2090,7 +2110,7 @@ function autoCompleteEval(context, preExpr, spreExpr, includeCurrentScope)
         // Add "] to properties if we are doing index-completions.
         if (indexCompletion)
         {
-            function convertQuotes(x)
+            var convertQuotes = function(x)
             {
                 x = (out.indexQuoteType === '"') ? Str.escapeJS(x): Str.escapeSingleQuoteJS(x);
                 return x + out.indexQuoteType + "]";
@@ -2113,6 +2133,38 @@ function autoCompleteEval(context, preExpr, spreExpr, includeCurrentScope)
         // at the same time, completions must shadow hiddenCompletions.
         out.completions = Arr.sortUnique(out.completions, comparePropertyNames);
         out.hiddenCompletions = Arr.sortUnique(out.hiddenCompletions, comparePropertyNames);
+
+        // Transform the completions into their proper tagged form.
+        var convertToObject = function(x)
+        {
+            return { value: x };
+        };
+        out.completions = out.completions.map(convertToObject);
+        out.hiddenCompletions = out.hiddenCompletions.map(convertToObject);
+
+        if (spreExpr === "")
+        {
+            // Add long keywords, for which we need completion.
+            if (firstCh === "i" && trailingOperator(pre))
+            {
+                // is, instanceof. is should only be suggested in for loops
+                // (it is unnecessary otherwise).
+                if (/for\s*\((var\s+|let\s+)?[a-zA-Z_$][a-zA-Z0-9_$]*\s+$/.test(pre))
+                    out.completions.push({ value: "in", keyword: true, operator: true });
+                out.completions.push({ value: "instanceof", keyword: true, operator: true });
+            }
+            else
+            {
+                // Other, non-operator keywords.
+                out.completions.push({ value: "typeof", keyword: true, operator: true });
+                out.completions.push({ value: "function", keyword: true });
+            }
+
+            out.completions.sort(function(a, b)
+            {
+                return comparePropertyNames(a.value, b.value);
+            });
+        }
     }
     catch (exc)
     {
@@ -2125,10 +2177,6 @@ function autoCompleteEval(context, preExpr, spreExpr, includeCurrentScope)
 var reValidJSToken = /^[A-Za-z_$][A-Za-z_$0-9]*$/;
 function isValidProperty(value)
 {
-    // Use only string props
-    if (typeof(value) != "string")
-        return false;
-
     // Use only those props that don't contain unsafe charactes and so need
     // quotation (e.g. object["my prop"] notice the space character).
     // Following expression checks that the name starts with a letter or $_,
