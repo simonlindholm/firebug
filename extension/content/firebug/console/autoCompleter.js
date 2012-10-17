@@ -604,6 +604,11 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
             }
             res += '["' + Str.escapeJS(property) + '"]';
         }
+        else if (this.completions.list[this.completions.index].operator)
+        {
+            // Add a space after operators.
+            res += " ";
+        }
         return res;
     };
 
