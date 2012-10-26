@@ -522,7 +522,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         if (commandLine.value)
         {
             commandLine.value = "";
-            this.autoCompleter.hide();
+            this.smallAutoCompleter.hide();
             this.update(context);
             return true;
         }
@@ -584,8 +584,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
                 commandEditor.value = Str.cleanIndentation(text);
             else
                 commandLine.value = Str.stripNewLines(text);
-
-            this.setAutoCompleter();
         }
         // else we may be hiding a panel while turning Firebug off
     },
@@ -628,7 +626,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     {
         Firebug.Module.initialize.apply(this, arguments);
 
-        this.autoCompleter = new Firebug.EmptyJSAutoCompleter();
+        this.setAutoCompleter();
         this.commandHistory = new Firebug.CommandHistory();
 
         if (Firebug.commandEditor)
@@ -637,36 +635,22 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
     setAutoCompleter: function()
     {
-        var context = Firebug.currentContext;
+        if (this.smallAutoCompleter)
+            this.smallAutoCompleter.shutdown();
 
-        // xxxHonza: see http://code.google.com/p/fbug/issues/detail?id=4901#c21
-        if (this.autoCompleter)
-            this.autoCompleter.shutdown();
+        // Always create the auto-completer for the single command line.
+        var commandLine = this.getSingleRowCommandLine();
+        var completionBox = this.getCompletionBox();
 
-        // Set the auto-completer even if the command-editor is currently displayed
-        // in the Console panel. This is to make the auto-completion work even in
-        // the small-command-line available on other panels (see issue 5006).
+        var options = {
+            showCompletionPopup: Firebug.Options.get("commandLineShowCompleterPopup"),
+            completionPopup: Firebug.chrome.$("fbCommandLineCompletionList"),
+            tabWarnings: true,
+            includeCurrentScope: true
+        };
 
-        if (!context/* || Firebug.commandEditor*/)
-        {
-            this.autoCompleter = new Firebug.EmptyJSAutoCompleter();
-        }
-        else
-        {
-            // Always create the auto-completer for the single command line.
-            var commandLine = this.getSingleRowCommandLine();
-            var completionBox = this.getCompletionBox();
-
-            var options = {
-                showCompletionPopup: Firebug.Options.get("commandLineShowCompleterPopup"),
-                completionPopup: Firebug.chrome.$("fbCommandLineCompletionList"),
-                tabWarnings: true,
-                includeCurrentScope: true
-            };
-
-            this.autoCompleter = new Firebug.JSAutoCompleter(commandLine,
-                completionBox, options);
-        }
+        this.smallAutoCompleter = new Firebug.JSAutoCompleter(commandLine,
+            completionBox, options);
     },
 
     initializeUI: function()
@@ -692,17 +676,14 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         Events.addEventListener(commandLine, "keydown", this.onCommandLineKeyDown, true);
         Events.addEventListener(commandLine, "keypress", this.onCommandLineKeyPress, true);
         Events.addEventListener(commandLine, "blur", this.onCommandLineBlur, true);
-
-        Firebug.Console.addListener(this);  // to get onConsoleInjected
     },
 
     shutdown: function()
     {
         var commandLine = this.getSingleRowCommandLine();
 
-        // Make sure all listeners registered by the auto completer are removed.
-        if (this.autoCompleter)
-            this.autoCompleter.shutdown();
+        if (this.smallAutoCompleter)
+            this.smallAutoCompleter.shutdown();
 
         if (this.commandHistory)
             this.commandHistory.detachListeners();
@@ -724,7 +705,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         var commandLine = this.getCommandLine(context);
         commandLine.value = "";
 
-        this.autoCompleter.hide();
+        this.smallAutoCompleter.hide();
         Persist.persistObjects(this, panelState);
         // more of our work is done in the Console
 
@@ -757,7 +738,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
             delete panelState.commandLineText;
         }
 
-        this.autoCompleter.hide();
+        this.smallAutoCompleter.hide();
     },
 
     updateOption: function(name, value)
@@ -817,12 +798,12 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     {
         var context = Firebug.currentContext;
 
-        this.autoCompleter.handleKeyDown(event, context);
+        this.smallAutoCompleter.handleKeyDown(event, context);
 
         if (event.keyCode === KeyEvent.DOM_VK_H && Events.isControl(event))
         {
             event.preventDefault();
-            this.autoCompleter.hide();
+            this.smallAutoCompleter.hide();
             this.commandHistory.show(Firebug.chrome.$("fbCommandLineHistoryButton"));
             return true;
         }
@@ -834,7 +815,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     {
         var context = Firebug.currentContext;
 
-        if (!this.autoCompleter.handleKeyPress(event, context))
+        if (!this.smallAutoCompleter.handleKeyPress(event, context))
         {
             this.handleKeyPress(event);
         }
@@ -890,13 +871,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     {
         var context = Firebug.currentContext;
 
-        var commandEditorOpen = (Firebug.commandEditor && context.panelName == "console");
-        if (!this.commandHistory.isShown() && !commandEditorOpen)
-        {
-            this.autoCompleter.complete(context);
-        }
-
-        // Always update the buffer in context, even if command line is empty.
+        this.smallAutoCompleter.complete(context);
         this.update(context);
     },
 
@@ -906,15 +881,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
     onCommandLineFocus: function(event)
     {
-        if (FBTrace.DBG_COMMANDLINE)
-        {
-            var context = Firebug.currentContext;
-            FBTrace.sysout("commandLine.onCommandLineFocus; for: " +
-                (context ? context.getName() : "no context"));
-        }
-
-        if (this.autoCompleter.empty)
-            this.setAutoCompleter();
     },
 
     isAttached: function(context, win)
@@ -942,20 +908,6 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         Dom.collapse(Firebug.chrome.$("fbCommandBox"), true);
         Dom.collapse(Firebug.chrome.$("fbPanelSplitter"), true);
         Dom.collapse(Firebug.chrome.$("fbSidePanelDeck"), true);
-    },
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // Firebug.Console listener
-
-    onConsoleInjected: function(context, win)
-    {
-        // for some reason the console has been injected. If the user had focus in the command
-        // line they want it added in the page also. If the user has the cursor in the command
-        // line and reloads, the focus will already be there. issue 1339
-        var isFocused = Firebug.CommandEditor.hasFocus();
-        isFocused = isFocused || (this.getSingleRowCommandLine().getAttribute("focused") == "true");
-        if (isFocused)
-            setTimeout(this.onCommandLineFocus);
     },
 
     getCommandLine: function(context)
@@ -1461,7 +1413,7 @@ function CommandLineHandler(context, win)
 
         // Appends variables into the api.
         var htmlPanel = context.getPanel("html", true);
-        var vars = htmlPanel ? htmlPanel.getInspectorVars():null;
+        var vars = htmlPanel ? htmlPanel.getInspectorVars() : null;
 
         for (var prop in vars)
         {

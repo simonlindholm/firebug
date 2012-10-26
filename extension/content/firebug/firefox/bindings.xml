@@ -1875,9 +1875,12 @@
         ]]></handler>
 
         <handler event="keypress" keycode="VK_TAB"><![CDATA[
-            var input = document.getAnonymousElementByAttribute(this, "anonid", "input");
-            FBL.insertTextIntoElement(input, Firebug.Editor.tabCharacter);
-            event.preventDefault();
+            if (!event.defaultPrevented)
+            {
+                var input = document.getAnonymousElementByAttribute(this, "anonid", "input");
+                FBL.insertTextIntoElement(input, Firebug.Editor.tabCharacter);
+                event.preventDefault();
+            }
         ]]></handler>
 
         <handler event="keypress" keycode="VK_RETURN" modifiers="meta" preventdefault="true"><![CDATA[
@@ -1889,7 +1892,7 @@
         ]]></handler>
 
         <handler event="keypress" keycode="VK_ESCAPE" preventdefault="true"><![CDATA[
-            Firebug.CommandLine.cancel(Firebug.currentContext);
+            Firebug.CommandEditor.onEscape();
         ]]></handler>
     </handlers>
 </binding>

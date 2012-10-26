@@ -127,40 +127,32 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
     this.complete = function(context)
     {
         this.revertValue = null;
-        this.createCandidates(context);
-        this.showCompletions(false);
+        var offset = this.textBox.selectionStart;
+        if (this.createCandidates(context, this.textBox.value, offset))
+            this.showCompletions(false);
+        else
+            this.hide();
     };
 
     /**
      * Update the completion base and create completion candidates for the
      * current value of the text box.
+     * Return true iff new candidates were constructed.
      */
-    this.createCandidates = function(context)
+    this.createCandidates = function(context, value, offset)
     {
-        var offset = this.textBox.selectionStart;
-        if (offset !== this.textBox.value.length)
-        {
-            this.hide();
-            return;
-        }
-
-        var value = this.textBox.value;
+        if (offset !== value.length)
+            return false;
 
         // Create a simplified expression by redacting contents/normalizing
         // delimiters of strings and regexes, to make parsing easier.
         // Give up if the syntax is too weird.
         var svalue = simplifyExpr(value);
         if (svalue === null)
-        {
-            this.hide();
-            return;
-        }
+            return false;
 
         if (killCompletions(svalue, value))
-        {
-            this.hide();
-            return;
-        }
+            return false;
 
         // Find the expression to be completed.
         var parseStart = getExpressionOffset(svalue);
@@ -198,6 +190,7 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
         }
 
         this.createCompletions(prop, prevCompletions);
+        return true;
     };
 
     /**
@@ -861,22 +854,129 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
 
 // ********************************************************************************************* //
 
-/**
- * A dummy auto-completer, set as current by CommandLine.setAutoCompleter when
- * no completion is supposed to be done (such as in the large command line,
- * currently, or when there is no context).
- */
-Firebug.EmptyJSAutoCompleter = function()
+Firebug.LargeJSAutoCompleter = function(editor)
 {
-    this.empty = true;
-    this.shutdown = function() {};
-    this.hide = function() {};
-    this.complete = function() {};
-    this.acceptReturn = function() { return true; };
-    this.revert = function() { return false; };
-    this.handleKeyDown = function() {};
-    this.handleKeyPress = function() {};
+    var options = {includeCurrentScope: true};
+    Firebug.JSAutoCompleter.call(this, null, null, options);
+
+    this.editor = editor;
+    this.previous = null;
+
+    /**
+     * Handle a press of the tab key.
+     * Returns 2 if completion succeeded, 1 if it didn't but the caret was still
+     * in a completion area (so the tab shouldn't give rise to an actual tab), or
+     * 0 if it was not intended to complete (e.g., a tab at the start of a line,
+     * or indenting a selection).
+     */
+    this.onTab = function(context, reverse)
+    {
+        var editor = this.editor;
+
+        // If there is a selection, tab either indents or gives an actual tab.
+        if (editor.getSelectedText())
+            return 0;
+
+        var caret = editor.getCaretPosition();
+        var line = caret.line, col = caret.col;
+        var lineStart = editor.getLineStart(line);
+        var lineEnd = editor.getLineEnd(line);
+        var value = editor.getText(lineStart, lineEnd);
+
+        // An actual tab if the previous thing wasn't a JS char.
+        var prevChar = value.charAt(col-1);
+        if (!reJSChar.test(prevChar) && prevChar !== ".")
+            return 0;
+
+        // If the next thing is a JS char, we can't complete (e.g. 'doc|ument'
+        // should not complete to 'document|cument').
+        if (reJSChar.test(value.charAt(col)))
+            return 1;
+
+        var completer = this.completer;
+        var prev = this.previous, compl;
+        if (prev && prev.col === col && prev.line === line && prev.value === value)
+        {
+            // Cycle completion. Restore the input to the original, then set
+            // the completion to the next one in turn.
+            compl = prev.completions;
+            if (reverse)
+                compl.index += compl.list.length-1;
+            else
+                ++compl.index;
+            compl.index %= compl.list.length;
+            value = value.substr(0, prev.baseOffset) + compl.prefix + value.substr(col);
+            col = prev.offset;
+        }
+        else
+        {
+            // Perform a new completion.
+            // For now, only look at the current line.
+            this.hide();
+            var worked = this.createCandidates(context, value.substr(0, col), col);
+            if (!worked || !this.completions)
+                return 1;
+            compl = this.completions;
+        }
+
+        var theCompletion = this.getCurrentCompletion();
+        var baseCol = col - compl.prefix.length;
+        var newCol = baseCol + theCompletion.length;
+        var newValue = value.substr(0, baseCol) + theCompletion + value.substr(col);
+        try
+        {
+            Firebug.CommandEditor.ignoreChanges = true;
+            editor.setText(newValue, lineStart, lineEnd);
+            editor.setCaretOffset(lineStart + baseCol + theCompletion.length);
+        }
+        finally
+        {
+            Firebug.CommandEditor.ignoreChanges = false;
+        }
+
+        this.previous = {
+            col: newCol,
+            line: line,
+            value: newValue,
+            offset: col,
+            baseOffset: baseCol,
+            completions: compl
+        };
+
+        return 2;
+    };
+
+    this.revert = function()
+    {
+        var prev = this.previous;
+        if (!prev)
+            return;
+        var editor = this.editor;
+        var caret = editor.getCaretPosition();
+        var line = caret.line, col = caret.col;
+        var lineStart = editor.getLineStart(line);
+        var lineEnd = editor.getLineEnd(line);
+        var value = editor.getText(lineStart, lineEnd);
+        if (prev.col === col && prev.line === line && prev.value === value)
+        {
+            var newValue = value.substr(0, prev.baseOffset) + prev.completions.prefix + value.substr(col);
+            editor.setText(newValue, lineStart, lineEnd);
+            editor.setCaretOffset(prev.offset);
+            return true;
+        }
+        return false;
+    };
+
+    this.showCompletions = function() {};
+
+    var oldHide = this.hide;
+    this.hide = function()
+    {
+        oldHide.apply(this, arguments);
+        this.previous = null;
+    };
 };
+Firebug.LargeJSAutoCompleter.prototype = Object.create(Firebug.JSAutoCompleter.prototype);
 
 // ********************************************************************************************* //
 
@@ -1806,7 +1906,7 @@ function evalPropChainStep(step, tempExpr, evalChain, out, context)
                     tempExpr.thisCommand = "window";
                     tempExpr.command += "(" + link.origCont + ")";
                 }
-                else if (link.name === "")
+                else if (!link.name)
                 {
                     // We cannot know about functions without name; try the
                     // heuristic directly.

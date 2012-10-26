@@ -9,8 +9,9 @@ define([
     "firebug/lib/locale",
     "firebug/lib/css",
     "firebug/lib/options",
+    "firebug/console/autoCompleter",
 ],
-function(Obj, Firebug, Events, Menu, Dom, Locale, Css, Options) {
+function(Obj, Firebug, Events, Menu, Dom, Locale, Css, Options, AutoCompleter) {
 
 // ********************************************************************************************* //
 // Constants
@@ -75,16 +76,21 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
             action: "firebug-cmdEditor-execute",
             code: KeyEvent.DOM_VK_RETURN,
             accel: true,
-            callback: this.onExecute.bind(this),
+            callback: this.onExecute.bind(this)
         },{
             action: "firebug-cmdEditor-escape",
             code: KeyEvent.DOM_VK_ESCAPE,
-            callback: this.onEscape.bind(this),
+            callback: this.onEscape.bind(this)
         }];
+
+        this.completer = new Firebug.LargeJSAutoCompleter(this.editor);
 
         // Initialize Orion editor.
         this.parent = document.getElementById("fbCommandEditor");
         this.editor.init(this.parent, config, this.onEditorLoad.bind(this));
+
+        // Re-fetch the parent, it may have been replaced.
+        this.parent = document.getElementById("fbCommandEditor");
 
         if (FBTrace.DBG_COMMANDEDITOR)
             FBTrace.sysout("commandEditor: SourceEditor initialized");
@@ -97,6 +103,7 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
 
         this.editor.removeEventListener(CONTEXT_MENU, this.onContextMenu);
         this.editor.removeEventListener(TEXT_CHANGED, this.onTextChanged);
+        this.parent.removeEventListener("keydown", this.onKeyDown, true);
 
         this.editor.destroy();
         this.editor = null;
@@ -109,8 +116,12 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
     onEditorLoad: function()
     {
         // xxxHonza: Context menu support is going to change in SourceEditor
+        this.onTextChanged = this.onTextChanged.bind(this);
         this.editor.addEventListener(CONTEXT_MENU, this.onContextMenu);
         this.editor.addEventListener(TEXT_CHANGED, this.onTextChanged);
+
+        this.onKeyDown = this.onKeyDown.bind(this);
+        this.parent.addEventListener("keydown", this.onKeyDown, true);
 
         this.editor.setCaretOffset(this.editor.getCharCount());
 
@@ -134,8 +145,11 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
     onEscape: function()
     {
         var context = Firebug.currentContext;
-        Firebug.CommandLine.update(context);
-        Firebug.CommandLine.cancel(context);
+        if (this.completer.revert())
+            Firebug.CommandLine.update(context);
+        else
+            Firebug.CommandLine.cancel(context);
+        this.completer.hide();
         return true;
     },
 
@@ -148,7 +162,27 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
         if (Firebug.CommandEditor.ignoreChanges)
             return;
 
-        Firebug.CommandLine.onCommandLineInput(event);
+        var context = Firebug.currentContext;
+        this.completer.hide();
+        Firebug.CommandLine.update(context);
+    },
+
+    onKeyDown: function(event)
+    {
+        if (event.keyCode !== KeyEvent.DOM_VK_TAB)
+            return;
+        if (event.ctrlKey || event.metaKey || event.altKey)
+            return;
+        var reverse = event.shiftKey;
+        var context = Firebug.currentContext;
+        var ret = this.completer.onTab(context, reverse);
+        if (ret)
+        {
+            // Tab was captured. Save if anything changed.
+            if (ret === 2)
+                Firebug.CommandLine.update(context);
+            Events.cancelEvent(event);
+        }
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -344,23 +378,65 @@ TextEditor.prototype =
         Events.removeEventListener(this.textBox, type, callback, true);
     },
 
+    getCaretOffset: function()
+    {
+        return this.textBox.selectionEnd;
+    },
+
+    getCaretPosition: function()
+    {
+        var offset = this.getCaretOffset();
+        var text = this.getText();
+        var pre = text.substr(0, offset);
+        var lines = pre.split("\n");
+        return {
+            line: lines.length-1,
+            col: lines[lines.length-1].length
+        };
+    },
+
+    getLineStart: function(line)
+    {
+        var lines = this.getText().split("\n").slice(0, line);
+        return lines.join("").length + line;
+    },
+
+    getLineEnd: function(line, includeDelimiter)
+    {
+        var lines = this.getText().split("\n").slice(0, line+1);
+        return lines.join("\n").length + (includeDelimiter ? 1 : 0);
+    },
+
     setCaretOffset: function(offset)
     {
+        this.textBox.setSelectionRange(offset, offset);
     },
 
     getCharCount: function()
     {
-        return this.textBox.value ? this.textBox.value.length : 0;
+        return this.textBox.value.length;
     },
 
-    setText: function(text)
+    setText: function(text, start, end)
     {
-        this.textBox.value = text;
+        if (typeof start === "undefined")
+        {
+            this.textBox.value = text;
+        }
+        else
+        {
+            var value = this.textBox.value;
+            this.textBox.value = value.substr(0, start) + text +
+                (typeof end !== "undefined" ? value.substr(end) : "");
+        }
     },
 
-    getText: function()
+    getText: function(start, end)
     {
-        return this.textBox.value;
+        var text = this.textBox.value;
+        if (typeof start !== "undefined")
+            text = text.substring(start, end);
+        return text;
     },
 
     setSelection: function(start, end)
@@ -393,7 +469,7 @@ TextEditor.prototype =
 
         return this.textBox.value.substring(start, end);
     } 
-}
+};
 
 // ********************************************************************************************* //
 // Registration
