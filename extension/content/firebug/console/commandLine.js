@@ -657,6 +657,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
     initializeUI: function()
     {
+        this.onCommandLineFocus = Obj.bind(this.onCommandLineFocus, this);
         this.onCommandLineInput = Obj.bind(this.onCommandLineInput, this);
         this.onCommandLineOverflow = Obj.bind(this.onCommandLineOverflow, this);
         this.onCommandLineKeyUp = Obj.bind(this.onCommandLineKeyUp, this);
@@ -669,6 +670,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     {
         var commandLine = this.getSingleRowCommandLine();
 
+        Events.addEventListener(commandLine, "focus", this.onCommandLineFocus, true);
         Events.addEventListener(commandLine, "input", this.onCommandLineInput, true);
         Events.addEventListener(commandLine, "overflow", this.onCommandLineOverflow, true);
         Events.addEventListener(commandLine, "keyup", this.onCommandLineKeyUp, true);
@@ -686,6 +688,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         if (this.commandHistory)
             this.commandHistory.detachListeners();
 
+        Events.removeEventListener(commandLine, "focus", this.onCommandLineFocus, true);
         Events.removeEventListener(commandLine, "input", this.onCommandLineInput, true);
         Events.removeEventListener(commandLine, "overflow", this.onCommandLineOverflow, true);
         Events.removeEventListener(commandLine, "keyup", this.onCommandLineKeyUp, true);
@@ -784,6 +787,17 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
         // the attach is asynchronous, we can report when it is complete:
         return contentView._FirebugCommandLine;
+    },
+
+    onCommandLineFocus: function(event)
+    {
+        // XXX: Temporary hack to make FireClosure work (until that gets a new
+        // release out)
+        if (this.autoCompleter && !this.autoCompleter.shouldIncludeHint &&
+                Firebug.JSAutoCompleter.transformScopeExpr)
+        {
+            this.setAutoCompleter();
+        }
     },
 
     onCommandLineKeyUp: function(event)
