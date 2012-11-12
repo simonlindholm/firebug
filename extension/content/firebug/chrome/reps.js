@@ -2359,7 +2359,7 @@ FirebugReps.StackTrace = domplate(Firebug.Rep,
     frameIterator: function(frames)
     {
         // Skip Firebug internal frames.
-        // xxxHonza: this is anoter place where stack frame is peeling off.
+        // xxxHonza: this is another place where we peel off stack frames.
         var result = [];
         for (var i=0; frames && i<frames.length; i++)
         {

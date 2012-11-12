@@ -73,34 +73,45 @@ var ClosureInspector =
 
     getFunctionFromObject: function(obj)
     {
-        if (obj.environment)
+        if (obj.environment && this.scopeIsInteresting(obj.environment))
             return obj;
 
         var first = true;
         while (obj)
         {
             var names = obj.getOwnPropertyNames(), pd;
+
+            // "constructor" is boring, use it last
+            var ind = names.indexOf("constructor");
+            if (ind !== -1)
+            {
+                names.splice(ind, 1);
+                names.push("constructor");
+            }
+
             for (var i = 0; i < names.length; ++i)
             {
                 // We assume that the first own property, or the first
-                // enumerable property of the prototype, that is a
-                // function with some scope (i.e., it is interpreted,
-                // JSScript-backed, and without optimized-away scope)
-                // shares this scope with 'obj'.
+                // enumerable property of the prototype (or "constructor"),
+                // that is a function with some scope (i.e., it is interpreted,
+                // JSScript-backed, and without optimized-away scope) shares
+                // this scope with 'obj'.
 
+                var name = names[i];
                 try
                 {
-                    pd = obj.getOwnPropertyDescriptor(names[i]);
+                    pd = obj.getOwnPropertyDescriptor(name);
                 }
                 catch (e)
                 {
                     // getOwnPropertyDescriptor sometimes fails with
                     // "Illegal operation on WrappedNative prototype object",
-                    // for instance on [window].proto.gopd('localStorage').
+                    // for instance on [window].proto.gopd("localStorage").
                     continue;
                 }
-                if (!pd || (!first && !pd.enumerable))
+                if (!pd || (!first && !pd.enumerable && name !== "constructor"))
                     continue;
+
                 var toTest = [pd.get, pd.set, pd.value];
                 for (var j = 0; j < toTest.length; ++j)
                 {
@@ -224,7 +235,7 @@ var ClosureInspector =
 
         obj = dglobal.makeDebuggeeValue(obj);
         if (!obj || typeof obj !== "object")
-            throw new Error("Tried to get scope of non-object.");
+            throw new TypeError("Can't get scope of non-object.");
 
         obj = this.getFunctionFromObject(obj);
 

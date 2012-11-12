@@ -892,10 +892,9 @@ Firebug.JSAutoCompleter = function(textBox, completionBox, options)
 };
 
 /**
- * Transform an expression from using .% into something JavaScript-friendly,
- * which delegates to a helper function.
- * (This is unrelated to the auto-completer, but autoCompleter.js has so many
- * nice helper functions.)
+ * Transform expressions that use .% into more JavaScript-friendly function calls.
+ * (This is unrelated to the auto-completer, but autoCompleter.js has so many nice
+ * helper functions.)
  */
 Firebug.JSAutoCompleter.transformScopeOperator = function(expr, fname)
 {
@@ -905,17 +904,37 @@ Firebug.JSAutoCompleter.transformScopeOperator = function(expr, fname)
     var search = 0;
     for (;;)
     {
+        // Find the next occurrance of .%.
         var end = sexpr.indexOf(".%", search);
         if (end === -1)
             break;
+
         var start = getExpressionOffset(sexpr, end);
-        expr = expr.substr(0, start) + "(" + fname + "(" +
-            expr.substring(start, end) + "))." +
-            expr.substr(end+2);
-        sexpr = sexpr.substr(0, start) + "(" + fname + "(" +
-            sexpr.substring(start, end) + "))." +
-            sexpr.substr(end+2);
-        search = end + fname.length + "(()).".length - ".%".length;
+        if (/^-?[0-9]*$/.test(expr.substring(start, end)))
+        {
+            // False alarm - the operator was actually a number and the modulo operator.
+            search = end + 1;
+        }
+        else
+        {
+            // Substitute "expr.%prop" with "scopeGetter(expr).prop", or, if used
+            // in a "new" expression, "(scopeGetter(expr)).prop" (so that the scope
+            // getter isn't used as a constructor). We don't want to use the first
+            // thing unconditionally though, because it messes with ASI.
+            var newPos = (start === 0 ? -1 : sexpr.lastIndexOf("new", start-1));
+            var hasNew = (newPos !== -1 && !/[a-zA-Z0-9_$.]/.test(sexpr.charAt(newPos-1)) &&
+                sexpr.substring(newPos + 3, start).trim() === "");
+            var subst = function(expr)
+            {
+                return expr.substr(0, start) + (hasNew ? "(" : "") + fname + "(" +
+                    expr.substring(start, end) + ")" + (hasNew ? ")" : "") + "." +
+                    expr.substr(end+2);
+            };
+            expr = subst(expr);
+            sexpr = subst(sexpr);
+
+            search = end + fname.length + (hasNew ? 3 : 1); // |(()).| - |.%|, or |().| - |.%|
+        }
     }
     return expr;
 };
@@ -1680,7 +1699,9 @@ function propertiesToHide(expr, obj)
         );
 
         // Hide ourselves.
-        ret.push("_FirebugCommandLine", "_firebug");
+        ret.push("_FirebugCommandLine", "_firebug",
+            "_firebugUnwrappedDebuggerObject", "__fb_scopedVars"
+        );
     }
 
     // Old and ugly.
@@ -1759,6 +1780,15 @@ function setCompletionsFromObject(out, object, context)
 function setCompletionsFromScope(out, object, context)
 {
     out.completions = ClosureInspector.getScopedVariablesList(object, context);
+
+    // Hide "arguments"; it almost never holds a value.
+    out.completions = Arr.unique(out.completions);
+    var ind = out.completions.indexOf("arguments");
+    if (ind !== -1)
+    {
+        out.completions.splice(ind, 1);
+        out.hiddenCompletions.push("arguments");
+    }
 }
 
 function propChainBuildComplete(out, context, tempExpr, result)
@@ -1855,7 +1885,7 @@ function evalPropChainStep(step, tempExpr, evalChain, out, context)
                 tempExpr.thisCommand = tempExpr.command;
                 tempExpr.command += "." + link.name;
             }
-            else if (type === LinkType.PROPERTY)
+            else if (type === LinkType.SCOPED_VARS)
             {
                 tempExpr.thisCommand = "window";
                 tempExpr.command += ".%" + link.name;
