@@ -20,10 +20,6 @@ const Cu = Components.utils;
 
 var ClosureInspector =
 {
-    dispatchName: "closureInspector",
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
     hasInit: false,
     Debugger: null,
 
@@ -131,11 +127,11 @@ var ClosureInspector =
         return undefined;
     },
 
-    getScopedVariableRaw: function(obj, mem)
+    getScopedVariableRaw: function(env, mem)
     {
         try
         {
-            var env = obj.environment.find(mem);
+            env = env.find(mem);
             if (env)
                 return env.getVariable(mem);
             if (FBTrace.DBG_COMMANDLINE)
@@ -151,11 +147,11 @@ var ClosureInspector =
         return undefined;
     },
 
-    setScopedVariableRaw: function(obj, mem, to)
+    setScopedVariableRaw: function(env, mem, to)
     {
         try
         {
-            var env = obj.environment.find(mem);
+            env = env.find(mem);
             if (env)
             {
                 env.setVariable(mem, to);
@@ -173,26 +169,27 @@ var ClosureInspector =
         throw new Error("Can't create new closure variables.");
     },
 
-    getScopedVariablesListRaw: function(obj)
+    getScopedVariablesListRaw: function(env)
     {
         var ret = [];
         try
         {
-            for (var sc = obj.environment; sc; sc = sc.parent)
+            while (env)
             {
-                if (sc.type === "with" && sc.getVariable("profileEnd"))
+                if (env.type === "with" && env.getVariable("profileEnd"))
                 {
                     // Almost certainly the with(_FirebugCommandLine) block,
                     // which is at the top of the scope chain on objects
                     // defined through the console. Hide it for a nicer display.
                     break;
                 }
-                if (sc.type === "object" && sc.getVariable("Object"))
+                if (env.type === "object" && env.getVariable("Object"))
                 {
                     // Almost certainly the window object, which we don't need.
                     break;
                 }
-                ret.push.apply(ret, sc.names());
+                ret.push.apply(ret, env.names());
+                env = env.parent;
             }
         }
         catch (exc)
@@ -203,41 +200,63 @@ var ClosureInspector =
         return ret;
     },
 
-    getScopedVariablesList: function(obj, context)
-    {
-        // Avoid 'window' and 'document' getting associated with closures.
-        var global = context.baseWindow || context.window;
-        if (obj === global || obj === global.document)
-            return [];
-
-        var dbg = this.getInactiveDebuggerForContext(context);
-        if (!dbg)
-            return [];
-        var dglobal = dbg.addDebuggee(global);
-
-        obj = dglobal.makeDebuggeeValue(obj);
-        if (!obj || typeof obj !== "object")
-            return [];
-
-        obj = this.getFunctionFromObject(obj);
-        if (!obj)
-            return [];
-
-        return this.getScopedVariablesListRaw(obj);
-    },
-
-    getScopedVarsWrapper: function(obj, uwGlobal, context)
+    // Within the security context of the (wrapped) window 'win', find a relevant
+    // closure for the content object 'obj' (may be from another frame).
+    // Throws exceptions on error.
+    getEnvironmentForObject: function(win, obj, context)
     {
         var dbg = this.getInactiveDebuggerForContext(context);
         if (!dbg)
             throw new Error("Debugger not available.");
-        var dglobal = dbg.addDebuggee(uwGlobal);
 
-        obj = dglobal.makeDebuggeeValue(obj);
-        if (!obj || typeof obj !== "object")
+        if (!obj || !(typeof obj === "object" || typeof obj === "function"))
             throw new TypeError("Can't get scope of non-object.");
 
-        obj = this.getFunctionFromObject(obj);
+        var objGlobal = Cu.getGlobalForObject(obj);
+        if (win !== objGlobal && !(win.document && objGlobal.document &&
+            win.document.nodePrincipal.subsumes(objGlobal.document.nodePrincipal)))
+        {
+            throw new Error("Permission denied to access cross origin scope.");
+        }
+
+        var dglobal = dbg.addDebuggee(objGlobal);
+
+        var dobj = dglobal.makeDebuggeeValue(obj);
+
+        dobj = this.getFunctionFromObject(dobj);
+
+        if (!dobj)
+            throw new Error("Missing closure.");
+
+        return dobj.environment;
+    },
+
+    getScopedVariablesList: function(obj, context)
+    {
+        // Avoid 'window' and 'document' getting associated with closures.
+        var win = context.baseWindow || context.window;
+        if (obj === win || obj === win.document)
+            return [];
+
+        try
+        {
+            var env = this.getEnvironmentForObject(win, obj, context);
+            return this.getScopedVariablesListRaw(env);
+        }
+        catch (exc)
+        {
+            if (FBTrace.DBG_COMMANDLINE)
+                FBTrace.sysout("ClosureInspector; getScopedVariablesList failed", exc);
+            return [];
+        }
+    },
+
+    getScopedVarsWrapper: function(obj, win, context)
+    {
+        var env = this.getEnvironmentForObject(win, obj, context);
+
+        var dbg = this.getInactiveDebuggerForContext(context);
+        var dglobal = dbg.addDebuggee(win);
 
         // Return a wrapper for its scoped variables.
         var self = this;
@@ -264,10 +283,9 @@ var ClosureInspector =
                 {
                     try
                     {
-                        if (!obj)
-                            return undefined;
-                        var ret = self.getScopedVariableRaw(obj, name);
-                        return self.unwrap(uwGlobal, dglobal, ret);
+                        var ret = self.getScopedVariableRaw(env, name);
+                        var uwWin = Wrapper.getContentView(win);
+                        return self.unwrap(uwWin, dglobal, ret);
                     }
                     catch (exc)
                     {
@@ -278,10 +296,8 @@ var ClosureInspector =
 
                 set: function(value)
                 {
-                    if (!obj)
-                        throw new Error("Missing closure.");
                     value = dglobal.makeDebuggeeValue(value);
-                    self.setScopedVariableRaw(obj, name, value);
+                    self.setScopedVariableRaw(env, name, value);
                 }
             };
         };
@@ -289,7 +305,7 @@ var ClosureInspector =
         return Proxy.create(handler);
     },
 
-    extendLanguageSyntax: function (expr, global, context)
+    extendLanguageSyntax: function (expr, win, context)
     {
         var fname = "__fb_scopedVars";
 
@@ -303,7 +319,7 @@ var ClosureInspector =
                     expr + "` -> `" + newExpr + "`");
         }
 
-        // Stick the helper function for .%-expressions on the global object.
+        // Stick the helper function for .%-expressions on the window object.
         // This really belongs on the command line object, but that doesn't
         // work when stopped in the debugger (issue 5321, which depends on
         // integrating JSD2) and we really need this to work there.
@@ -312,11 +328,10 @@ var ClosureInspector =
         try
         {
             var self = this;
-            var uwGlobal = Wrapper.getContentView(global);
-            Object.defineProperty(uwGlobal, fname, {
+            Object.defineProperty(Wrapper.getContentView(win), fname, {
                 value: function(obj)
                 {
-                    return self.getScopedVarsWrapper(obj, uwGlobal, context);
+                    return self.getScopedVarsWrapper(obj, win, context);
                 },
                 writable: true,
                 configurable: true
