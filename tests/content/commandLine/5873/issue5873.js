@@ -203,13 +203,13 @@ function runTest()
 
             // Verify cross-compartment permissions
             taskList.push(FBTest.executeCommandAndVerify, "_FirebugCommandLine.%cmd",
-                "Error: Permission denied to access cross origin scope.", "span", "errorMessage");
+                "Error: permission denied to access cross origin scope", "span", "errorMessage");
             if ("sandbox" in document.createElement("iframe"))
             {
                 taskList.push(FBTest.executeCommandAndVerify, "frames[1].%framePriv",
-                    "Error: Permission denied to access cross origin scope.", "span", "errorMessage");
+                    "Error: permission denied to access cross origin scope", "span", "errorMessage");
                 taskList.push(FBTest.executeCommandAndVerify, "frames[1].location.%framePriv",
-                    "Error: Permission denied to access cross origin scope.", "span", "errorMessage");
+                    "Error: permission denied to access cross origin scope", "span", "errorMessage");
             }
             taskList.push(FBTest.executeCommandAndVerify, "frames[0].location.%framePriv",
                 "2", "pre", "objectBox-number");
@@ -227,20 +227,20 @@ function runTest()
                 "undefined", "pre", "objectBox-undefined");
 
             taskList.push(FBTest.executeCommandAndVerify, "emptyObject.%blah",
-                "Error: Missing closure.", "span", "errorMessage");
+                "Error: missing closure", "span", "errorMessage");
             taskList.push(FBTest.executeCommandAndVerify, "a.%local.%blah",
-                "TypeError: Can't get scope of non-object.", "span", "errorMessage");
+                "TypeError: can't get scope of non-object", "span", "errorMessage");
 
             // Test setting
             taskList.push(FBTest.executeCommandAndVerify, "a.%nonExistent = 1",
-                "Error: Can't create new closure variables.", "span", "errorMessage");
+                "Error: can't create new closure variables", "span", "errorMessage");
             taskList.push(FBTest.executeCommandAndVerify, "a.%unused = 1",
                 "1", "pre", "objectBox-number");
             taskList.push(FBTest.executeCommandAndVerify, "++a.%local",
                 "6", "pre", "objectBox-number");
 
             taskList.push(FBTest.executeCommandAndVerify, "emptyObject.%blah = 1",
-                "Error: Missing closure.", "span", "errorMessage");
+                "Error: missing closure", "span", "errorMessage");
 
             // Verify the setting
             taskList.push(FBTest.executeCommandAndVerify, "a.%unused",
