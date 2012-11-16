@@ -347,6 +347,7 @@ var ClosureInspector =
     }
 };
 
+Firebug.ClosureInspector = ClosureInspector;
 return ClosureInspector;
 
 // ********************************************************************************************* //
