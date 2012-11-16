@@ -166,7 +166,7 @@ var ClosureInspector =
                 FBTrace.sysout("ClosureInspector; setScopedVariableRaw failed", exc);
             throw exc;
         }
-        throw new Error("Can't create new closure variables.");
+        throw new Error("can't create new closure variables");
     },
 
     getScopedVariablesListRaw: function(env)
@@ -207,16 +207,16 @@ var ClosureInspector =
     {
         var dbg = this.getInactiveDebuggerForContext(context);
         if (!dbg)
-            throw new Error("Debugger not available.");
+            throw new Error("debugger not available");
 
         if (!obj || !(typeof obj === "object" || typeof obj === "function"))
-            throw new TypeError("Can't get scope of non-object.");
+            throw new TypeError("can't get scope of non-object");
 
         var objGlobal = Cu.getGlobalForObject(obj);
         if (win !== objGlobal && !(win.document && objGlobal.document &&
             win.document.nodePrincipal.subsumes(objGlobal.document.nodePrincipal)))
         {
-            throw new Error("Permission denied to access cross origin scope.");
+            throw new Error("permission denied to access cross origin scope");
         }
 
         var dglobal = dbg.addDebuggee(objGlobal);
@@ -226,7 +226,7 @@ var ClosureInspector =
         dobj = this.getFunctionFromObject(dobj);
 
         if (!dobj)
-            throw new Error("Missing closure.");
+            throw new Error("missing closure");
 
         return dobj.environment;
     },
