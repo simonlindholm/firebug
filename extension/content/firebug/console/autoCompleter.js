@@ -2148,7 +2148,7 @@ function autoCompleteEval(context, preExpr, spreExpr, includeCurrentScope)
         spreExpr: spreExpr,
         completions: [],
         hiddenCompletions: [],
-        window: context.baseWindow || context.window
+        window: context.getCurrentGlobal()
     };
     var indexCompletion = false;
 
