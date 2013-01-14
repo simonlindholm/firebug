@@ -300,12 +300,15 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
         context.stoppedFrame = frame;  // the frame we stopped in, don't change this elsewhere.
         context.currentFrame = frame;  // the frame we show to user, depends on selection
         context.stopped = true;
+        context.stoppedGlobal = Wrapper.wrapObject(
+            Wrapper.unwrapIValue(frame.executionContext.globalObject));
 
         var hookReturn = Firebug.connection.dispatch("onStop", [context, frame, type, rv]);
         if ( hookReturn && hookReturn >= 0 )
         {
             delete context.stopped;
             delete context.stoppedFrame;
+            delete context.stoppedGlobal;
             delete context.currentFrame;
 
             if (FBTrace.DBG_UI_LOOP)
@@ -1017,6 +1020,7 @@ Firebug.Debugger = Obj.extend(Firebug.ActivableModule,
             {
                 delete context.stopped;
                 delete context.stoppedFrame;
+                delete context.stoppedGlobal;
                 delete context.currentFrame;
                 context.executingSourceFile = null;
                 delete context.breakLineNumber;
