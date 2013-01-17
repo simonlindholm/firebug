@@ -1400,9 +1400,9 @@ function CommandLineHandler(context, win)
 
         if (FBTrace.DBG_COMMANDLINE)
         {
-            var win = context.baseWindow;
-            FBTrace.sysout("commandLine.handleEvent('firebugExecuteCommand') " +
-                "event in window " + (win && win.location), event);
+            FBTrace.sysout("commandLine.handleEvent() " +
+                (win && Dom.getMappedData(win.document, "firebug-methodName")) +
+                " window: " + Win.safeGetWindowLocation(win), {win: win, ev: event});
         }
 
         // Appends variables into the api.
@@ -1430,14 +1430,6 @@ function CommandLineHandler(context, win)
         {
             var methodName = Dom.getMappedData(win.document, "firebug-methodName");
             Firebug.Console.log(Locale.$STRF("commandline.MethodNotSupported", [methodName]));
-        }
-
-        if (FBTrace.DBG_COMMANDLINE)
-        {
-            var win = context.baseWindow;
-            FBTrace.sysout("commandLine.handleEvent() " +
-                Dom.getMappedData(win.document, "firebug-methodName") +
-                " window: " + (win && win.location), win);
         }
     };
 }
