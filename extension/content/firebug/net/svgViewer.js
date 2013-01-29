@@ -143,7 +143,7 @@ Firebug.SVGViewerModel = Obj.extend(Firebug.Module,
  * <code>Firebug.SVGViewerModel</code>.
  */
 with (D) {
-Firebug.SVGViewerModel.ParseError = domplate(Firebug.Rep,
+Firebug.SVGViewerModel.ParseError = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "svgInfoError"},

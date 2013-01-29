@@ -1812,7 +1812,7 @@ with (D) {
 /**
  * @domplate Displays various warning messages within the Script panel.
  */
-Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
+Firebug.ScriptPanel.WarningRep = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "disabledPanelBox"},
@@ -1958,7 +1958,7 @@ var WarningRep = Firebug.ScriptPanel.WarningRep;
 
 // ********************************************************************************************* //
 
-Firebug.ScriptPanel.BreakpointInfoTip = domplate(Firebug.Rep,
+Firebug.ScriptPanel.BreakpointInfoTip = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV("$expr"),

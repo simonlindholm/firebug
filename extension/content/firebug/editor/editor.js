@@ -568,7 +568,7 @@ Firebug.InlineEditor = function(doc)
 };
 
 with (D) {
-Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
+Firebug.InlineEditor.prototype = D.domplate(Firebug.BaseEditor,
 {
     enterOnBlur: true,
 

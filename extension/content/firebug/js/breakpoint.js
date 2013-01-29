@@ -244,7 +244,7 @@ Firebug.Breakpoint = Obj.extend(Firebug.Module,
 // ************************************************************************************************
 
 with (D) {
-Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
+Firebug.Breakpoint.BreakpointListRep = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({role : "list"},
@@ -307,7 +307,7 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
+Firebug.Breakpoint.BreakpointRep = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", role: "option",
@@ -948,7 +948,7 @@ Firebug.Breakpoint.ConditionEditor = function(doc)
 };
 
 with (D) {
-Firebug.Breakpoint.ConditionEditor.prototype = domplate(Firebug.JSEditor.prototype,
+Firebug.Breakpoint.ConditionEditor.prototype = D.domplate(Firebug.JSEditor.prototype,
 {
     tag:
         D.DIV({"class": "conditionEditor"},
@@ -1052,7 +1052,7 @@ Firebug.Breakpoint.BreakNotification = function(doc, cause)
     this.cause = cause;
 };
 
-Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
+Firebug.Breakpoint.BreakNotification.prototype = D.domplate(Firebug.Rep,
 /** @lends Firebug.ScriptPanel.Notification */
 {
     tag:

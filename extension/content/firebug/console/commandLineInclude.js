@@ -47,7 +47,7 @@ Cu.import("resource://firebug/storageService.js", storageScope);
 // ********************************************************************************************* //
 // Implementation
 
-var CommandLineIncludeRep = domplate(FirebugReps.Table,
+var CommandLineIncludeRep = D.domplate(FirebugReps.Table,
 {
     tableClassName: "tableCommandLineInclude dataTable",
 
@@ -520,7 +520,7 @@ function IncludeEditor(doc)
     Firebug.InlineEditor.call(this, doc);
 }
 
-IncludeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+IncludeEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {

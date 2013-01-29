@@ -21,7 +21,7 @@ function LayoutPanel() {}
 with (D) {
 LayoutPanel.prototype = Obj.extend(Firebug.Panel,
 {
-    template: domplate(
+    template: D.domplate(
     {
         tag:
             D.DIV({"class": "outerLayoutBox"},
@@ -490,7 +490,7 @@ function LayoutEditor(doc)
     this.numeric = true;
 }
 
-LayoutEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+LayoutEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     saveEdit: function(target, value, previousValue)
     {

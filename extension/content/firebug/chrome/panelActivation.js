@@ -275,7 +275,7 @@ Firebug.PanelActivation = Obj.extend(Firebug.Module,
  * @domplate This template renders default content for disabled panels.
  */
 with (D) {
-Firebug.DisabledPanelBox = domplate(Firebug.Rep,
+Firebug.DisabledPanelBox = D.domplate(Firebug.Rep,
 /** @lends Firebug.DisabledPanelBox */
 {
     tag:

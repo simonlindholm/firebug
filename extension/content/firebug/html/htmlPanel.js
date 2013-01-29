@@ -2042,7 +2042,7 @@ var TextTag = Firebug.HTMLPanel.TextTag =
 
 // ********************************************************************************************* //
 
-Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.CompleteElement = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox open $object|getHidden", _repObject: "$object", role : 'presentation'},
@@ -2096,7 +2096,7 @@ Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
     }
 });
 
-Firebug.HTMLPanel.SoloElement = domplate(Firebug.HTMLPanel.CompleteElement,
+Firebug.HTMLPanel.SoloElement = D.domplate(Firebug.HTMLPanel.CompleteElement,
 {
     tag:
         D.DIV({"class": "soloElement", onmousedown: "$onMouseDown"},
@@ -2117,7 +2117,7 @@ Firebug.HTMLPanel.SoloElement = domplate(Firebug.HTMLPanel.CompleteElement,
     }
 });
 
-Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.Element = D.domplate(FirebugReps.Element,
 {
     tag:
     D.DIV({"class": "nodeBox containerNodeBox $object|getHidden", _repObject: "$object",
@@ -2142,7 +2142,7 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
     )
 });
 
-Firebug.HTMLPanel.HTMLDocument = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.HTMLDocument = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox documentNodeBox containerNodeBox",
@@ -2151,7 +2151,7 @@ Firebug.HTMLPanel.HTMLDocument = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.HTMLDocType = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.HTMLDocType = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox docTypeNodeBox containerNodeBox",
@@ -2168,7 +2168,7 @@ Firebug.HTMLPanel.HTMLDocType = domplate(FirebugReps.Element,
     }
 });
 
-Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.HTMLHtmlElement = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden",
@@ -2194,7 +2194,7 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.TextElement = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox textNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
@@ -2213,7 +2213,7 @@ Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.EmptyElement = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.EmptyElement = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
@@ -2228,7 +2228,7 @@ Firebug.HTMLPanel.EmptyElement = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.XEmptyElement = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.XEmptyElement = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
@@ -2243,12 +2243,12 @@ Firebug.HTMLPanel.XEmptyElement = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.AttrNode = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.AttrNode = D.domplate(FirebugReps.Element,
 {
     tag: AttrTag
 });
 
-Firebug.HTMLPanel.TextNode = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.TextNode = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
@@ -2256,7 +2256,7 @@ Firebug.HTMLPanel.TextNode = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.CDATANode = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.CDATANode = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
@@ -2266,7 +2266,7 @@ Firebug.HTMLPanel.CDATANode = domplate(FirebugReps.Element,
         )
 });
 
-Firebug.HTMLPanel.CommentNode = domplate(FirebugReps.Element,
+Firebug.HTMLPanel.CommentNode = D.domplate(FirebugReps.Element,
 {
     tag:
         D.DIV({"class": "nodeBox nodeComment", _repObject: "$object", role : 'presentation'},
@@ -2287,7 +2287,7 @@ function TextDataEditor(doc)
     this.initializeInline(doc);
 }
 
-TextDataEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+TextDataEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     saveEdit: function(target, value, previousValue)
     {
@@ -2316,7 +2316,7 @@ function TextNodeEditor(doc)
     this.initializeInline(doc);
 }
 
-TextNodeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+TextNodeEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     getInitialValue: function(target, value)
     {
@@ -2398,7 +2398,7 @@ function AttributeEditor(doc)
     this.initializeInline(doc);
 }
 
-AttributeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+AttributeEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     saveEdit: function(target, value, previousValue)
     {
@@ -2524,7 +2524,7 @@ function HTMLEditor(doc)
     this.arrowCompletion = false;
 }
 
-HTMLEditor.prototype = domplate(Firebug.BaseEditor,
+HTMLEditor.prototype = D.domplate(Firebug.BaseEditor,
 {
     tag:
         D.DIV(
@@ -2969,7 +2969,7 @@ Firebug.HTMLModule.Breakpoint = function(node, type)
     this.type = type;
 };
 
-Firebug.HTMLModule.BreakpointRep = domplate(Firebug.Rep,
+Firebug.HTMLModule.BreakpointRep = D.domplate(Firebug.Rep,
 {
     inspectable: false,
 

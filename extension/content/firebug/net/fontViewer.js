@@ -156,7 +156,7 @@ Firebug.FontViewerModel = Obj.extend(Firebug.Module,
 // ********************************************************************************************* //
 
 with (D) {
-Firebug.FontViewerModel.Preview = domplate(
+Firebug.FontViewerModel.Preview = D.domplate(
 {
     bodyTag:
         D.DIV({"class": "fontInfo", _repObject: "$fontObject"},

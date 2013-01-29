@@ -1100,7 +1100,7 @@ Firebug.CookieModule = Obj.extend(Firebug.ActivableModule,
  * @domplate Represents domplate template for cookie body that is displayed if 
  * a cookie entry in the cookie list is expanded.
  */
-Firebug.CookieModule.NetInfoBody = domplate(Firebug.Rep,
+Firebug.CookieModule.NetInfoBody = D.domplate(Firebug.Rep,
 /** @lends Firebug.CookieModule.NetInfoBody */
 {
     tag:

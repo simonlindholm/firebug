@@ -2477,7 +2477,7 @@ Firebug.MeasureBox =
 // ********************************************************************************************* //
 
 with (D) {
-Firebug.Rep = domplate(
+Firebug.Rep = D.domplate(
 {
     className: "",
     inspectable: true,

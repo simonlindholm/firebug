@@ -67,7 +67,7 @@ var CSSDomplateBase =
     }
 };
 
-var CSSPropTag = domplate(CSSDomplateBase,
+var CSSPropTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssProp focusRow", $disabledStyle: "$prop.disabled",
@@ -93,7 +93,7 @@ var CSSPropTag = domplate(CSSDomplateBase,
 var CSSRuleTag =
     D.TAG("$rule.tag", {rule: "$rule"});
 
-var CSSImportRuleTag = domplate(CSSDomplateBase,
+var CSSImportRuleTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule insertInto focusRow importRule", _repObject: "$rule.rule"},
@@ -112,7 +112,7 @@ var CSSImportRuleTag = domplate(CSSDomplateBase,
     }
 });
 
-var CSSCharsetRuleTag = domplate(CSSDomplateBase,
+var CSSCharsetRuleTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule focusRow cssCharsetRule", _repObject: "$rule.rule"},
@@ -123,7 +123,7 @@ var CSSCharsetRuleTag = domplate(CSSDomplateBase,
         )
 });
 
-var CSSNamespaceRuleTag = domplate(CSSDomplateBase,
+var CSSNamespaceRuleTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule focusRow cssNamespaceRule", _repObject: "$rule.rule"},
@@ -141,7 +141,7 @@ var CSSNamespaceRuleTag = domplate(CSSDomplateBase,
     }
 });
 
-var CSSFontFaceRuleTag = domplate(CSSDomplateBase,
+var CSSFontFaceRuleTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule cssFontFaceRule",
@@ -164,7 +164,7 @@ var CSSFontFaceRuleTag = domplate(CSSDomplateBase,
         )
 });
 
-var CSSStyleRuleTag = domplate(CSSDomplateBase,
+var CSSStyleRuleTag = D.domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule",
@@ -207,7 +207,7 @@ Firebug.CSSStyleSheetPanel = function() {};
 
 Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
 {
-    template: domplate(
+    template: D.domplate(
     {
         tag:
             D.DIV({"class": "cssSheet insertInto a11yCSSView"},
@@ -1674,7 +1674,7 @@ function CSSEditor(doc)
     this.initializeInline(doc);
 }
 
-CSSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+CSSEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     insertNewRow: function(target, insertWhere)
     {
@@ -2243,7 +2243,7 @@ function CSSRuleEditor(doc)
     this.initializeInline(doc);
 }
 
-CSSRuleEditor.prototype = domplate(SelectorEditor.prototype,
+CSSRuleEditor.prototype = D.domplate(SelectorEditor.prototype,
 {
     insertNewRow: function(target, insertWhere)
     {
@@ -2448,7 +2448,7 @@ function StyleSheetEditor(doc)
     this.input = this.box.firstChild;
 }
 
-StyleSheetEditor.prototype = domplate(Firebug.BaseEditor,
+StyleSheetEditor.prototype = D.domplate(Firebug.BaseEditor,
 {
     multiLine: true,
 

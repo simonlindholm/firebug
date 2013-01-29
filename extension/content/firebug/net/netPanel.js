@@ -1629,7 +1629,7 @@ Firebug.NetMonitor.ConditionEditor = function(doc)
     Firebug.Breakpoint.ConditionEditor.apply(this, arguments);
 };
 
-Firebug.NetMonitor.ConditionEditor.prototype = domplate(Firebug.Breakpoint.ConditionEditor.prototype,
+Firebug.NetMonitor.ConditionEditor.prototype = D.domplate(Firebug.Breakpoint.ConditionEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {

@@ -21,7 +21,7 @@ const reSelectorChar = /[-_0-9a-zA-Z]/;
 
 function SelectorEditor() {}
 
-SelectorEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+SelectorEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     getAutoCompleteRange: function(value, offset)
     {

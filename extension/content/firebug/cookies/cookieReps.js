@@ -50,7 +50,7 @@ var CookieReps = {};
 /**
  * @domplate Basic template for Cookies panel UI.
  */
-CookieReps.Rep = domplate(Firebug.Rep,
+CookieReps.Rep = D.domplate(Firebug.Rep,
 {
     getContextMenuItems: function(cookie, target, context)
     {
@@ -68,7 +68,7 @@ CookieReps.Rep = domplate(Firebug.Rep,
 /**
  * @domplate Represents a domplate template for cookie entry in the cookie list.
  */
-CookieReps.CookieRow = domplate(CookieReps.Rep,
+CookieReps.CookieRow = D.domplate(CookieReps.Rep,
 /** @lends CookieReps.CookieRow */
 {
     inspectable: false,
@@ -694,7 +694,7 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
  * @domplate This template is used for displaying cookie-changed events
  * (except of "clear") in the Console tab.
  */
-CookieReps.CookieChanged = domplate(CookieReps.Rep,
+CookieReps.CookieChanged = D.domplate(CookieReps.Rep,
 {
     inspectable: false,
 
@@ -841,7 +841,7 @@ CookieReps.CookieChanged = domplate(CookieReps.Rep,
 /**
  * @domplate Represents a domplate template for displaying rejected cookies.
  */
-CookieReps.CookieRejected = domplate(CookieReps.Rep,
+CookieReps.CookieRejected = D.domplate(CookieReps.Rep,
 /** @lends CookieReps.CookieRejected */
 {
     inspectable: false,
@@ -910,7 +910,7 @@ CookieReps.CookieRejected = domplate(CookieReps.Rep,
  * @domplate Represents a domplate template for cookie cleared event that is
  * visualised in Firebug Console panel.
  */
-CookieReps.CookieCleared = domplate(CookieReps.Rep,
+CookieReps.CookieCleared = D.domplate(CookieReps.Rep,
 /** @lends CookieReps.CookieCleared */
 {
     inspectable: false,
@@ -938,7 +938,7 @@ CookieReps.CookieCleared = domplate(CookieReps.Rep,
 });
 
 
-CookieReps.SizeInfoTip = domplate(Firebug.Rep,
+CookieReps.SizeInfoTip = D.domplate(Firebug.Rep,
 {
     tag:
         D.TABLE({"class": "sizeInfoTip", "id": "cookiesSizeInfoTip", role:"presentation"},
@@ -988,7 +988,7 @@ CookieReps.SizeInfoTip = domplate(Firebug.Rep,
  * @domplate Represents a template for basic cookie list layout. This
  * template also includes a header and related functionality (such as sorting).
  */
-CookieReps.CookieTable = domplate(CookieReps.Rep,
+CookieReps.CookieTable = D.domplate(CookieReps.Rep,
 /** @lends CookieReps.CookieTable */
 {
     inspectable: false,
@@ -1325,7 +1325,7 @@ CookieReps.CookieTable = domplate(CookieReps.Rep,
 var OBJECTLINK = FirebugReps.OBJECTLINK;
 
 // xxxHonza: TODO
-CookieReps.CookieRep = domplate(CookieReps.Rep,
+CookieReps.CookieRep = D.domplate(CookieReps.Rep,
 {
     tag:
         OBJECTLINK(

@@ -975,7 +975,7 @@ Firebug.JSEditor = function()
 };
 
 with (D) {
-Firebug.JSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
+Firebug.JSEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     setupCompleter: function(completionBox, options)
     {

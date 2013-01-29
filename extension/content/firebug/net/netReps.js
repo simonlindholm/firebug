@@ -55,7 +55,7 @@ const reSplitIP = /^(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)$/;
 /**
  * @domplate Represents a template that is used to render basic content of the net panel.
  */
-Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetRequestTable = D.domplate(Firebug.Rep, new Firebug.Listener(),
 {
     inspectable: false,
 
@@ -400,7 +400,7 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
 /**
  * @domplate Represents a template that is used to render net panel entries.
  */
-Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetRequestEntry = D.domplate(Firebug.Rep, new Firebug.Listener(),
 {
     fileTag:
         D.FOR("file", "$files",
@@ -723,7 +723,7 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
 
 // ********************************************************************************************* //
 
-Firebug.NetMonitor.NetPage = domplate(Firebug.Rep,
+Firebug.NetMonitor.NetPage = D.domplate(Firebug.Rep,
 {
     separatorTag:
         D.TR({"class": "netRow netPageSeparatorRow"},
@@ -787,7 +787,7 @@ Firebug.NetMonitor.NetPage = domplate(Firebug.Rep,
  * @domplate Represents a template that is used to render detailed info about a request.
  * This template is rendered when a request is expanded.
  */
-Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoBody = D.domplate(Firebug.Rep, new Firebug.Listener(),
 {
     tag:
         D.DIV({"class": "netInfoBody", _repObject: "$file"},
@@ -1272,7 +1272,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
  * @domplate Represents posted data within request info (the info, which is visible when
  * a request entry is expanded. This template renders content of the Post tab.
  */
-Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoPostData = D.domplate(Firebug.Rep, new Firebug.Listener(),
 {
     // application/x-www-form-urlencoded
     paramsTable:
@@ -1573,7 +1573,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
  * @domplate Used within the Net panel to display raw source of request and response headers
  * as well as pretty-formatted summary of these headers.
  */
-Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoHeaders = D.domplate(Firebug.Rep, new Firebug.Listener(),
 {
     tag:
         D.DIV({"class": "netInfoHeadersTable", "role": "tabpanel"},
@@ -1714,7 +1714,7 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
  * @domplate Represents a template for popup tip that displays detailed timing info about
  * a network request.
  */
-Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
+Firebug.NetMonitor.TimeInfoTip = D.domplate(Firebug.Rep,
 {
     tableTag:
         D.TABLE({"class": "timeInfoTip", "id": "fbNetTimeInfoTip"},
@@ -1910,7 +1910,7 @@ Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
 /**
  * @domplate Represents a template for a pupup tip with detailed size info.
  */
-Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
+Firebug.NetMonitor.SizeInfoTip = D.domplate(Firebug.Rep,
 {
     tag:
         D.TABLE({"class": "sizeInfoTip", "id": "fbNetSizeInfoTip", role:"presentation"},
@@ -1989,7 +1989,7 @@ Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.NetMonitor.NetLimit = domplate(Firebug.Rep,
+Firebug.NetMonitor.NetLimit = D.domplate(Firebug.Rep,
 {
     collapsed: true,
 
@@ -2062,7 +2062,7 @@ Firebug.NetMonitor.NetLimit = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.NetMonitor.ResponseSizeLimit = domplate(Firebug.Rep,
+Firebug.NetMonitor.ResponseSizeLimit = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "netInfoResponseSizeLimit"},

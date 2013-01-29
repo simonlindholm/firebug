@@ -75,7 +75,7 @@ var PerformanceTimingModule = Obj.extend(Firebug.Module,
 /**
  * This template is used to render the timing waterfall graph.
  */
-var PerformanceTimingRep = domplate(Firebug.Rep,
+var PerformanceTimingRep = D.domplate(Firebug.Rep,
 /** @lends PerformanceTimingRep */
 {
     className: "perfTiming",
@@ -151,7 +151,7 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
  * Hovering mouse over the waterfall graph shows an infotip. This template is responsible
  * for rendering its content.
  */
-var PerfInfoTip = domplate(Firebug.Rep,
+var PerfInfoTip = D.domplate(Firebug.Rep,
 /** @lends PerfInfoTip */
 {
     tableTag:
@@ -403,7 +403,7 @@ function performanceTiming(context, timing)
 /**
  * A capation for detailed performance timing info.
  */
-var DetailsCaption = domplate(
+var DetailsCaption = D.domplate(
 /** @lends DetailsCaption */
 {
     tag:
@@ -422,7 +422,7 @@ var DetailsCaption = domplate(
 /**
  * This template represents a table with detailed timing info.
  */
-var DetailsTable = domplate(
+var DetailsTable = D.domplate(
 /** @lends DetailsTable */
 {
     tag:
@@ -457,7 +457,7 @@ var DetailsTable = domplate(
 /**
  * A row within detailed performance timing info.
  */
-var DetailsEntry = domplate(
+var DetailsEntry = D.domplate(
 /** @lends DetailsEntry */
 {
     tag:

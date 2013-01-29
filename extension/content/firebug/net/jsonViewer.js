@@ -160,7 +160,7 @@ Firebug.JSONViewerModel = Obj.extend(Firebug.Module,
 // ********************************************************************************************* //
 
 with (D) {
-Firebug.JSONViewerModel.Preview = domplate(
+Firebug.JSONViewerModel.Preview = D.domplate(
 {
     bodyTag:
         D.DIV({"class": "jsonPreview", _repObject: "$file"},

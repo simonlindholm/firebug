@@ -48,7 +48,7 @@ function CSSComputedPanel() {}
 
 CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
 {
-    template: domplate(
+    template: D.domplate(
     {
         computedStylesTag:
             D.DIV({"class": "a11yCSSView", role: "list", "aria-label":

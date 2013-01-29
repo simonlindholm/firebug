@@ -27,7 +27,7 @@ var CSSInfoTip = Obj.extend(InfoTip,
 {
     dispatchName: "cssInfoTip",
 
-    tags: domplate(
+    tags: D.domplate(
     {
         infoTipTag: D.DIV({"class": "infoTip"}),
 

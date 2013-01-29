@@ -21,7 +21,7 @@ with (D) {
 Firebug.InfoTip = Obj.extend(Firebug.Module,
 {
     dispatchName: "infoTip",
-    tags: domplate(
+    tags: D.domplate(
     {
         infoTipTag: D.DIV({"class": "infoTip"}),
     }),

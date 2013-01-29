@@ -76,7 +76,7 @@ function FunctionLog(frame, stackTrace)
 // ********************************************************************************************* //
 // Function Monitor Rep
 
-var FunctionMonitorRep = domplate(Firebug.Rep,
+var FunctionMonitorRep = D.domplate(Firebug.Rep,
 {
     className: "functionCall",
 

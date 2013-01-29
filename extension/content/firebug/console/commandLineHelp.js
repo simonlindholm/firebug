@@ -28,7 +28,7 @@ const prompts = Xpcom.CCSV("@mozilla.org/embedcomp/prompt-service;1", "nsIPrompt
 // ********************************************************************************************* //
 // Domplates
 
-var HelpCaption = domplate(
+var HelpCaption = D.domplate(
 {
     tag:
         D.SPAN({"class": "helpTitle"},
@@ -42,7 +42,7 @@ var HelpCaption = domplate(
 });
 
 // The table UI should be based on tableRep
-var HelpTable = domplate(
+var HelpTable = D.domplate(
 {
     tag:
         D.TABLE({"class": "helpTable", cellspacing: 0, cellpadding: 0, width: "100%",
@@ -72,7 +72,7 @@ var HelpTable = domplate(
     }
 });
 
-var HelpEntry = domplate(
+var HelpEntry = D.domplate(
 {
     tag:
         D.FOR("command", "$commands",
@@ -130,7 +130,7 @@ var HelpEntry = domplate(
 // ********************************************************************************************* //
 // Help Object
 
-var CommandLineHelp = domplate(
+var CommandLineHelp = D.domplate(
 {
     render: function(context)
     {

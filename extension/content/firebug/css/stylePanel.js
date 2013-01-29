@@ -48,7 +48,7 @@ function CSSStylePanel() {}
 
 CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
 {
-    template: domplate(
+    template: D.domplate(
     {
         cascadedTag:
             D.DIV({"class": "a11yCSSView", role: "presentation"},

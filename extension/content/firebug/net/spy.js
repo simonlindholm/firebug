@@ -887,7 +887,7 @@ function onHTTPSpyAbort(spy)
  * log (displayed when expanded) is rendered using {@link Firebug.NetMonitor.NetInfoBody}.
  */
 with (D) {
-Firebug.Spy.XHR = domplate(Firebug.Rep,
+Firebug.Spy.XHR = D.domplate(Firebug.Rep,
 /** @lends Firebug.Spy.XHR */
 {
     tag:

@@ -16,7 +16,7 @@ function(D, Locale, FirebugReps, Dom, Css, Arr) {
 // ********************************************************************************************* //
 
 with (D) {
-FirebugReps.Table = domplate(Firebug.Rep,
+FirebugReps.Table = D.domplate(Firebug.Rep,
 {
     className: "table",
     tableClassName: "dataTable",

@@ -557,7 +557,7 @@ ObjectIterator.prototype =
 // Domplate Templates
 
 with (D) {
-Firebug.MemoryProfiler.ProfileTable = domplate(
+Firebug.MemoryProfiler.ProfileTable = D.domplate(
 {
     tag:
         D.DIV({"class": "profileSizer", "tabindex": "-1" },
@@ -700,7 +700,7 @@ Firebug.MemoryProfiler.ProfileTable = domplate(
 
 // ********************************************************************************************* //
 
-Firebug.MemoryProfiler.ProfileCaption = domplate(Firebug.Rep,
+Firebug.MemoryProfiler.ProfileCaption = D.domplate(Firebug.Rep,
 {
     tag:
         D.SPAN({"class": "profileTitle", "role": "status"},
@@ -719,7 +719,7 @@ var OBJECTLINK =
         _repObject: "$object"
     });
 
-Firebug.MemoryProfiler.ProfileCall = domplate(Firebug.Rep,
+Firebug.MemoryProfiler.ProfileCall = D.domplate(Firebug.Rep,
 {
     tag:
         D.TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
@@ -807,7 +807,7 @@ Firebug.MemoryProfiler.ProfileCall = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.MemoryProfiler.ProfileSummary = domplate(Firebug.Rep,
+Firebug.MemoryProfiler.ProfileSummary = D.domplate(Firebug.Rep,
 {
     tag:
         D.TR({"class": "focusRow profileSummaryRow subFocusRow", "role": "row"},

@@ -138,7 +138,7 @@ Breakpoint.prototype =
 // Breakpoint UI
 
 with (D) {
-var BreakpointRep = domplate(Firebug.Rep,
+var BreakpointRep = D.domplate(Firebug.Rep,
 {
     inspectable: false,
 

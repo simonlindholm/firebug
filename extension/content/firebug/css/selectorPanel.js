@@ -337,7 +337,7 @@ function SelectorPanelEditor(doc)
     this.fixedWidth = true;
 }
 
-SelectorPanelEditor.prototype = domplate(SelectorEditor.prototype,
+SelectorPanelEditor.prototype = D.domplate(SelectorEditor.prototype,
 {
     tag:
         D.INPUT({"class": "fixedWidthEditor a11yFocusNoTab",
@@ -358,7 +358,7 @@ SelectorPanelEditor.prototype = domplate(SelectorEditor.prototype,
 
 // ********************************************************************************************* //
 
-var BaseRep = domplate(Firebug.Rep,
+var BaseRep = D.domplate(Firebug.Rep,
 {
     // xxxHonza: shouldn't this be in Firebug.Rep?
     getNaturalTag: function(value)
@@ -388,7 +388,7 @@ var TrialRow =
 /**
  * @domplate: Template for basic layout of the {@link SelectorPanel} panel.
  */
-var SelectorTemplate = domplate(BaseRep,
+var SelectorTemplate = D.domplate(BaseRep,
 {
     // object will be array of elements CSSStyleRule
     tag:
@@ -415,7 +415,7 @@ var SelectorTemplate = domplate(BaseRep,
 
 // ********************************************************************************************* //
 
-var WarningTemplate = domplate(Firebug.Rep,
+var WarningTemplate = D.domplate(Firebug.Rep,
 {
     noSelectionTag:
         D.TR({"class": "selectorWarning"},

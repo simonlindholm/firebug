@@ -11,7 +11,7 @@ Firebug.BalloonNote = function(doc, object)
 };
 
 with (D) {
-Firebug.BalloonNote.prototype = domplate(
+Firebug.BalloonNote.prototype = D.domplate(
 {
     tag:
         D.DIV({"class": "balloon", onclick: "$onClick"},

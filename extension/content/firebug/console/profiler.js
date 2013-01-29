@@ -255,7 +255,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 // ********************************************************************************************* //
 
 with (D) {
-Firebug.Profiler.ProfileTable = domplate(
+Firebug.Profiler.ProfileTable = D.domplate(
 {
     tag:
         D.DIV({"class": "profileSizer", "tabindex": "-1" },
@@ -407,7 +407,7 @@ Firebug.Profiler.ProfileTable = domplate(
 
 // ********************************************************************************************* //
 
-Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
+Firebug.Profiler.ProfileCaption = D.domplate(Firebug.Rep,
 {
     tag:
         D.SPAN({"class": "profileTitle", "role": "status"},
@@ -419,7 +419,7 @@ Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
+Firebug.Profiler.ProfileCall = D.domplate(Firebug.Rep,
 {
     tag:
         D.TR({"class": "focusRow profileRow subFocusRow", "role": "row"},

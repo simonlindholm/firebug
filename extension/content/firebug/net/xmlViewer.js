@@ -151,7 +151,7 @@ Firebug.XMLViewerModel = Obj.extend(Firebug.Module,
  * <code>Firebug.XMLViewerModel</code>.
  */
 with (D) {
-Firebug.XMLViewerModel.ParseError = domplate(Firebug.Rep,
+Firebug.XMLViewerModel.ParseError = D.domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "xmlInfoError"},
