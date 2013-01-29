@@ -534,8 +534,8 @@ Firebug.CookieModule.DebuggerListener =
 Firebug.CookieModule.ConsoleListener =
 {
     tag:
-        DIV({_repObject: "$object"},
-            DIV({"class": "documentCookieBody"})
+        D.DIV({_repObject: "$object"},
+            D.DIV({"class": "documentCookieBody"})
         ),
 
     log: function(context, object, className, sourceLink)

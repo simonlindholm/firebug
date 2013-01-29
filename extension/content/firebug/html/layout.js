@@ -24,15 +24,15 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
     template: domplate(
     {
         tag:
-            DIV({"class": "outerLayoutBox"},
-                DIV({"class": "positionLayoutBox $outerTopMode $outerRightMode $outerBottomMode "+
+            D.DIV({"class": "outerLayoutBox"},
+                D.DIV({"class": "positionLayoutBox $outerTopMode $outerRightMode $outerBottomMode "+
                         "$outerLeftMode focusGroup"},
-                    DIV({"class": "layoutEdgeTop layoutEdge"}),
-                    DIV({"class": "layoutEdgeRight layoutEdge"}),
-                    DIV({"class": "layoutEdgeBottom layoutEdge"}),
-                    DIV({"class": "layoutEdgeLeft layoutEdge"}),
+                    D.DIV({"class": "layoutEdgeTop layoutEdge"}),
+                    D.DIV({"class": "layoutEdgeRight layoutEdge"}),
+                    D.DIV({"class": "layoutEdgeBottom layoutEdge"}),
+                    D.DIV({"class": "layoutEdgeLeft layoutEdge"}),
 
-                    DIV({"class": "layoutLabelBottom layoutLabel layoutLabelPosition"},
+                    D.DIV({"class": "layoutLabelBottom layoutLabel layoutLabelPosition"},
                         SPAN({"class": "layoutPosition layoutCaption",
                                 "aria-label": Locale.$STR("a11y.layout.position")},
                             Locale.$STR("position") + ": " + "$position"),
@@ -44,28 +44,28 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                             "z: " + "$zIndex")
                     ),
 
-                    DIV({"class": "layoutLabelTop layoutLabel",
+                    D.DIV({"class": "layoutLabelTop layoutLabel",
                             $invisible: "$outerTop|isInvisible"},
                         SPAN({"class": "layoutLabelOuterTop editable focusStart",
                                 "aria-label": Locale.$STR("a11y.layout.position top")},
                             "$outerTop"
                         )
                     ),
-                    DIV({"class": "layoutLabelRight layoutLabel",
+                    D.DIV({"class": "layoutLabelRight layoutLabel",
                             $invisible: "$outerRight|isInvisible"},
                         SPAN({"class": "layoutLabelOuterRight editable",
                                 "aria-label": Locale.$STR("a11y.layout.position right")},
                             "$outerRight"
                         )
                     ),
-                    DIV({"class": "layoutLabelBottom layoutLabel",
+                    D.DIV({"class": "layoutLabelBottom layoutLabel",
                             $invisible: "$outerBottom|isInvisible"},
                         SPAN({"class": "layoutLabelOuterBottom editable",
                                 "aria-label": Locale.$STR("a11y.layout.position bottom")},
                             "$outerBottom"
                         )
                     ),
-                    DIV({"class": "layoutLabelLeft layoutLabel",
+                    D.DIV({"class": "layoutLabelLeft layoutLabel",
                             $invisible: "$outerLeft|isInvisible"},
                         SPAN({"class": "layoutLabelOuterLeft editable",
                                 "aria-label": Locale.$STR("a11y.layout.position left")},
@@ -73,33 +73,33 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                         )
                     ),
 
-                    DIV({"class": "outerLabel layoutCaption"}, "$outerLabel"),
+                    D.DIV({"class": "outerLabel layoutCaption"}, "$outerLabel"),
 
 
-                    DIV({"class": "marginLayoutBox layoutBox editGroup focusGroup"},
-                        DIV({"class": "layoutCaption"}, Locale.$STR("LayoutMargin")),
-                        DIV({"class": "layoutLabelTop layoutLabel",
+                    D.DIV({"class": "marginLayoutBox layoutBox editGroup focusGroup"},
+                        D.DIV({"class": "layoutCaption"}, Locale.$STR("LayoutMargin")),
+                        D.DIV({"class": "layoutLabelTop layoutLabel",
                                 $invisible: "$marginTop|isInvisible"},
                             SPAN({"class": "layoutLabelMarginTop editable focusStart",
                                     "aria-label": Locale.$STR("a11y.layout.margin top")},
                                 "$marginTop"
                             )
                         ),
-                        DIV({"class": "layoutLabelRight layoutLabel",
+                        D.DIV({"class": "layoutLabelRight layoutLabel",
                                 $invisible: "$marginRight|isInvisible"},
                             SPAN({"class": "layoutLabelMarginRight editable",
                                     "aria-label": Locale.$STR("a11y.layout.margin right")},
                                 "$marginRight"
                             )
                         ),
-                        DIV({"class": "layoutLabelBottom layoutLabel",
+                        D.DIV({"class": "layoutLabelBottom layoutLabel",
                                 $invisible: "$marginBottom|isInvisible"},
                             SPAN({"class": "layoutLabelMarginBottom editable",
                                     "aria-label": Locale.$STR("a11y.layout.margin bottom")},
                                 "$marginBottom"
                             )
                         ),
-                        DIV({"class": "layoutLabelLeft layoutLabel",
+                        D.DIV({"class": "layoutLabelLeft layoutLabel",
                                 $invisible: "$marginLeft|isInvisible"},
                             SPAN({"class": "layoutLabelMarginLeft editable",
                                     "aria-label": Locale.$STR("a11y.layout.margin left")},
@@ -107,30 +107,30 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                             )
                         ),
 
-                        DIV({"class": "borderLayoutBox layoutBox editGroup focusGroup"},
-                            DIV({"class": "layoutCaption"}, Locale.$STR("LayoutBorder")),
-                            DIV({"class": "layoutLabelTop layoutLabel",
+                        D.DIV({"class": "borderLayoutBox layoutBox editGroup focusGroup"},
+                            D.DIV({"class": "layoutCaption"}, Locale.$STR("LayoutBorder")),
+                            D.DIV({"class": "layoutLabelTop layoutLabel",
                                     $invisible: "$borderTop|isInvisible"},
                                 SPAN({"class": "layoutLabelBorderTop editable  focusStart",
                                         "aria-label": Locale.$STR("a11y.layout.border top")},
                                     "$borderTop"
                                 )
                             ),
-                            DIV({"class": "layoutLabelRight layoutLabel",
+                            D.DIV({"class": "layoutLabelRight layoutLabel",
                                     $invisible: "$borderRight|isInvisible"},
                                 SPAN({"class": "layoutLabelBorderRight editable",
                                         "aria-label": Locale.$STR("a11y.layout.border right")},
                                     "$borderRight"
                                 )
                             ),
-                            DIV({"class": "layoutLabelBottom layoutLabel",
+                            D.DIV({"class": "layoutLabelBottom layoutLabel",
                                     $invisible: "$borderBottom|isInvisible"},
                                 SPAN({"class": "layoutLabelBorderBottom editable",
                                         "aria-label": Locale.$STR("a11y.layout.border bottom")},
                                     "$borderBottom"
                                 )
                             ),
-                            DIV({"class": "layoutLabelLeft layoutLabel",
+                            D.DIV({"class": "layoutLabelLeft layoutLabel",
                                     $invisible: "$borderLeft|isInvisible"},
                                 SPAN({"class": "layoutLabelBorderLeft editable",
                                         "aria-label": Locale.$STR("a11y.layout.border left")},
@@ -138,16 +138,16 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                                 )
                             ),
 
-                            DIV({"class": "paddingLayoutBox layoutBox editGroup focusGroup"},
-                                DIV({"class": "layoutCaption"}, Locale.$STR("LayoutPadding")),
-                                DIV({"class": "layoutLabelTop layoutLabel",
+                            D.DIV({"class": "paddingLayoutBox layoutBox editGroup focusGroup"},
+                                D.DIV({"class": "layoutCaption"}, Locale.$STR("LayoutPadding")),
+                                D.DIV({"class": "layoutLabelTop layoutLabel",
                                         $invisible: "$paddingTop|isInvisible"},
                                     SPAN({"class": "layoutLabelPaddingTop editable focusStart",
                                             "aria-label": Locale.$STR("a11y.layout.padding top")},
                                         "$paddingTop"
                                     )
                                 ),
-                                DIV({"class": "layoutLabelRight layoutLabel",
+                                D.DIV({"class": "layoutLabelRight layoutLabel",
                                         $invisible: "$paddingRight|isInvisible"},
                                     SPAN(
                                         {
@@ -158,7 +158,7 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                                         "$paddingRight"
                                     )
                                 ),
-                                DIV({"class": "layoutLabelBottom layoutLabel",
+                                D.DIV({"class": "layoutLabelBottom layoutLabel",
                                         $invisible: "$paddingBottom|isInvisible"},
                                     SPAN(
                                         {
@@ -169,7 +169,7 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                                         "$paddingBottom"
                                     )
                                 ),
-                                DIV({"class": "layoutLabelLeft layoutLabel",
+                                D.DIV({"class": "layoutLabelLeft layoutLabel",
                                         $invisible: "$paddingLeft|isInvisible"},
                                     SPAN({"class": "layoutLabelPaddingLeft editable",
                                             "aria-label": Locale.$STR("a11y.layout.padding left")},
@@ -177,8 +177,8 @@ LayoutPanel.prototype = Obj.extend(Firebug.Panel,
                                     )
                                 ),
 
-                                DIV({"class": "contentLayoutBox layoutBox editGroup focusGroup"},
-                                    DIV({"class": "layoutLabelCenter layoutLabel"},
+                                D.DIV({"class": "contentLayoutBox layoutBox editGroup focusGroup"},
+                                    D.DIV({"class": "layoutLabelCenter layoutLabel"},
                                         SPAN({"class": "layoutLabelWidth layoutLabel editable "+
                                                 "focusStart",
                                                 "aria-label": Locale.$STR("a11y.layout.width")},

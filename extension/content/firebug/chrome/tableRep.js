@@ -21,7 +21,7 @@ FirebugReps.Table = domplate(Firebug.Rep,
     className: "table",
     tableClassName: "dataTable",
     tag:
-        DIV({"class": "dataTableSizer", "tabindex": "-1" },
+        D.DIV({"class": "dataTableSizer", "tabindex": "-1" },
             TABLE({"class": "$tableClassName", cellspacing: 0, cellpadding: 0, width: "100%",
                 "role": "grid"},
                 THEAD({"class": "dataTableThead", "role": "presentation"},
@@ -30,7 +30,7 @@ FirebugReps.Table = domplate(Firebug.Rep,
                         FOR("column", "$object.columns",
                             TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 $alphaValue: "$column.alphaValue"},
-                                DIV({"class": "headerCellBox"},
+                                D.DIV({"class": "headerCellBox"},
                                     "$column.label"
                                 )
                             )

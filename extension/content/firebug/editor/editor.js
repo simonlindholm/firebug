@@ -573,7 +573,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
     enterOnBlur: true,
 
     tag:
-        DIV({"class": "inlineEditor"},
+        D.DIV({"class": "inlineEditor"},
             INPUT({"class": "textEditorInner", type: "text",
                 oninput: "$onInput", onkeypress: "$onKeyPress", onoverflow: "$onOverflow",
                 oncontextmenu: "$onContextMenu"}

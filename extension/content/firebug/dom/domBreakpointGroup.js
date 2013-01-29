@@ -190,15 +190,15 @@ var BreakpointRep = domplate(Firebug.Rep,
     inspectable: false,
 
     tag:
-        DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", _repObject: "$bp",
+        D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", _repObject: "$bp",
             role: "option", "aria-checked": "$bp.checked"},
-            DIV({"class": "breakpointBlockHead"},
+            D.DIV({"class": "breakpointBlockHead"},
                 INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex: "-1", onclick: "$onEnable"}),
                 SPAN({"class": "breakpointName"}, "$bp.propName"),
                 IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
-            DIV({"class": "breakpointCode"},
+            D.DIV({"class": "breakpointCode"},
                 TAG("$bp.object|getObjectTag", {object: "$bp.object"})
             )
         ),

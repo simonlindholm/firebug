@@ -159,15 +159,15 @@ with (D) {
 Firebug.FontViewerModel.Preview = domplate(
 {
     bodyTag:
-        DIV({"class": "fontInfo", _repObject: "$fontObject"},
-            DIV({"class": "fontInfoGroup fontInfoGeneralInfoTitle"},
+        D.DIV({"class": "fontInfo", _repObject: "$fontObject"},
+            D.DIV({"class": "fontInfoGroup fontInfoGeneralInfoTitle"},
                 SPAN(Locale.$STR("fontviewer.General Info"))
             ),
             TABLE({cellpadding: 0, cellspacing: 0},
                 TBODY({"class": "fontInfoGeneralInfoBody", "role": "list",
                     "aria-label": Locale.$STR("fontviewer.General Info")})
             ),
-            DIV({"class": "fontInfoGroup fontInfoMetaDataTitle",
+            D.DIV({"class": "fontInfoGroup fontInfoMetaDataTitle",
                 $collapsed: "$fontObject|noMetaData"},
                 SPAN(Locale.$STR("fontviewer.Meta Data")),
                 SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
@@ -179,16 +179,16 @@ Firebug.FontViewerModel.Preview = domplate(
                 TBODY({"class": "fontInfoMetaDataBody", "role": "list",
                     "aria-label": Locale.$STR("fontviewer.Meta Data")})
             ),
-            DIV({"class": "fontInfoGroup fontInfoPreviewTitle"},
+            D.DIV({"class": "fontInfoGroup fontInfoPreviewTitle"},
                 SPAN(Locale.$STR("fontviewer.Preview")),
                 SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
                   _lettersDisplayed: false, _rowName: "Preview"},
                   Locale.$STR("fontviewer.view characters")
                 )
             ),
-            DIV({"class": "fontInfoPreview"},
+            D.DIV({"class": "fontInfoPreview"},
                 STYLE({"class": "fontInfoPreviewStyle"}),
-                DIV({"class": "fontInfoPreviewSample"},
+                D.DIV({"class": "fontInfoPreviewSample"},
                     FOR("style", "$styles",
                         P({"class": "$fontObject.CSSFamilyName|getFontFaceClass",
                             "style": "font-size: $style|getFontSize"},
@@ -197,7 +197,7 @@ Firebug.FontViewerModel.Preview = domplate(
                         )
                     )
                 ),
-                DIV({"class": "fontInfoPreviewCharacters"},
+                D.DIV({"class": "fontInfoPreviewCharacters"},
                     FOR("charType", "$charTypes",
                         P({"class": "$fontObject.CSSFamilyName|getFontFaceClass"},
                             "$charType|getCharacters"
@@ -227,14 +227,14 @@ Firebug.FontViewerModel.Preview = domplate(
         ),
 
     translatedInfoTag:
-        DIV({"class": "fontInfoTranslatedInfo"},
-            DIV({"class": "fontInfoLangInfo"},
+        D.DIV({"class": "fontInfoTranslatedInfo"},
+            D.DIV({"class": "fontInfoLangInfo"},
                 FOR("lang", "$node|getLanguages",
                     A({"class": "fontInfoLangTab", $selected: "$lang.selected", role: "tab",
                         onclick: "$onTranslatedLangChange"}, "$lang.name")
                 )
             ),
-            DIV({"class": "fontInfoTranslatedContent"},
+            D.DIV({"class": "fontInfoTranslatedContent"},
                 "$node|getTranslatedText"
             )
         ),
@@ -243,7 +243,7 @@ Firebug.FontViewerModel.Preview = domplate(
         TAG("$node|getLinkedTextTag", {node: "$node"}),
 
     licenseTag:
-        DIV({"class": "fontInfoLicense"},
+        D.DIV({"class": "fontInfoLicense"},
             TAG("$node|getLinkedTextTag", {node: "$node"}),
             TAG("$translatedInfoTag", {node: "$node"})
         ),

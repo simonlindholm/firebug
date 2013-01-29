@@ -51,15 +51,15 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
     template: domplate(
     {
         computedStylesTag:
-            DIV({"class": "a11yCSSView", role: "list", "aria-label":
+            D.DIV({"class": "a11yCSSView", role: "list", "aria-label":
                 Locale.$STR("aria.labels.computed styles")}),
 
         groupedStylesTag:
             FOR("group", "$groups",
-                DIV({"class": "computedStylesGroup", $opened: "$group.opened", role: "list",
+                D.DIV({"class": "computedStylesGroup", $opened: "$group.opened", role: "list",
                         $hidden: "$group.props|hasNoStyles", _repObject: "$group"},
                     H1({"class": "cssComputedHeader groupHeader focusRow", role: "listitem"},
-                        DIV({"class": "twisty", role: "presentation"}),
+                        D.DIV({"class": "twisty", role: "presentation"}),
                         SPAN({"class": "cssComputedLabel"}, "$group.title")
                     ),
                     TAG("$stylesTag", {props: "$group.props"})

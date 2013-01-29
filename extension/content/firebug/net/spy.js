@@ -891,21 +891,21 @@ Firebug.Spy.XHR = domplate(Firebug.Rep,
 /** @lends Firebug.Spy.XHR */
 {
     tag:
-        DIV({"class": "spyHead", _repObject: "$object"},
+        D.DIV({"class": "spyHead", _repObject: "$object"},
             TABLE({"class": "spyHeadTable focusRow outerFocusRow", cellpadding: 0, cellspacing: 0,
                 "role": "listitem", "aria-expanded": "false"},
                 TBODY({"role": "presentation"},
                     TR({"class": "spyRow"},
                         TD({"class": "spyTitleCol spyCol", onclick: "$onToggleBody"},
-                            DIV({"class": "spyTitle"},
+                            D.DIV({"class": "spyTitle"},
                                 "$object|getCaption"
                             ),
-                            DIV({"class": "spyFullTitle spyTitle"},
+                            D.DIV({"class": "spyFullTitle spyTitle"},
                                 "$object|getFullUri"
                             )
                         ),
                         TD({"class": "spyCol"},
-                            DIV({"class": "spyStatus"}, "$object|getStatus")
+                            D.DIV({"class": "spyStatus"}, "$object|getStatus")
                         ),
                         TD({"class": "spyCol"},
                             IMG({"class": "spyIcon", src: "blank.gif"})

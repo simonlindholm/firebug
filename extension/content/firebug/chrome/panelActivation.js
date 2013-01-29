@@ -279,7 +279,7 @@ Firebug.DisabledPanelBox = domplate(Firebug.Rep,
 /** @lends Firebug.DisabledPanelBox */
 {
     tag:
-        DIV({"class": "disabledPanelBox"},
+        D.DIV({"class": "disabledPanelBox"},
             H1({"class": "disabledPanelHead"},
                 SPAN("$pageTitle")
             ),

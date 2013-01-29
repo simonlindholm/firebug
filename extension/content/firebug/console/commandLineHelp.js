@@ -51,12 +51,12 @@ var HelpTable = domplate(
                 TR({"class": "headerRow focusRow helpRow subFocusRow", onclick: "$onClick",
                     "role": "row"},
                     TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
-                        DIV({"class": "headerCellBox"},
+                        D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Name")
                         )
                     ),
                     TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "90%"},
-                        DIV({"class": "headerCellBox"},
+                        D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Description")
                         )
                     )

@@ -560,32 +560,32 @@ with (D) {
 Firebug.MemoryProfiler.ProfileTable = domplate(
 {
     tag:
-        DIV({"class": "profileSizer", "tabindex": "-1" },
+        D.DIV({"class": "profileSizer", "tabindex": "-1" },
             TABLE({"class": "profileTable", cellspacing: 0, cellpadding: 0,
                 width: "100%", "role": "grid"},
                 THEAD({"class": "profileThead", "role": "presentation"},
                     TR({"class": "headerRow focusRow profileRow subFocusRow",
                         onclick: "$onClick", "role": "row"},
                         TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
-                            DIV({"class": "headerCellBox"},
+                            D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("Function")
                             )
                         ),
                         TH({"class": "headerCell a11yFocus", "role": "columnheader"},
-                            DIV({"class": "headerCellBox", title: Locale.$STR("CallsHeaderTooltip")},
+                            D.DIV({"class": "headerCellBox", title: Locale.$STR("CallsHeaderTooltip")},
                                 Locale.$STR("Calls")
                             )
                         ),
                         FOR("column", "$object|getColumns",
                             TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 "aria-sort": "descending"},
-                                DIV({"class": "headerCellBox"},
+                                D.DIV({"class": "headerCellBox"},
                                     Locale.$STR("$column|getColumnLabel")
                                 )
                             )
                         ),
                         TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
-                            DIV({"class": "headerCellBox"},
+                            D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("File")
                             )
                         )

@@ -247,15 +247,15 @@ with (D) {
 Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
 {
     tag:
-        DIV({role : "list"},
+        D.DIV({role : "list"},
             FOR("group", "$groups",
-                DIV({"class": "breakpointBlock breakpointBlock-$group.name", role: "list",
+                D.DIV({"class": "breakpointBlock breakpointBlock-$group.name", role: "list",
                         $opened: "$group.opened", _repObject: "$group", onclick: "$onClick"},
                     H1({"class": "breakpointHeader groupHeader"},
-                        DIV({"class": "twisty", role: "presentation"}),
+                        D.DIV({"class": "twisty", role: "presentation"}),
                         SPAN({"class": "breakpointsHeaderLabel"}, "$group.title")
                     ),
-                    DIV({"class": "breakpointsGroupListBox", role: "listbox"},
+                    D.DIV({"class": "breakpointsGroupListBox", role: "listbox"},
                         FOR("bp", "$group.breakpoints",
                             TAG("$bp|getBreakpointRep", {bp: "$bp"})
                         )
@@ -310,16 +310,16 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
 Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
 {
     tag:
-        DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", role: "option",
+        D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", role: "option",
                 "aria-checked": "$bp.checked", _repObject: "$bp", onclick: "$onClick"},
-            DIV({"class": "breakpointBlockHead"},
+            D.DIV({"class": "breakpointBlockHead"},
                 INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : '-1'}),
                 SPAN({"class": "breakpointName"}, "$bp.name"),
                 TAG(FirebugReps.SourceLink.tag, {object: "$bp|getSourceLink"}),
                 IMG({"class": "closeButton", src: "blank.gif"})
             ),
-            DIV({"class": "breakpointCode"}, "$bp.sourceLine")
+            D.DIV({"class": "breakpointCode"}, "$bp.sourceLine")
         ),
 
     getSourceLink: function(bp)
@@ -951,8 +951,8 @@ with (D) {
 Firebug.Breakpoint.ConditionEditor.prototype = domplate(Firebug.JSEditor.prototype,
 {
     tag:
-        DIV({"class": "conditionEditor"},
-            DIV({"class": "conditionCaption"}, Locale.$STR("ConditionInput")),
+        D.DIV({"class": "conditionEditor"},
+            D.DIV({"class": "conditionCaption"}, Locale.$STR("ConditionInput")),
             INPUT({"class": "conditionInput completionBox", type: "text",
                 tabindex: "-1"}),
             INPUT({"class": "conditionInput completionInput", type: "text",
@@ -1056,7 +1056,7 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
 /** @lends Firebug.ScriptPanel.Notification */
 {
     tag:
-        DIV({"class": "notificationBox"},
+        D.DIV({"class": "notificationBox"},
             TABLE({"class": "notificationTable", onclick: "$onHide",
                 onmouseover: "$onMouseOver", onmouseout: "$onMouseOut"},
                 TBODY(
@@ -1070,7 +1070,7 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                             SPAN("&nbsp;"),
                             SPAN({"class": "diff"}, "$cause|getDiff"),
                             SPAN({"class": "targets"}),
-                            DIV({"class": "noNotificationDesc"})
+                            D.DIV({"class": "noNotificationDesc"})
                         ),
                         TD({"class": "buttonsCol"},
                             BUTTON({"class": "notificationButton copyButton",
@@ -1090,7 +1090,7 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                             )
                         ),
                         TD(
-                            DIV({"class": "notificationClose", onclick: "$onHide"})
+                            D.DIV({"class": "notificationClose", onclick: "$onHide"})
                         )
                     )
                 )

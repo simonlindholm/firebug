@@ -100,7 +100,7 @@ var FunctionMonitorRep = domplate(Firebug.Rep,
                 _repObject: "$object|getSourceLink",
                 role: "link"},
                 "$object|getSourceLinkTitle"),
-            DIV({"class": "stackTrace"})
+            D.DIV({"class": "stackTrace"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

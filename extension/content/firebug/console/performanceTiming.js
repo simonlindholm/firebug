@@ -89,24 +89,24 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
                 FOR("bar", "$object.bars",
                     TR(
                         TD(
-                            DIV({"class": "perfTimingBox"},
-                                DIV({"class": "perfTimingBar $bar.className",
+                            D.DIV({"class": "perfTimingBox"},
+                                D.DIV({"class": "perfTimingBar $bar.className",
                                     style: "left: $bar.left%; width: $bar.width%"},
                                     SPAN({"class": "perfTimingBarLabel"}, "$bar.label")
                                 ),
-                                DIV({"class": "perfTimingEvent domLoading",
+                                D.DIV({"class": "perfTimingEvent domLoading",
                                     style: "left: $bar.domLoading%;"}
                                 ),
-                                DIV({"class": "perfTimingEvent domInteractive",
+                                D.DIV({"class": "perfTimingEvent domInteractive",
                                     style: "left: $bar.domInteractive%;"}
                                 ),
-                                DIV({"class": "perfTimingEvent domContentLoaded",
+                                D.DIV({"class": "perfTimingEvent domContentLoaded",
                                     style: "left: $bar.domContentLoaded%;"}
                                 ),
-                                DIV({"class": "perfTimingEvent onLoad",
+                                D.DIV({"class": "perfTimingEvent onLoad",
                                     style: "left: $bar.onLoad%;"}
                                 ),
-                                DIV({"class": "perfTimingEvent cursor"})
+                                D.DIV({"class": "perfTimingEvent cursor"})
                             )
                         )
                     )
@@ -184,7 +184,7 @@ var PerfInfoTip = domplate(Firebug.Rep,
         FOR("event", "$events",
             TR({"class": "timeInfoTipEventRow"},
                 TD({"class": "timeInfoTipBar", align: "center"},
-                    DIV({"class": "$event|getClassName timeInfoTipEventBar"})
+                    D.DIV({"class": "$event|getClassName timeInfoTipEventBar"})
                 ),
                 TD("$event.start|formatStartTime"),
                 TD({"class": "timeInfotTipEventName", "colspan": 2},
@@ -295,8 +295,8 @@ var ConsoleListener =
 /** @lends ConsoleListener */
 {
     tag:
-        DIV({_repObject: "$object"},
-            DIV({"class": "documentCookieBody"})
+        D.DIV({_repObject: "$object"},
+            D.DIV({"class": "documentCookieBody"})
         ),
 
     log: function(context, object, className, sourceLink)
@@ -431,17 +431,17 @@ var DetailsTable = domplate(
             THEAD({"class": "timingThead", "role": "presentation"},
                 TR({"class": "headerRow focusRow timingRow subFocusRow", "role": "row"},
                     TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
-                        DIV({"class": "headerCellBox"},
+                        D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Name")
                         )
                     ),
                     TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
-                        DIV({"class": "headerCellBox"},
+                        D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Time")
                         )
                     ),
                     TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "70%"},
-                        DIV({"class": "headerCellBox"},
+                        D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Description")
                         )
                     )

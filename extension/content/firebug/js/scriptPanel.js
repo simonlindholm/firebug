@@ -1815,7 +1815,7 @@ with (D) {
 Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
 {
     tag:
-        DIV({"class": "disabledPanelBox"},
+        D.DIV({"class": "disabledPanelBox"},
             H1({"class": "disabledPanelHead"},
                 SPAN("$pageTitle")
             ),
@@ -1961,7 +1961,7 @@ var WarningRep = Firebug.ScriptPanel.WarningRep;
 Firebug.ScriptPanel.BreakpointInfoTip = domplate(Firebug.Rep,
 {
     tag:
-        DIV("$expr"),
+        D.DIV("$expr"),
 
     render: function(parentNode, expr)
     {

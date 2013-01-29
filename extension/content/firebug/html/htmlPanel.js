@@ -2045,8 +2045,8 @@ var TextTag = Firebug.HTMLPanel.TextTag =
 Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox open $object|getHidden", _repObject: "$object", role : 'presentation'},
-            DIV({"class": "nodeLabel", role: "presentation"},
+        D.DIV({"class": "nodeBox open $object|getHidden", _repObject: "$object", role : 'presentation'},
+            D.DIV({"class": "nodeLabel", role: "presentation"},
                 SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem', 'aria-expanded' : 'false'},
                     "&lt;",
                     SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2054,12 +2054,12 @@ Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
                     SPAN({"class": "nodeBracket"}, "&gt;")
                 )
             ),
-            DIV({"class": "nodeChildBox", role :"group"},
+            D.DIV({"class": "nodeChildBox", role :"group"},
                 FOR("child", "$object|childIterator",
                     TAG("$child|getNodeTag", {object: "$child"})
                 )
             ),
-            DIV({"class": "nodeCloseLabel", role:"presentation"},
+            D.DIV({"class": "nodeCloseLabel", role:"presentation"},
                 "&lt;/",
                 SPAN({"class": "nodeTag"}, "$object|getNodeName"),
                 "&gt;"
@@ -2099,7 +2099,7 @@ Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.SoloElement = domplate(Firebug.HTMLPanel.CompleteElement,
 {
     tag:
-        DIV({"class": "soloElement", onmousedown: "$onMouseDown"},
+        D.DIV({"class": "soloElement", onmousedown: "$onMouseDown"},
             Firebug.HTMLPanel.CompleteElement.tag
         ),
 
@@ -2120,10 +2120,10 @@ Firebug.HTMLPanel.SoloElement = domplate(Firebug.HTMLPanel.CompleteElement,
 Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
 {
     tag:
-    DIV({"class": "nodeBox containerNodeBox $object|getHidden", _repObject: "$object",
+    D.DIV({"class": "nodeBox containerNodeBox $object|getHidden", _repObject: "$object",
             role: "presentation"},
-        DIV({"class": "nodeLabel", role: "presentation"},
-            DIV({"class": "twisty", role: "presentation"}),
+        D.DIV({"class": "nodeLabel", role: "presentation"},
+            D.DIV({"class": "twisty", role: "presentation"}),
             SPAN({"class": "nodeLabelBox repTarget", role: "treeitem", "aria-expanded": "false"},
                 "&lt;",
                 SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2131,8 +2131,8 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
                 SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;")
             )
         ),
-        DIV({"class": "nodeChildBox", role: "group"}), /* nodeChildBox is special signal in insideOutBox */
-        DIV({"class": "nodeCloseLabel", role: "presentation"},
+        D.DIV({"class": "nodeChildBox", role: "group"}), /* nodeChildBox is special signal in insideOutBox */
+        D.DIV({"class": "nodeCloseLabel", role: "presentation"},
             SPAN({"class": "nodeCloseLabelBox repTarget"},
                 "&lt;/",
                 SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2145,18 +2145,18 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.HTMLDocument = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox documentNodeBox containerNodeBox",
+        D.DIV({"class": "nodeBox documentNodeBox containerNodeBox",
             _repObject: "$object", role: "presentation"},
-            DIV({"class": "nodeChildBox", role: "group"})
+            D.DIV({"class": "nodeChildBox", role: "group"})
         )
 });
 
 Firebug.HTMLPanel.HTMLDocType = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox docTypeNodeBox containerNodeBox",
+        D.DIV({"class": "nodeBox docTypeNodeBox containerNodeBox",
             _repObject: "$object", role: "presentation"},
-            DIV({"class": "docType"},
+            D.DIV({"class": "docType"},
                 "$object|getDocType"
             )
         ),
@@ -2171,10 +2171,10 @@ Firebug.HTMLPanel.HTMLDocType = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden",
+        D.DIV({"class": "nodeBox htmlNodeBox containerNodeBox $object|getHidden",
             _repObject: "$object", role: "presentation"},
-            DIV({"class": "nodeLabel", role: "presentation"},
-                DIV({"class": "twisty", role: "presentation"}),
+            D.DIV({"class": "nodeLabel", role: "presentation"},
+                D.DIV({"class": "twisty", role: "presentation"}),
                 SPAN({"class": "nodeLabelBox repTarget", role: "treeitem",
                     "aria-expanded": "false"},
                     "&lt;",
@@ -2183,8 +2183,8 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
                     SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;")
                 )
             ),
-            DIV({"class": "nodeChildBox", role: "group"}), /* nodeChildBox is special signal in insideOutBox */
-            DIV({"class": "nodeCloseLabel", role: "presentation"},
+            D.DIV({"class": "nodeChildBox", role: "group"}), /* nodeChildBox is special signal in insideOutBox */
+            D.DIV({"class": "nodeCloseLabel", role: "presentation"},
                 SPAN({"class": "nodeCloseLabelBox repTarget"},
                     "&lt;/",
                     SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2197,8 +2197,8 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox textNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
-            DIV({"class": "nodeLabel", role: "presentation"},
+        D.DIV({"class": "nodeBox textNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
+            D.DIV({"class": "nodeLabel", role: "presentation"},
                 SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2216,8 +2216,8 @@ Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.EmptyElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
-            DIV({"class": "nodeLabel", role: "presentation"},
+        D.DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
+            D.DIV({"class": "nodeLabel", role: "presentation"},
                 SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2231,8 +2231,8 @@ Firebug.HTMLPanel.EmptyElement = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.XEmptyElement = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
-            DIV({"class": "nodeLabel", role: "presentation"},
+        D.DIV({"class": "nodeBox emptyNodeBox $object|getHidden", _repObject: "$object", role : 'presentation'},
+            D.DIV({"class": "nodeLabel", role: "presentation"},
                 SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     SPAN({"class": "nodeTag"}, "$object|getNodeName"),
@@ -2251,7 +2251,7 @@ Firebug.HTMLPanel.AttrNode = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.TextNode = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
+        D.DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
             TextTag
         )
 });
@@ -2259,7 +2259,7 @@ Firebug.HTMLPanel.TextNode = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.CDATANode = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
+        D.DIV({"class": "nodeBox", _repObject: "$object", role : 'presentation'},
             "&lt;![CDATA[",
             SPAN({"class": "nodeText nodeCDATA editable"}, "$object.nodeValue"),
             "]]&gt;"
@@ -2269,7 +2269,7 @@ Firebug.HTMLPanel.CDATANode = domplate(FirebugReps.Element,
 Firebug.HTMLPanel.CommentNode = domplate(FirebugReps.Element,
 {
     tag:
-        DIV({"class": "nodeBox nodeComment", _repObject: "$object", role : 'presentation'},
+        D.DIV({"class": "nodeBox nodeComment", _repObject: "$object", role : 'presentation'},
             "&lt;!--",
             SPAN({"class": "nodeComment editable"}, "$object.nodeValue"),
             "--&gt;"
@@ -2527,7 +2527,7 @@ function HTMLEditor(doc)
 HTMLEditor.prototype = domplate(Firebug.BaseEditor,
 {
     tag:
-        DIV(
+        D.DIV(
             TEXTAREA({"class": "htmlEditor fullPanelEditor", oninput: "$onInput"})
         ),
 
@@ -2974,16 +2974,16 @@ Firebug.HTMLModule.BreakpointRep = domplate(Firebug.Rep,
     inspectable: false,
 
     tag:
-        DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", _repObject: "$bp",
+        D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", _repObject: "$bp",
             role: "option", "aria-checked": "$bp.checked"},
-            DIV({"class": "breakpointBlockHead"},
+            D.DIV({"class": "breakpointBlockHead"},
                 INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : "-1", onclick: "$onEnable"}),
                 TAG("$bp.node|getNodeTag", {object: "$bp.node"}),
-                DIV({"class": "breakpointMutationType"}, "$bp|getChangeLabel"),
+                D.DIV({"class": "breakpointMutationType"}, "$bp|getChangeLabel"),
                 IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
-            DIV({"class": "breakpointCode"},
+            D.DIV({"class": "breakpointCode"},
                 TAG("$bp.node|getSourceLine", {object: "$bp.node"})
             )
         ),

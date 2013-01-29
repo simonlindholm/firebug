@@ -70,7 +70,7 @@ var CSSDomplateBase =
 var CSSPropTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssProp focusRow", $disabledStyle: "$prop.disabled",
+        D.DIV({"class": "cssProp focusRow", $disabledStyle: "$prop.disabled",
             $editGroup: "$rule|isEditable",
             $cssOverridden: "$prop.overridden",
             role: "option"},
@@ -96,7 +96,7 @@ var CSSRuleTag =
 var CSSImportRuleTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssRule insertInto focusRow importRule", _repObject: "$rule.rule"},
+        D.DIV({"class": "cssRule insertInto focusRow importRule", _repObject: "$rule.rule"},
         "@import &quot;",
         A({"class": "objectLink", _repObject: "$rule.rule.styleSheet"}, "$rule.rule.href"),
         "&quot;",
@@ -115,7 +115,7 @@ var CSSImportRuleTag = domplate(CSSDomplateBase,
 var CSSCharsetRuleTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssRule focusRow cssCharsetRule", _repObject: "$rule.rule"},
+        D.DIV({"class": "cssRule focusRow cssCharsetRule", _repObject: "$rule.rule"},
             SPAN({"class": "cssRuleName"}, "@charset"),
             "&nbsp;&quot;",
             SPAN({"class": "cssRuleValue", $editable: "$rule|isEditable"}, "$rule.rule.encoding"),
@@ -126,7 +126,7 @@ var CSSCharsetRuleTag = domplate(CSSDomplateBase,
 var CSSNamespaceRuleTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssRule focusRow cssNamespaceRule", _repObject: "$rule.rule"},
+        D.DIV({"class": "cssRule focusRow cssNamespaceRule", _repObject: "$rule.rule"},
             SPAN({"class": "cssRuleName"}, "@namespace"),
             SPAN({"class": "separator"}, "$rule.prefix|getSeparator"),
             SPAN({"class": "cssNamespacePrefix", $editable: "$rule|isEditable"}, "$rule.prefix"),
@@ -144,20 +144,20 @@ var CSSNamespaceRuleTag = domplate(CSSDomplateBase,
 var CSSFontFaceRuleTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssRule cssFontFaceRule",
+        D.DIV({"class": "cssRule cssFontFaceRule",
             $cssEditableRule: "$rule|isEditable",
             $insertInto: "$rule|isEditable",
             _repObject: "$rule.rule",
             role : 'presentation'},
-            DIV({"class": "cssHead focusRow", role : "listitem"}, "@font-face {"),
-            DIV({role : "group"},
-                DIV({"class": "cssPropertyListBox", role: "listbox"},
+            D.DIV({"class": "cssHead focusRow", role : "listitem"}, "@font-face {"),
+            D.DIV({role : "group"},
+                D.DIV({"class": "cssPropertyListBox", role: "listbox"},
                     FOR("prop", "$rule.props",
                         TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
                     )
                 )
             ),
-            DIV({$editable: "$rule|isEditable", $insertBefore:"$rule|isEditable",
+            D.DIV({$editable: "$rule|isEditable", $insertBefore:"$rule|isEditable",
                 role:"presentation"},
                 "}"
             )
@@ -167,25 +167,25 @@ var CSSFontFaceRuleTag = domplate(CSSDomplateBase,
 var CSSStyleRuleTag = domplate(CSSDomplateBase,
 {
     tag:
-        DIV({"class": "cssRule",
+        D.DIV({"class": "cssRule",
             $cssEditableRule: "$rule|isEditable",
             $insertInto: "$rule|isEditable",
             $editGroup: "$rule|isSelectorEditable",
             _repObject: "$rule.rule",
             role: "presentation"},
-            DIV({"class": "cssHead focusRow", role: "listitem"},
+            D.DIV({"class": "cssHead focusRow", role: "listitem"},
                 SPAN({"class": "cssSelector", $editable: "$rule|isSelectorEditable"},
                     "$rule.selector"),
                 " {"
             ),
-            DIV({role: "group"},
-                DIV({"class": "cssPropertyListBox", _rule: "$rule", role: "listbox"},
+            D.DIV({role: "group"},
+                D.DIV({"class": "cssPropertyListBox", _rule: "$rule", role: "listbox"},
                     FOR("prop", "$rule.props",
                         TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
                     )
                 )
             ),
-            DIV({$editable: "$rule|isEditable", $insertBefore: "$rule|isEditable",
+            D.DIV({$editable: "$rule|isEditable", $insertBefore: "$rule|isEditable",
                 role:"presentation"},
                 "}"
             )
@@ -210,11 +210,11 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
     template: domplate(
     {
         tag:
-            DIV({"class": "cssSheet insertInto a11yCSSView"},
+            D.DIV({"class": "cssSheet insertInto a11yCSSView"},
                 FOR("rule", "$rules",
                     CSSRuleTag
                 ),
-                DIV({"class": "cssSheet editable insertBefore"}, ""
+                D.DIV({"class": "cssSheet editable insertBefore"}, ""
                 )
             )
     }),
@@ -2452,7 +2452,7 @@ StyleSheetEditor.prototype = domplate(Firebug.BaseEditor,
 {
     multiLine: true,
 
-    tag: DIV(
+    tag: D.DIV(
         TEXTAREA({"class": "styleSheetEditor fullPanelEditor", oninput: "$onInput"})
     ),
 

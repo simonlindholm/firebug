@@ -14,31 +14,31 @@ with (D) {
 Firebug.BalloonNote.prototype = domplate(
 {
     tag:
-        DIV({"class": "balloon", onclick: "$onClick"},
-            DIV({"class": "balloonTop1"},
-                DIV({"class": "balloonTop2"})
+        D.DIV({"class": "balloon", onclick: "$onClick"},
+            D.DIV({"class": "balloonTop1"},
+                D.DIV({"class": "balloonTop2"})
             ),
-            DIV({"class": "balloonInner1"},
-                DIV({"class": "balloonInner2"},
-                    DIV({"class": "balloonInner3"},
-                        DIV({"class": "balloonInner4"},
+            D.DIV({"class": "balloonInner1"},
+                D.DIV({"class": "balloonInner2"},
+                    D.DIV({"class": "balloonInner3"},
+                        D.DIV({"class": "balloonInner4"},
                             IMG({"class": "balloonCloseButton closeButton", src: "blank.gif",
                                 onclick: "$onCloseAction"}),
-                            DIV({"class": "balloonContent"},
+                            D.DIV({"class": "balloonContent"},
                                 TAG("$cause|getContentTag", {cause: "$cause"})
                             )
                         )
                     )
                 )
             ),
-            DIV({"class": "balloonBottom1"},
-                DIV({"class": "balloonBottom2"})
+            D.DIV({"class": "balloonBottom1"},
+                D.DIV({"class": "balloonBottom2"})
             )
         ),
 
     getContentTag: function(object)
     {
-        return DIV(object.message);
+        return D.DIV(object.message);
     },
 
     onCloseAction: function()

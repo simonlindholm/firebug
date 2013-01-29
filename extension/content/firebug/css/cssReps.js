@@ -29,27 +29,27 @@ var CSSInfoTip = Obj.extend(InfoTip,
 
     tags: domplate(
     {
-        infoTipTag: DIV({"class": "infoTip"}),
+        infoTipTag: D.DIV({"class": "infoTip"}),
 
         colorTag:
-            DIV({"class": "infoTipColorBox"},
-                DIV({style: "background: $rgbValue; width: 100px; height: 40px;"})
+            D.DIV({"class": "infoTipColorBox"},
+                D.DIV({style: "background: $rgbValue; width: 100px; height: 40px;"})
             ),
 
         imgTag:
-            DIV({"class": "infoTipImageBox infoTipLoading"},
+            D.DIV({"class": "infoTipImageBox infoTipLoading"},
                 IMG({"class": "infoTipImage", src: "$urlValue", repeat: "$repeat",
                     onload: "$onLoadImage", onerror: "$onErrorImage"}),
                 IMG({"class": "infoTipBgImage", collapsed: true, src: "blank.gif"}),
-                DIV({"class": "infoTipCaption"})
+                D.DIV({"class": "infoTipCaption"})
             ),
 
         fontFamilyTag:
-            DIV({"class": "infoTipFontFamilyBox"},
+            D.DIV({"class": "infoTipFontFamilyBox"},
                 STYLE({"class": "infoTipFontFamilyStyle"}),
-                DIV({"class": "infoTipFontFamilySample"},
+                D.DIV({"class": "infoTipFontFamilySample"},
                     FOR("fontStyle", "$fontStyles",
-                        DIV({"class": "infoTipFontFace", style: "$fontStyle"},
+                        D.DIV({"class": "infoTipFontFace", style: "$fontStyle"},
                             Locale.$STR("css.fontFamilyPreview"))
                     )
                 )

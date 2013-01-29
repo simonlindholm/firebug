@@ -62,7 +62,7 @@ var OBJECTBOX = FirebugReps.OBJECTBOX =
     PRE({"class": "objectBox inline objectBox-$className", role: "presentation"});
 
 var OBJECTBLOCK = FirebugReps.OBJECTBLOCK =
-    DIV({"class": "objectBox objectBox-$className focusRow subLogRow", role: "listitem"});
+    D.DIV({"class": "objectBox objectBox-$className focusRow subLogRow", role: "listitem"});
 
 var OBJECTLINK = FirebugReps.OBJECTLINK =
     A({
@@ -210,7 +210,7 @@ FirebugReps.Caption = domplate(Firebug.Rep,
 
 FirebugReps.Warning = domplate(Firebug.Rep,
 {
-    tag: DIV({"class": "warning focusRow", role: "listitem"}, "$object|STR")
+    tag: D.DIV({"class": "warning focusRow", role: "listitem"}, "$object|STR")
 });
 
 // ********************************************************************************************* //
@@ -1864,8 +1864,8 @@ FirebugReps.SourceLink = domplate(Firebug.Rep,
     tag:
         OBJECTLINK(
             {$collapsed: "$object|hideSourceLink"},
-            DIV("$object|getSourceLinkTitle"),
-            DIV({$systemLink: "$object|isSystemLink"}, "$object|getSystemFlagTitle")),
+            D.DIV("$object|getSourceLinkTitle"),
+            D.DIV({$systemLink: "$object|isSystemLink"}, "$object|getSystemFlagTitle")),
 
     isSystemLink: function(sourceLink)
     {
@@ -2110,13 +2110,13 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
                 _repObject: "$object|getSourceLink",
                 role: "link"},
                 "$object|getSourceLinkTitle"),
-            DIV({"class": "argList"})
+            D.DIV({"class": "argList"})
         ),
 
     argList:
-        DIV({"class": "argListBox", onclick: "$onSelectFrame"},
+        D.DIV({"class": "argListBox", onclick: "$onSelectFrame"},
             FOR("arg", "$object|argIterator",
-                DIV({"class": "argBox"},
+                D.DIV({"class": "argBox"},
                     SPAN({"class": "argName"}, "$arg.name"),
                     SPAN("&nbsp;=&nbsp;"),
                     TAG("$arg.tag", {object: "$arg.value"})
@@ -2285,7 +2285,7 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
 FirebugReps.StackTrace = domplate(Firebug.Rep,
 {
     tag:
-        DIV({role : "group", "aria-label" : Locale.$STR("aria.labels.stack trace")},
+        D.DIV({role : "group", "aria-label" : Locale.$STR("aria.labels.stack trace")},
             FOR("frame", "$object.frames|frameIterator",
                 TAG(FirebugReps.StackFrame.tag, {object: "$frame"})
             )
@@ -2337,15 +2337,15 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
             _repObject: "$object",
             _stackTrace: "$object|getLastErrorStackTrace",
             onclick: "$onToggleError"},
-            DIV({"class": "errorTitle focusRow subLogRow", role: "listitem"},
+            D.DIV({"class": "errorTitle focusRow subLogRow", role: "listitem"},
                 SPAN({"class": "errorDuplication"}, "$object.msgId|getDuplication"),
                 SPAN({"class": "errorMessage"},
                     "$object.message"
                 )
             ),
-            DIV({"class": "errorTrace", role: "presentation"}),
+            D.DIV({"class": "errorTrace", role: "presentation"}),
             TAG("$object|getObjectsTag", {object: "$object.objects"}),
-            DIV({"class": "errorSourceBox errorSource-$object|getSourceType focusRow subLogRow",
+            D.DIV({"class": "errorSourceBox errorSource-$object|getSourceType focusRow subLogRow",
                 role : "listitem"},
                 TABLE({cellspacing: 0, cellpadding: 0},
                     TBODY(
@@ -2367,10 +2367,10 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
                         TR({$collapsed: "$object|hideErrorCaret"},
                             TD(),
                             TD(
-                                DIV({"class": "errorColPosition"},
+                                D.DIV({"class": "errorColPosition"},
                                     "$object|getColumnPosition"
                                 ),
-                                DIV({"class": "errorColCaret"})
+                                D.DIV({"class": "errorColCaret"})
                             )
                         )
                     )
@@ -2710,9 +2710,9 @@ FirebugReps.Except = domplate(Firebug.Rep,
 FirebugReps.Assert = domplate(Firebug.Rep,
 {
     tag:
-        DIV(
-            DIV({"class": "errorTitle"}),
-            DIV({"class": "assertDescription"})
+        D.DIV(
+            D.DIV({"class": "errorTitle"}),
+            D.DIV({"class": "assertDescription"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -2754,9 +2754,9 @@ FirebugReps.Assert = domplate(Firebug.Rep,
 FirebugReps.SourceText = domplate(Firebug.Rep,
 {
     tag:
-        DIV(
+        D.DIV(
             FOR("line", "$object|lineIterator",
-                DIV({"class": "sourceRow", role : "presentation"},
+                D.DIV({"class": "sourceRow", role : "presentation"},
                     SPAN({"class": "sourceLine", role : "presentation"}, "$line.lineNo"),
                     SPAN({"class": "sourceRowText", role : "presentation"}, "$line.text")
                 )
@@ -3041,7 +3041,7 @@ FirebugReps.Description = domplate(Firebug.Rep,
     className: "Description",
 
     tag:
-        DIV({onclick: "$onClickLink"}),
+        D.DIV({onclick: "$onClickLink"}),
 
     render: function(text, parentNode, listener)
     {

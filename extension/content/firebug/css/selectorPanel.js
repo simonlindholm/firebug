@@ -374,12 +374,12 @@ var BaseRep = domplate(Firebug.Rep,
 var TrialRow =
     TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
         TD({"class": "watchEditCell", colspan: 3},
-            DIV({"class": "watchEditBox a11yFocusNoTab", "id": "trialHint",
+            D.DIV({"class": "watchEditBox a11yFocusNoTab", "id": "trialHint",
                 role: "button", "tabindex" : "0",
                 "aria-label": Locale.$STR("a11y.labels.press enter to add new selector")},
                 Locale.$STR("css.selector.TryASelector")
             ),
-            DIV({"class": "trialSelector", "id": "trialSelector"}, "")
+            D.DIV({"class": "trialSelector", "id": "trialSelector"}, "")
         )
     );
 

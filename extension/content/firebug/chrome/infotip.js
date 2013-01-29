@@ -23,7 +23,7 @@ Firebug.InfoTip = Obj.extend(Firebug.Module,
     dispatchName: "infoTip",
     tags: domplate(
     {
-        infoTipTag: DIV({"class": "infoTip"}),
+        infoTipTag: D.DIV({"class": "infoTip"}),
     }),
 
     initializeBrowser: function(browser)

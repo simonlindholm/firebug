@@ -51,20 +51,20 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
     template: domplate(
     {
         cascadedTag:
-            DIV({"class": "a11yCSSView", role: "presentation"},
-                DIV({"class": "cssNonInherited", role: "list",
+            D.DIV({"class": "a11yCSSView", role: "presentation"},
+                D.DIV({"class": "cssNonInherited", role: "list",
                         "aria-label": Locale.$STR("aria.labels.style rules") },
                     FOR("rule", "$rules",
                         TAG("$ruleTag", {rule: "$rule"})
                     )
                 ),
-                DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
+                D.DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
                     FOR("section", "$inherited",
                         H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
                             SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
                             TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
                         ),
-                        DIV({role: "group"},
+                        D.DIV({role: "group"},
                             FOR("rule", "$section.rules",
                                 TAG("$ruleTag", {rule: "$rule"})
                             )
@@ -74,14 +74,14 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
             ),
 
         ruleTag:
-            DIV({"class": "cssElementRuleContainer"},
+            D.DIV({"class": "cssElementRuleContainer"},
                 TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
                 TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
             ),
 
         newRuleTag:
-            DIV({"class": "cssElementRuleContainer"},
-                DIV({"class": "cssRule insertBefore", style: "display: none"}, "")
+            D.DIV({"class": "cssElementRuleContainer"},
+                D.DIV({"class": "cssRule insertBefore", style: "display: none"}, "")
             ),
 
         CSSFontPropValueTag:

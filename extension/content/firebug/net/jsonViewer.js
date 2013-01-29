@@ -163,14 +163,14 @@ with (D) {
 Firebug.JSONViewerModel.Preview = domplate(
 {
     bodyTag:
-        DIV({"class": "jsonPreview", _repObject: "$file"},
-            DIV({"class": "title"},
-                DIV({"class": "sortLink", onclick: "$onSort", $sorted: "$sorted"},
+        D.DIV({"class": "jsonPreview", _repObject: "$file"},
+            D.DIV({"class": "title"},
+                D.DIV({"class": "sortLink", onclick: "$onSort", $sorted: "$sorted"},
                     SPAN({"class": "doSort"}, Locale.$STR("jsonviewer.sort")),
                     SPAN({"class": "doNotSort"}, Locale.$STR("jsonviewer.do not sort"))
                 )
             ),
-            DIV({"class": "jsonPreviewBody"})
+            D.DIV({"class": "jsonPreviewBody"})
         ),
 
     onSort: function(event)
