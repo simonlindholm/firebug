@@ -83,12 +83,12 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     tag:
-        TABLE({"class": "perfTimingTable", cellspacing: 0, cellpadding: 0, width: "100%",
+        D.TABLE({"class": "perfTimingTable", cellspacing: 0, cellpadding: 0, width: "100%",
             "role": "grid", _repObject: "$object"},
-            TBODY({"class": "perfTimingTbody", "role": "presentation"},
+            D.TBODY({"class": "perfTimingTbody", "role": "presentation"},
                 FOR("bar", "$object.bars",
-                    TR(
-                        TD(
+                    D.TR(
+                        D.TD(
                             D.DIV({"class": "perfTimingBox"},
                                 D.DIV({"class": "perfTimingBar $bar.className",
                                     style: "left: $bar.left%; width: $bar.width%"},
@@ -155,39 +155,39 @@ var PerfInfoTip = domplate(Firebug.Rep,
 /** @lends PerfInfoTip */
 {
     tableTag:
-        TABLE({"class": "timeInfoTip", "id": "fbPerfTimingInfoTip"},
-            TBODY()
+        D.TABLE({"class": "timeInfoTip", "id": "fbPerfTimingInfoTip"},
+            D.TBODY()
         ),
 
     timingsTag:
         FOR("bar", "$bars",
-            TR({"class": "timeInfoTipRow", $collapsed: "$bar|hideBar"},
-                TD({"class": "timeInfoTipBar $bar|getClassName"}),
-                TD({"class": "timeInfoTipCell startTime"},
+            D.TR({"class": "timeInfoTipRow", $collapsed: "$bar|hideBar"},
+                D.TD({"class": "timeInfoTipBar $bar|getClassName"}),
+                D.TD({"class": "timeInfoTipCell startTime"},
                     "$bar.start|formatStartTime"
                 ),
-                TD({"class": "timeInfoTipCell elapsedTime"},
+                D.TD({"class": "timeInfoTipCell elapsedTime"},
                     "$bar.elapsed|formatTime"
                 ),
-                TD("$bar|getLabel")
+                D.TD("$bar|getLabel")
             )
         ),
 
     separatorTag:
-        TR(
-            TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
+        D.TR(
+            D.TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
                 D.SPAN("$label")
             )
         ),
 
     eventsTag:
         FOR("event", "$events",
-            TR({"class": "timeInfoTipEventRow"},
-                TD({"class": "timeInfoTipBar", align: "center"},
+            D.TR({"class": "timeInfoTipEventRow"},
+                D.TD({"class": "timeInfoTipBar", align: "center"},
                     D.DIV({"class": "$event|getClassName timeInfoTipEventBar"})
                 ),
-                TD("$event.start|formatStartTime"),
-                TD({"class": "timeInfotTipEventName", "colspan": 2},
+                D.TD("$event.start|formatStartTime"),
+                D.TD({"class": "timeInfotTipEventName", "colspan": 2},
                     "$event|getTimeStampLabel"
                 )
             )
@@ -426,28 +426,28 @@ var DetailsTable = domplate(
 /** @lends DetailsTable */
 {
     tag:
-        TABLE({"class": "timingTable", cellspacing: 0, cellpadding: 0, width: "100%",
+        D.TABLE({"class": "timingTable", cellspacing: 0, cellpadding: 0, width: "100%",
             "role": "grid", _repObject: "$object"},
-            THEAD({"class": "timingThead", "role": "presentation"},
-                TR({"class": "headerRow focusRow timingRow subFocusRow", "role": "row"},
-                    TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
+            D.THEAD({"class": "timingThead", "role": "presentation"},
+                D.TR({"class": "headerRow focusRow timingRow subFocusRow", "role": "row"},
+                    D.TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
                         D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Name")
                         )
                     ),
-                    TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
+                    D.TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
                         D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Time")
                         )
                     ),
-                    TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "70%"},
+                    D.TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "70%"},
                         D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Description")
                         )
                     )
                 )
             ),
-            TBODY({"class": "perfTimingTbody", "role": "presentation"}
+            D.TBODY({"class": "perfTimingTbody", "role": "presentation"}
             )
         ),
 });
@@ -462,15 +462,15 @@ var DetailsEntry = domplate(
 {
     tag:
         FOR("timing", "$timings",
-            TR({"class": "focusRow timingRow subFocusRow", "role": "row", _repObject: "$timing",
+            D.TR({"class": "focusRow timingRow subFocusRow", "role": "row", _repObject: "$timing",
                 onmousemove: "$onMouseMove", onmouseout: "$onMouseOut"},
-                TD({"class": "a11yFocus timingCell timingName", "role": "gridcell"},
+                D.TD({"class": "a11yFocus timingCell timingName", "role": "gridcell"},
                     "$timing.name"
                 ),
-                TD({"class": "a11yFocus timingCell timingTime", "role": "gridcell"},
+                D.TD({"class": "a11yFocus timingCell timingTime", "role": "gridcell"},
                     "$timing.timeLabel"
                 ),
-                TD({"class": "a11yFocus timingCell timingDesc", "role": "gridcell"},
+                D.TD({"class": "a11yFocus timingCell timingDesc", "role": "gridcell"},
                     "$timing.desc"
                 )
             )

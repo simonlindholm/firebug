@@ -60,65 +60,65 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
     inspectable: false,
 
     tableTag:
-        TABLE({"class": "netTable", cellpadding: 0, cellspacing: 0, hiddenCols: "",
+        D.TABLE({"class": "netTable", cellpadding: 0, cellspacing: 0, hiddenCols: "",
             "role": "treegrid"},
-            THEAD(
-                TR({"class": "netHeaderRow netRow focusRow outerFocusRow",
+            D.THEAD(
+                D.TR({"class": "netHeaderRow netRow focusRow outerFocusRow",
                     onclick: "$onClickHeader", "role": "row"},
-                    TD({id: "netBreakpointBar", width: "1%", "class": "netHeaderCell",
+                    D.TD({id: "netBreakpointBar", width: "1%", "class": "netHeaderCell",
                         "role": "columnheader"},
                         "&nbsp;"
                     ),
-                    TD({id: "netHrefCol", width: "18%", "class": "netHeaderCell alphaValue a11yFocus",
+                    D.TD({id: "netHrefCol", width: "18%", "class": "netHeaderCell alphaValue a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.URL Tooltip")},
                             Locale.$STR("net.header.URL")
                         )
                     ),
-                    TD({id: "netStatusCol", width: "12%", "class": "netHeaderCell alphaValue a11yFocus",
+                    D.TD({id: "netStatusCol", width: "12%", "class": "netHeaderCell alphaValue a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Status Tooltip")},
                             Locale.$STR("net.header.Status")
                         )
                     ),
-                    TD({id: "netProtocolCol", width: "4%", "class": "netHeaderCell alphaValue a11yFocus",
+                    D.TD({id: "netProtocolCol", width: "4%", "class": "netHeaderCell alphaValue a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Protocol Tooltip")},
                             Locale.$STR("net.header.Protocol")
                         )
                     ),
-                    TD({id: "netDomainCol", width: "12%", "class": "netHeaderCell alphaValue a11yFocus",
+                    D.TD({id: "netDomainCol", width: "12%", "class": "netHeaderCell alphaValue a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Domain Tooltip")},
                             Locale.$STR("net.header.Domain")
                         )
                     ),
-                    TD({id: "netSizeCol", width: "4%", "class": "netHeaderCell a11yFocus",
+                    D.TD({id: "netSizeCol", width: "4%", "class": "netHeaderCell a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Size Tooltip")},
                             Locale.$STR("net.header.Size")
                         )
                     ),
-                    TD({id: "netLocalAddressCol", width: "4%", "class": "netHeaderCell a11yFocus",
+                    D.TD({id: "netLocalAddressCol", width: "4%", "class": "netHeaderCell a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Local IP Tooltip")},
                             Locale.$STR("net.header.Local IP")
                         )
                     ),
-                    TD({id: "netRemoteAddressCol", width: "4%", "class": "netHeaderCell a11yFocus",
+                    D.TD({id: "netRemoteAddressCol", width: "4%", "class": "netHeaderCell a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Remote IP Tooltip")},
                             Locale.$STR("net.header.Remote IP")
                         )
                     ),
-                    TD({id: "netTimeCol", width: "53%", "class": "netHeaderCell a11yFocus",
+                    D.TD({id: "netTimeCol", width: "53%", "class": "netHeaderCell a11yFocus",
                         "role": "columnheader"},
                         D.DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Timeline Tooltip")},
@@ -127,7 +127,7 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
                     )
                 )
             ),
-            TBODY({"class": "netTableBody", "role" : "presentation"})
+            D.TBODY({"class": "netTableBody", "role" : "presentation"})
         ),
 
     onClickHeader: function(event)
@@ -404,7 +404,7 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
 {
     fileTag:
         FOR("file", "$files",
-            TR({"class": "netRow $file.file|getCategory focusRow outerFocusRow",
+            D.TR({"class": "netRow $file.file|getCategory focusRow outerFocusRow",
                 onclick: "$onClick", "role": "row", "aria-expanded": "false",
                 $hasHeaders: "$file.file|hasRequestHeaders",
                 $history: "$file.file.history",
@@ -413,13 +413,13 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
                 $fromBFCache: "$file.file|isFromBFCache",
                 $fromCache: "$file.file.fromCache",
                 $inFrame: "$file.file|getInFrame"},
-                TD({"class": "netDebugCol netCol"},
+                D.TD({"class": "netDebugCol netCol"},
                    D.DIV({"class": "sourceLine netRowHeader",
                    onclick: "$onClickRowHeader"},
                         "&nbsp;"
                    )
                 ),
-                TD({"class": "netHrefCol netCol a11yFocus", "role": "rowheader"},
+                D.TD({"class": "netHrefCol netCol a11yFocus", "role": "rowheader"},
                     D.DIV({"class": "netHrefLabel netLabel",
                          style: "margin-left: $file.file|getIndent\\px"},
                         "$file.file|getHref"
@@ -429,26 +429,26 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
                         "$file.file.href"
                     )
                 ),
-                TD({"class": "netStatusCol netCol a11yFocus", "role": "gridcell"},
+                D.TD({"class": "netStatusCol netCol a11yFocus", "role": "gridcell"},
                     D.DIV({"class": "netStatusLabel netLabel"}, "$file.file|getStatus")
                 ),
-                TD({"class": "netProtocolCol netCol a11yFocus", "role": "gridcell"},
+                D.TD({"class": "netProtocolCol netCol a11yFocus", "role": "gridcell"},
                     D.DIV({"class": "netProtocolLabel netLabel"}, "$file.file|getProtocol")
                 ),
-                TD({"class": "netDomainCol netCol a11yFocus", "role": "gridcell" },
+                D.TD({"class": "netDomainCol netCol a11yFocus", "role": "gridcell" },
                     D.DIV({"class": "netDomainLabel netLabel"}, "$file.file|getDomain")
                 ),
-                TD({"class": "netSizeCol netCol a11yFocus", "role": "gridcell",
+                D.TD({"class": "netSizeCol netCol a11yFocus", "role": "gridcell",
                     "aria-describedby": "fbNetSizeInfoTip"},
                     D.DIV({"class": "netSizeLabel netLabel"}, "$file.file|getSize")
                 ),
-                TD({"class": "netLocalAddressCol netCol a11yFocus", "role": "gridcell"},
+                D.TD({"class": "netLocalAddressCol netCol a11yFocus", "role": "gridcell"},
                     D.DIV({"class": "netAddressLabel netLabel"}, "$file.file|getLocalAddress")
                 ),
-                TD({"class": "netRemoteAddressCol netCol a11yFocus", "role": "gridcell"},
+                D.TD({"class": "netRemoteAddressCol netCol a11yFocus", "role": "gridcell"},
                     D.DIV({"class": "netAddressLabel netLabel"}, "$file.file|getRemoteAddress")
                 ),
-                TD({"class": "netTimeCol netCol a11yFocus", "role": "gridcell",
+                D.TD({"class": "netTimeCol netCol a11yFocus", "role": "gridcell",
                     "aria-describedby": "fbNetTimeInfoTip"  },
                     D.DIV({"class": "netLoadingIcon"}),
                     D.DIV({"class": "netBar"},
@@ -468,32 +468,32 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
         ),
 
     netInfoTag:
-        TR({"class": "netInfoRow $file|getCategory outerFocusRow", "role" : "row"},
-            TD({"class": "sourceLine netRowHeader"}),
-            TD({"class": "netInfoCol", colspan: 8, "role" : "gridcell"})
+        D.TR({"class": "netInfoRow $file|getCategory outerFocusRow", "role" : "row"},
+            D.TD({"class": "sourceLine netRowHeader"}),
+            D.TD({"class": "netInfoCol", colspan: 8, "role" : "gridcell"})
         ),
 
     activationTag:
-        TR({"class": "netRow netActivationRow"},
-            TD({"class": "netCol netActivationLabel", colspan: 9, "role": "status"},
+        D.TR({"class": "netRow netActivationRow"},
+            D.TD({"class": "netCol netActivationLabel", colspan: 9, "role": "status"},
                 Locale.$STR("net.ActivationMessage")
             )
         ),
 
     summaryTag:
-        TR({"class": "netRow netSummaryRow focusRow outerFocusRow", "role": "row",
+        D.TR({"class": "netRow netSummaryRow focusRow outerFocusRow", "role": "row",
             "aria-live": "polite"},
-            TD({"class": "netCol"}, "&nbsp;"),
-            TD({"class": "netCol netHrefCol a11yFocus", "role" : "rowheader"},
+            D.TD({"class": "netCol"}, "&nbsp;"),
+            D.TD({"class": "netCol netHrefCol a11yFocus", "role" : "rowheader"},
                 D.DIV({"class": "netCountLabel netSummaryLabel"}, "-")
             ),
-            TD({"class": "netCol netStatusCol a11yFocus", "role" : "gridcell"}),
-            TD({"class": "netCol netProtocolCol a11yFocus", "role" : "gridcell"}),
-            TD({"class": "netCol netDomainCol a11yFocus", "role" : "gridcell"}),
-            TD({"class": "netTotalSizeCol netCol netSizeCol a11yFocus", "role": "gridcell"},
+            D.TD({"class": "netCol netStatusCol a11yFocus", "role" : "gridcell"}),
+            D.TD({"class": "netCol netProtocolCol a11yFocus", "role" : "gridcell"}),
+            D.TD({"class": "netCol netDomainCol a11yFocus", "role" : "gridcell"}),
+            D.TD({"class": "netTotalSizeCol netCol netSizeCol a11yFocus", "role": "gridcell"},
                 D.DIV({"class": "netTotalSizeLabel netSummaryLabel"}, "0 B")
             ),
-            TD({"class": "netTotalTimeCol netCol netTimeCol a11yFocus", "role":
+            D.TD({"class": "netTotalTimeCol netCol netTimeCol a11yFocus", "role":
                 "gridcell", colspan: "3"},
                 D.DIV({"class": "netSummaryBar", style: "width: 100%"},
                     D.DIV({"class": "netCacheSizeLabel netSummaryLabel", collapsed: "true"},
@@ -510,8 +510,8 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
         ),
 
     footerTag:
-        TR({"class": "netFooterRow", "style" : "height: 100%"},
-            TD({"class": "", colspan: 9})
+        D.TR({"class": "netFooterRow", "style" : "height: 100%"},
+            D.TD({"class": "", colspan: 9})
         ),
 
     onClickRowHeader: function(event)
@@ -726,13 +726,13 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
 Firebug.NetMonitor.NetPage = domplate(Firebug.Rep,
 {
     separatorTag:
-        TR({"class": "netRow netPageSeparatorRow"},
-            TD({"class": "netCol netPageSeparatorLabel", colspan: 8, "role": "separator"})
+        D.TR({"class": "netRow netPageSeparatorRow"},
+            D.TD({"class": "netCol netPageSeparatorLabel", colspan: 8, "role": "separator"})
         ),
 
     pageTag:
-        TR({"class": "netRow netPageRow", onclick: "$onPageClick"},
-            TD({"class": "netCol netPageCol", colspan: 8, "role": "separator"},
+        D.TR({"class": "netRow netPageRow", onclick: "$onPageClick"},
+            D.TD({"class": "netCol netPageCol", colspan: 8, "role": "separator"},
                 D.DIV({"class": "netLabel netPageLabel netPageTitle"}, "$page|getTitle")
             )
         ),
@@ -835,16 +835,16 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
     infoBodies:
         D.DIV({"class": "netInfoBodies outerFocusRow"},
-            TABLE({"class": "netInfoParamsText netInfoText netInfoParamsTable", "role": "tabpanel",
-                    cellpadding: 0, cellspacing: 0}, TBODY()),
+            D.TABLE({"class": "netInfoParamsText netInfoText netInfoParamsTable", "role": "tabpanel",
+                    cellpadding: 0, cellspacing: 0}, D.TBODY()),
             D.DIV({"class": "netInfoHeadersText netInfoText", "role": "tabpanel"}),
             D.DIV({"class": "netInfoPostText netInfoText", "role": "tabpanel"}),
             D.DIV({"class": "netInfoPutText netInfoText", "role": "tabpanel"}),
             D.DIV({"class": "netInfoResponseText netInfoText", "role": "tabpanel"}),
             D.DIV({"class": "netInfoCacheText netInfoText", "role": "tabpanel"},
-                TABLE({"class": "netInfoCacheTable", cellpadding: 0, cellspacing: 0,
+                D.TABLE({"class": "netInfoCacheTable", cellpadding: 0, cellspacing: 0,
                     "role": "presentation"},
-                    TBODY({"role": "list", "aria-label": Locale.$STR("Cache")})
+                    D.TBODY({"role": "list", "aria-label": Locale.$STR("Cache")})
                 )
             ),
             D.DIV({"class": "netInfoHtmlText netInfoText", "role": "tabpanel"},
@@ -855,11 +855,11 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
     headerDataTag:
         FOR("param", "$headers",
-            TR({"role": "listitem"},
-                TD({"class": "netInfoParamName", "role": "presentation"},
+            D.TR({"role": "listitem"},
+                D.TD({"class": "netInfoParamName", "role": "presentation"},
                     TAG("$param|getNameTag", {param: "$param"})
                 ),
-                TD({"class": "netInfoParamValue", "role": "list", "aria-label": "$param.name"},
+                D.TD({"class": "netInfoParamValue", "role": "list", "aria-label": "$param.name"},
                     FOR("line", "$param|getParamValueIterator",
                         CODE({"class": "focusRow subFocusRow", "role": "listitem"}, "$line")
                     )
@@ -868,8 +868,8 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
         ),
 
     responseHeadersFromBFCacheTag:
-        TR(
-            TD({"class": "headerFromBFCache"},
+        D.TR(
+            D.TD({"class": "headerFromBFCache"},
                 Locale.$STR("net.label.ResponseHeadersFromBFCache")
             )
         ),
@@ -1276,11 +1276,11 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
 {
     // application/x-www-form-urlencoded
     paramsTable:
-        TABLE({"class": "netInfoPostParamsTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostParamsTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Parameters")},
-                TR({"class": "netInfoPostParamsTitle", "role": "presentation"},
-                    TD({colspan: 2, "role": "presentation"},
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Parameters")},
+                D.TR({"class": "netInfoPostParamsTitle", "role": "presentation"},
+                    D.TD({colspan: 2, "role": "presentation"},
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("net.label.Parameters"),
                             D.SPAN({"class": "netInfoPostContentType"},
@@ -1294,11 +1294,11 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
 
     // multipart/form-data
     partsTable:
-        TABLE({"class": "netInfoPostPartsTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostPartsTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Parts")},
-                TR({"class": "netInfoPostPartsTitle", "role": "presentation"},
-                    TD({colspan: 2, "role":"presentation" },
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Parts")},
+                D.TR({"class": "netInfoPostPartsTitle", "role": "presentation"},
+                    D.TD({colspan: 2, "role":"presentation" },
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("net.label.Parts"),
                             D.SPAN({"class": "netInfoPostContentType"},
@@ -1312,80 +1312,80 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
 
     // application/json
     jsonTable:
-        TABLE({"class": "netInfoPostJSONTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostJSONTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("jsonviewer.tab.JSON")},
-                TR({"class": "netInfoPostJSONTitle", "role": "presentation"},
-                    TD({"role": "presentation" },
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("jsonviewer.tab.JSON")},
+                D.TR({"class": "netInfoPostJSONTitle", "role": "presentation"},
+                    D.TD({"role": "presentation" },
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("jsonviewer.tab.JSON")
                         )
                     )
                 ),
-                TR(
-                    TD({"class": "netInfoPostJSONBody"})
+                D.TR(
+                    D.TD({"class": "netInfoPostJSONBody"})
                 )
             )
         ),
 
     // application/xml
     xmlTable:
-        TABLE({"class": "netInfoPostXMLTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostXMLTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("xmlviewer.tab.XML")},
-                TR({"class": "netInfoPostXMLTitle", "role": "presentation"},
-                    TD({"role": "presentation" },
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("xmlviewer.tab.XML")},
+                D.TR({"class": "netInfoPostXMLTitle", "role": "presentation"},
+                    D.TD({"role": "presentation" },
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("xmlviewer.tab.XML")
                         )
                     )
                 ),
-                TR(
-                    TD({"class": "netInfoPostXMLBody"})
+                D.TR(
+                    D.TD({"class": "netInfoPostXMLBody"})
                 )
             )
         ),
 
     // image/svg+xml
     svgTable:
-        TABLE({"class": "netInfoPostSVGTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostSVGTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("svgviewer.tab.SVG")},
-                TR({"class": "netInfoPostSVGTitle", "role": "presentation"},
-                    TD({"role": "presentation" },
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("svgviewer.tab.SVG")},
+                D.TR({"class": "netInfoPostSVGTitle", "role": "presentation"},
+                    D.TD({"role": "presentation" },
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("svgviewer.tab.SVG")
                         )
                     )
                 ),
-                TR(
-                    TD({"class": "netInfoPostSVGBody"})
+                D.TR(
+                    D.TD({"class": "netInfoPostSVGBody"})
                 )
             )
         ),
 
     // application/x-woff
     fontTable:
-      TABLE({"class": "netInfoPostFontTable", cellpadding: 0, cellspacing: 0,
+      D.TABLE({"class": "netInfoPostFontTable", cellpadding: 0, cellspacing: 0,
         "role": "presentation"},
-          TBODY({"role": "list", "aria-label": Locale.$STR("fontviewer.tab.Font")},
-              TR({"class": "netInfoPostFontTitle", "role": "presentation"},
-                  TD({"role": "presentation" },
+          D.TBODY({"role": "list", "aria-label": Locale.$STR("fontviewer.tab.Font")},
+              D.TR({"class": "netInfoPostFontTitle", "role": "presentation"},
+                  D.TD({"role": "presentation" },
                       Locale.$STR("fontviewer.tab.Font")
                   )
               ),
-              TR(
-                  TD({"class": "netInfoPostFontBody"})
+              D.TR(
+                  D.TD({"class": "netInfoPostFontBody"})
               )
           )
       ),
 
     sourceTable:
-        TABLE({"class": "netInfoPostSourceTable", cellpadding: 0, cellspacing: 0,
+        D.TABLE({"class": "netInfoPostSourceTable", cellpadding: 0, cellspacing: 0,
             "role": "presentation"},
-            TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Source")},
-                TR({"class": "netInfoPostSourceTitle", "role": "presentation"},
-                    TD({colspan: 2, "role": "presentation"},
+            D.TBODY({"role": "list", "aria-label": Locale.$STR("net.label.Source")},
+                D.TR({"class": "netInfoPostSourceTitle", "role": "presentation"},
+                    D.TD({colspan: 2, "role": "presentation"},
                         D.DIV({"class": "netInfoPostSource"},
                             Locale.$STR("net.label.Source")
                         )
@@ -1395,8 +1395,8 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
         ),
 
     sourceBodyTag:
-        TR({"role": "presentation"},
-            TD({colspan: 2, "role": "presentation"},
+        D.TR({"role": "presentation"},
+            D.TD({colspan: 2, "role": "presentation"},
                 FOR("line", "$param|getParamValueIterator",
                     CODE({"class":"focusRow subFocusRow", "role": "listitem"}, "$line")
                 )
@@ -1584,8 +1584,8 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
                     Locale.$STR("net.headers.view source")
                 )
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "netInfoResponseHeadersBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "netInfoResponseHeadersBody", "role": "list",
                     "aria-label": Locale.$STR("ResponseHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoRequestHeadersTitle collapsed"},
@@ -1595,29 +1595,29 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
                     Locale.$STR("net.headers.view source")
                 )
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "netInfoRequestHeadersBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "netInfoRequestHeadersBody", "role": "list",
                     "aria-label": Locale.$STR("RequestHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoCachedResponseHeadersTitle collapsed"},
                 D.SPAN(Locale.$STR("CachedResponseHeaders"))
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "netInfoCachedResponseHeadersBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "netInfoCachedResponseHeadersBody", "role": "list",
                     "aria-label": Locale.$STR("CachedResponseHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoPostRequestHeadersTitle collapsed"},
                 D.SPAN(Locale.$STR("PostRequestHeaders"))
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "netInfoPostRequestHeadersBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "netInfoPostRequestHeadersBody", "role": "list",
                     "aria-label": Locale.$STR("PostRequestHeaders")})
             )
         ),
 
     sourceTag:
-        TR({"role": "presentation"},
-            TD({colspan: 2, "role": "presentation"},
+        D.TR({"role": "presentation"},
+            D.TD({colspan: 2, "role": "presentation"},
                 PRE({"class": "source"})
             )
         ),
@@ -1717,51 +1717,51 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
 Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
 {
     tableTag:
-        TABLE({"class": "timeInfoTip", "id": "fbNetTimeInfoTip"},
-            TBODY()
+        D.TABLE({"class": "timeInfoTip", "id": "fbNetTimeInfoTip"},
+            D.TBODY()
         ),
 
     timingsTag:
         FOR("time", "$timings",
-            TR({"class": "timeInfoTipRow", $collapsed: "$time|hideBar"},
-                TD({"class": "$time|getBarClass timeInfoTipBar",
+            D.TR({"class": "timeInfoTipRow", $collapsed: "$time|hideBar"},
+                D.TD({"class": "$time|getBarClass timeInfoTipBar",
                     $loaded: "$time.loaded",
                     $fromCache: "$time.fromCache",
                 }),
-                TD({"class": "timeInfoTipCell startTime"},
+                D.TD({"class": "timeInfoTipCell startTime"},
                     "$time.start|formatStartTime"
                 ),
-                TD({"class": "timeInfoTipCell elapsedTime"},
+                D.TD({"class": "timeInfoTipCell elapsedTime"},
                     "$time.elapsed|formatTime"
                 ),
-                TD("$time|getLabel")
+                D.TD("$time|getLabel")
             )
         ),
 
     startTimeTag:
-        TR(
-            TD(),
-            TD("$startTime.time|formatStartTime"),
-            TD({"class": "timeInfoTipStartLabel", "colspan": 2},
+        D.TR(
+            D.TD(),
+            D.TD("$startTime.time|formatStartTime"),
+            D.TD({"class": "timeInfoTipStartLabel", "colspan": 2},
                 "$startTime|getLabel"
             )
         ),
 
     separatorTag:
-        TR(
-            TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
+        D.TR(
+            D.TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
                 D.SPAN("$label")
             )
         ),
 
     eventsTag:
         FOR("event", "$events",
-            TR({"class": "timeInfoTipEventRow"},
-                TD({"class": "timeInfoTipBar", align: "center"},
+            D.TR({"class": "timeInfoTipEventRow"},
+                D.TD({"class": "timeInfoTipBar", align: "center"},
                     D.DIV({"class": "$event|getTimeStampClass timeInfoTipEventBar"})
                 ),
-                TD("$event.start|formatStartTime"),
-                TD({"class": "timeInfotTipEventName", "colspan": 2},
+                D.TD("$event.start|formatStartTime"),
+                D.TD({"class": "timeInfotTipEventName", "colspan": 2},
                     "$event|getTimeStampLabel"
                 )
             )
@@ -1913,8 +1913,8 @@ Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
 Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
 {
     tag:
-        TABLE({"class": "sizeInfoTip", "id": "fbNetSizeInfoTip", role:"presentation"},
-            TBODY(
+        D.TABLE({"class": "sizeInfoTip", "id": "fbNetSizeInfoTip", role:"presentation"},
+            D.TBODY(
                 FOR("size", "$sizeInfo",
                     TAG("$size|getRowTag", {size: "$size"})
                 )
@@ -1922,20 +1922,20 @@ Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
         ),
 
     sizeTag:
-        TR({"class": "sizeInfoRow", $collapsed: "$size|hideRow"},
-            TD({"class": "sizeInfoLabelCol"}, "$size.label"),
-            TD({"class": "sizeInfoSizeCol"}, "$size|formatSize"),
-            TD({"class": "sizeInfoDetailCol"}, "$size|formatNumber")
+        D.TR({"class": "sizeInfoRow", $collapsed: "$size|hideRow"},
+            D.TD({"class": "sizeInfoLabelCol"}, "$size.label"),
+            D.TD({"class": "sizeInfoSizeCol"}, "$size|formatSize"),
+            D.TD({"class": "sizeInfoDetailCol"}, "$size|formatNumber")
         ),
 
     separatorTag:
-        TR(
-            TD({"colspan": 3, "height": "7px"})
+        D.TR(
+            D.TD({"colspan": 3, "height": "7px"})
         ),
 
     descTag:
-        TR(
-            TD({"colspan": 3, "class": "sizeInfoDescCol"}, "$size.label")
+        D.TR(
+            D.TD({"colspan": 3, "class": "sizeInfoDescCol"}, "$size.label")
         ),
 
     getRowTag: function(size)
@@ -1995,30 +1995,30 @@ Firebug.NetMonitor.NetLimit = domplate(Firebug.Rep,
 
     tableTag:
         D.DIV(
-            TABLE({width: "100%", cellpadding: 0, cellspacing: 0},
-                TBODY()
+            D.TABLE({width: "100%", cellpadding: 0, cellspacing: 0},
+                D.TBODY()
             )
         ),
 
     limitTag:
-        TR({"class": "netRow netLimitRow", $collapsed: "$isCollapsed"},
-            TD({"class": "netCol netLimitCol", colspan: 8},
-                TABLE({cellpadding: 0, cellspacing: 0},
-                    TBODY(
-                        TR(
-                            TD(
+        D.TR({"class": "netRow netLimitRow", $collapsed: "$isCollapsed"},
+            D.TD({"class": "netCol netLimitCol", colspan: 8},
+                D.TABLE({cellpadding: 0, cellspacing: 0},
+                    D.TBODY(
+                        D.TR(
+                            D.TD(
                                 D.SPAN({"class": "netLimitLabel"},
                                     Locale.$STRP("plural.Limit_Exceeded2", [0])
                                 )
                             ),
-                            TD({style: "width:100%"}),
-                            TD(
+                            D.TD({style: "width:100%"}),
+                            D.TD(
                                 BUTTON({"class": "netLimitButton", title: "$limitPrefsTitle",
                                     onclick: "$onPreferences"},
                                   Locale.$STR("LimitPrefs")
                                 )
                             ),
-                            TD("&nbsp;")
+                            D.TD("&nbsp;")
                         )
                     )
                 )

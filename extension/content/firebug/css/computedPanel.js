@@ -67,20 +67,20 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         stylesTag:
-            TABLE({"class": "computedStyleTable", role: "list"},
-                TBODY({role: "presentation"},
+            D.TABLE({"class": "computedStyleTable", role: "list"},
+                D.TBODY({role: "presentation"},
                     FOR("prop", "$props",
-                        TR({"class": "focusRow computedStyleRow computedStyle",
+                        D.TR({"class": "focusRow computedStyleRow computedStyle",
                                 $opened: "$prop.opened", role: "listitem",
                                 $hasSelectors: "$prop|hasSelectors", _repObject: "$prop"},
-                            TD({"class": "stylePropName", role: "presentation"},
+                            D.TD({"class": "stylePropName", role: "presentation"},
                                 "$prop.property"
                             ),
-                            TD({role: "presentation"},
+                            D.TD({role: "presentation"},
                                 D.SPAN({"class": "stylePropValue"}, "$prop.value|formatValue"))
                         ),
-                        TR({"class": "focusRow computedStyleRow matchedSelectors", _repObject: "$prop"},
-                            TD({colspan: 2},
+                        D.TR({"class": "focusRow computedStyleRow matchedSelectors", _repObject: "$prop"},
+                            D.TD({colspan: 2},
                                 TAG("$selectorsTag", {prop: "$prop"})
                             )
                         )
@@ -89,17 +89,17 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         selectorsTag:
-            TABLE({"class": "matchedSelectorsTable", role: "list"},
-                TBODY({role: "presentation"},
+            D.TABLE({"class": "matchedSelectorsTable", role: "list"},
+                D.TBODY({role: "presentation"},
                     FOR("selector", "$prop.matchedSelectors",
-                        TR({"class": "focusRow computedStyleRow styleSelector "+
+                        D.TR({"class": "focusRow computedStyleRow styleSelector "+
                             "$selector.status|getStatusClass", role: "listitem",
                                 _repObject: "$selector"},
-                            TD({"class": "selectorName", role: "presentation"},
+                            D.TD({"class": "selectorName", role: "presentation"},
                                 "$selector.selector.text"),
-                            TD({"class": "propValue", role: "presentation"},
+                            D.TD({"class": "propValue", role: "presentation"},
                                 D.SPAN({"class": "stylePropValue"}, "$selector.value|formatValue")),
-                            TD({"class": "styleSourceLink", role: "presentation"},
+                            D.TD({"class": "styleSourceLink", role: "presentation"},
                                 TAG(FirebugReps.SourceLink.tag, {object: "$selector|getSourceLink"})
                             )
                         )

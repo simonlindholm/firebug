@@ -1057,22 +1057,22 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "notificationBox"},
-            TABLE({"class": "notificationTable", onclick: "$onHide",
+            D.TABLE({"class": "notificationTable", onclick: "$onHide",
                 onmouseover: "$onMouseOver", onmouseout: "$onMouseOut"},
-                TBODY(
-                    TR(
-                        TD({"class": "imageCol"},
+                D.TBODY(
+                    D.TR(
+                        D.TD({"class": "imageCol"},
                             IMG({"class": "notificationImage",
                                 src: "chrome://firebug/skin/breakpoint.png"})
                         ),
-                        TD({"class": "descCol"},
+                        D.TD({"class": "descCol"},
                             D.SPAN({"class": "notificationDesc"}, "$cause|getDescription"),
                             D.SPAN("&nbsp;"),
                             D.SPAN({"class": "diff"}, "$cause|getDiff"),
                             D.SPAN({"class": "targets"}),
                             D.DIV({"class": "noNotificationDesc"})
                         ),
-                        TD({"class": "buttonsCol"},
+                        D.TD({"class": "buttonsCol"},
                             BUTTON({"class": "notificationButton copyButton",
                                 onclick: "$onCopyAction",
                                 $collapsed: "$cause|hideCopyAction"},
@@ -1089,7 +1089,7 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                                 Locale.$STR("script.balloon.Continue")
                             )
                         ),
-                        TD(
+                        D.TD(
                             D.DIV({"class": "notificationClose", onclick: "$onHide"})
                         )
                     )

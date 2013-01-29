@@ -561,37 +561,37 @@ Firebug.MemoryProfiler.ProfileTable = domplate(
 {
     tag:
         D.DIV({"class": "profileSizer", "tabindex": "-1" },
-            TABLE({"class": "profileTable", cellspacing: 0, cellpadding: 0,
+            D.TABLE({"class": "profileTable", cellspacing: 0, cellpadding: 0,
                 width: "100%", "role": "grid"},
-                THEAD({"class": "profileThead", "role": "presentation"},
-                    TR({"class": "headerRow focusRow profileRow subFocusRow",
+                D.THEAD({"class": "profileThead", "role": "presentation"},
+                    D.TR({"class": "headerRow focusRow profileRow subFocusRow",
                         onclick: "$onClick", "role": "row"},
-                        TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("Function")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("CallsHeaderTooltip")},
                                 Locale.$STR("Calls")
                             )
                         ),
                         FOR("column", "$object|getColumns",
-                            TH({"class": "headerCell a11yFocus", "role": "columnheader",
+                            D.TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 "aria-sort": "descending"},
                                 D.DIV({"class": "headerCellBox"},
                                     Locale.$STR("$column|getColumnLabel")
                                 )
                             )
                         ),
-                        TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("File")
                             )
                         )
                     )
                 ),
-                TBODY({"class": "profileTbody", "role": "presentation"})
+                D.TBODY({"class": "profileTbody", "role": "presentation"})
             )
         ),
 
@@ -722,19 +722,19 @@ var OBJECTLINK =
 Firebug.MemoryProfiler.ProfileCall = domplate(Firebug.Rep,
 {
     tag:
-        TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
-            TD({"class": "profileCell", "role": "presentation"},
+        D.TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
+            D.TD({"class": "profileCell", "role": "presentation"},
                 OBJECTLINK("$object|getCallName")
             ),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"},
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"},
                 "$object.callCount"
             ),
             FOR("column", "$object|getColumns",
-                TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
+                D.TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
                     "$column|getColumnLabel"
                 )
             ),
-            TD({"class": "linkCell profileCell", "role": "presentation"},
+            D.TD({"class": "linkCell profileCell", "role": "presentation"},
                  TAG("$object|getSourceLinkTag", {object: "$object|getSourceLink"})
             )
         ),
@@ -810,16 +810,16 @@ Firebug.MemoryProfiler.ProfileCall = domplate(Firebug.Rep,
 Firebug.MemoryProfiler.ProfileSummary = domplate(Firebug.Rep,
 {
     tag:
-        TR({"class": "focusRow profileSummaryRow subFocusRow", "role": "row"},
-            TD({"class": "profileCell", "role": "presentation", colspan: 2},
+        D.TR({"class": "focusRow profileSummaryRow subFocusRow", "role": "row"},
+            D.TD({"class": "profileCell", "role": "presentation", colspan: 2},
                 Locale.$STR("firebug.Entire Session")
             ),
             FOR("column", "$object|getColumns",
-                TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
+                D.TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
                     "$column|getColumnLabel"
                 )
             ),
-            TD({"class": "linkCell profileCell", "role": "presentation"})
+            D.TD({"class": "linkCell profileCell", "role": "presentation"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

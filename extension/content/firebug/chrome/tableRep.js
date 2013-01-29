@@ -22,13 +22,13 @@ FirebugReps.Table = domplate(Firebug.Rep,
     tableClassName: "dataTable",
     tag:
         D.DIV({"class": "dataTableSizer", "tabindex": "-1" },
-            TABLE({"class": "$tableClassName", cellspacing: 0, cellpadding: 0, width: "100%",
+            D.TABLE({"class": "$tableClassName", cellspacing: 0, cellpadding: 0, width: "100%",
                 "role": "grid"},
-                THEAD({"class": "dataTableThead", "role": "presentation"},
-                    TR({"class": "headerRow focusRow dataTableRow subFocusRow", "role": "row",
+                D.THEAD({"class": "dataTableThead", "role": "presentation"},
+                    D.TR({"class": "headerRow focusRow dataTableRow subFocusRow", "role": "row",
                         onclick: "$onClickHeader"},
                         FOR("column", "$object.columns",
-                            TH({"class": "headerCell a11yFocus", "role": "columnheader",
+                            D.TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 $alphaValue: "$column.alphaValue"},
                                 D.DIV({"class": "headerCellBox"},
                                     "$column.label"
@@ -37,11 +37,11 @@ FirebugReps.Table = domplate(Firebug.Rep,
                         )
                     )
                 ),
-                TBODY({"class": "dataTableTbody", "role": "presentation"},
+                D.TBODY({"class": "dataTableTbody", "role": "presentation"},
                     FOR("row", "$object.data|getRows",
-                        TR({"class": "focusRow dataTableRow subFocusRow", "role": "row"},
+                        D.TR({"class": "focusRow dataTableRow subFocusRow", "role": "row"},
                             FOR("column", "$row|getColumns",
-                                TD({"class": "a11yFocus dataTableCell", "role": "gridcell"},
+                                D.TD({"class": "a11yFocus dataTableCell", "role": "gridcell"},
                                     TAG("$column|getValueTag", {object: "$column"})
                                 )
                             )

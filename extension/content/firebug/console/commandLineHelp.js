@@ -45,24 +45,24 @@ var HelpCaption = domplate(
 var HelpTable = domplate(
 {
     tag:
-        TABLE({"class": "helpTable", cellspacing: 0, cellpadding: 0, width: "100%",
+        D.TABLE({"class": "helpTable", cellspacing: 0, cellpadding: 0, width: "100%",
             "role": "grid"},
-            THEAD({"class": "helpThead", "role": "presentation"},
-                TR({"class": "headerRow focusRow helpRow subFocusRow", onclick: "$onClick",
+            D.THEAD({"class": "helpThead", "role": "presentation"},
+                D.TR({"class": "headerRow focusRow helpRow subFocusRow", onclick: "$onClick",
                     "role": "row"},
-                    TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
+                    D.TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "10%"},
                         D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Name")
                         )
                     ),
-                    TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "90%"},
+                    D.TH({"class": "headerCell a11yFocus", "role": "columnheader", width: "90%"},
                         D.DIV({"class": "headerCellBox"},
                             Locale.$STR("Description")
                         )
                     )
                 )
             ),
-            TBODY({"class": "helpTbody", "role": "presentation"})
+            D.TBODY({"class": "helpTbody", "role": "presentation"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -76,13 +76,13 @@ var HelpEntry = domplate(
 {
     tag:
         FOR("command", "$commands",
-            TR({"class": "focusRow helpRow subFocusRow", "role": "row"},
-                TD({"class": "a11yFocus helpCell commandName", "role": "presentation"},
+            D.TR({"class": "focusRow helpRow subFocusRow", "role": "row"},
+                D.TD({"class": "a11yFocus helpCell commandName", "role": "presentation"},
                     A({"class": "objectLink", onclick: "$onClick", _repObject: "$command"},
                         "$command|getName"
                     )
                 ),
-                TD({"class": "a11yFocus helpCell commandDesc", "role": "gridcell"},
+                D.TD({"class": "a11yFocus helpCell commandDesc", "role": "gridcell"},
                     "$command|getDesc"
                 )
             )

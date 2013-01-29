@@ -259,60 +259,60 @@ Firebug.Profiler.ProfileTable = domplate(
 {
     tag:
         D.DIV({"class": "profileSizer", "tabindex": "-1" },
-            TABLE({"class": "profileTable", cellspacing: 0, cellpadding: 0, width: "100%",
+            D.TABLE({"class": "profileTable", cellspacing: 0, cellpadding: 0, width: "100%",
                 "role": "grid"},
-                THEAD({"class": "profileThead", "role": "presentation"},
-                    TR({"class": "headerRow focusRow profileRow subFocusRow", onclick: "$onClick",
+                D.THEAD({"class": "profileThead", "role": "presentation"},
+                    D.TR({"class": "headerRow focusRow profileRow subFocusRow", onclick: "$onClick",
                         "role": "row"},
-                        TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("Function")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("CallsHeaderTooltip")},
                                 Locale.$STR("Calls")
                             )
                         ),
-                        TH({"class": "headerCell headerSorted a11yFocus", "role": "columnheader",
+                        D.TH({"class": "headerCell headerSorted a11yFocus", "role": "columnheader",
                             "aria-sort": "descending"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("PercentTooltip")},
                                 Locale.$STR("Percent")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("OwnTimeHeaderTooltip")},
                                 Locale.$STR("OwnTime")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("TimeHeaderTooltip")},
                                 Locale.$STR("Time")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("AvgHeaderTooltip")},
                                 Locale.$STR("Avg")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("MinHeaderTooltip")},
                                 Locale.$STR("Min")
                             )
                         ),
-                        TH({"class": "headerCell a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox", title: Locale.$STR("MaxHeaderTooltip")},
                                 Locale.$STR("Max")
                             )
                         ),
-                        TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
+                        D.TH({"class": "headerCell alphaValue a11yFocus", "role": "columnheader"},
                             D.DIV({"class": "headerCellBox"},
                                 Locale.$STR("File")
                             )
                         )
                     )
                 ),
-                TBODY({"class": "profileTbody", "role": "presentation"})
+                D.TBODY({"class": "profileTbody", "role": "presentation"})
             )
         ),
 
@@ -422,18 +422,18 @@ Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
 Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
 {
     tag:
-        TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
-            TD({"class": "profileCell", "role": "presentation"},
+        D.TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
+            D.TD({"class": "profileCell", "role": "presentation"},
                 FirebugReps.OBJECTLINK("$object|getCallName")
             ),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.callCount"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.percent%"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.totalOwnTime|roundTime\\ms"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.totalTime|roundTime\\ms"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object|avgTime|roundTime\\ms"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.minTime|roundTime\\ms"),
-            TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.maxTime|roundTime\\ms"),
-            TD({"class": "linkCell profileCell", "role": "presentation"},
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.callCount"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.percent%"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.totalOwnTime|roundTime\\ms"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.totalTime|roundTime\\ms"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object|avgTime|roundTime\\ms"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.minTime|roundTime\\ms"),
+            D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.maxTime|roundTime\\ms"),
+            D.TD({"class": "linkCell profileCell", "role": "presentation"},
                 TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
             )
         ),

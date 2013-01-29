@@ -372,8 +372,8 @@ var BaseRep = domplate(Firebug.Rep,
 // ********************************************************************************************* //
 
 var TrialRow =
-    TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
-        TD({"class": "watchEditCell", colspan: 3},
+    D.TR({"class": "watchNewRow", level: 0, onclick: "$onClickEditor"},
+        D.TD({"class": "watchEditCell", colspan: 3},
             D.DIV({"class": "watchEditBox a11yFocusNoTab", "id": "trialHint",
                 role: "button", "tabindex" : "0",
                 "aria-label": Locale.$STR("a11y.labels.press enter to add new selector")},
@@ -392,12 +392,12 @@ var SelectorTemplate = domplate(BaseRep,
 {
     // object will be array of elements CSSStyleRule
     tag:
-        TABLE({"class": "cssSelectionTable", cellpadding: 0, cellspacing: 0},
-            TBODY({"class": "cssSelectionTBody"},
+        D.TABLE({"class": "cssSelectionTable", cellpadding: 0, cellspacing: 0},
+            D.TBODY({"class": "cssSelectionTBody"},
                 TrialRow,
                 FOR("element", "$object",
-                    TR({"class": "selectionElementRow", _repObject: "$element"},
-                        TD({"class": "selectionElement"},
+                    D.TR({"class": "selectionElementRow", _repObject: "$element"},
+                        D.TD({"class": "selectionElement"},
                             TAG( "$element|getNaturalTag", {object: "$element"})
                         )
                     )
@@ -418,23 +418,23 @@ var SelectorTemplate = domplate(BaseRep,
 var WarningTemplate = domplate(Firebug.Rep,
 {
     noSelectionTag:
-        TR({"class": "selectorWarning"},
-            TD({"class": "selectionElement"}, Locale.$STR("css.selector.noSelection"))
+        D.TR({"class": "selectorWarning"},
+            D.TD({"class": "selectionElement"}, Locale.$STR("css.selector.noSelection"))
         ),
 
     noSelectionResultsTag:
-        TR({"class": "selectorWarning"},
-            TD({"class": "selectionElement"}, Locale.$STR("css.selector.noSelectionResults"))
+        D.TR({"class": "selectorWarning"},
+            D.TD({"class": "selectionElement"}, Locale.$STR("css.selector.noSelectionResults"))
         ),
 
     selectErrorTag:
-        TR({"class": "selectorWarning"},
-            TD({"class": "selectionElement"}, Locale.$STR("css.selector.selectorError"))
+        D.TR({"class": "selectorWarning"},
+            D.TD({"class": "selectionElement"}, Locale.$STR("css.selector.selectorError"))
         ),
 
     selectErrorTextTag:
-        TR({"class": "selectorWarning"},
-            TD({"class": "selectionErrorText selectionElement"},
+        D.TR({"class": "selectorWarning"},
+            D.TD({"class": "selectionErrorText selectionElement"},
                 D.SPAN("$object|getErrorMessage")
             )
         ),

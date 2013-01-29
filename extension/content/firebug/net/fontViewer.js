@@ -163,8 +163,8 @@ Firebug.FontViewerModel.Preview = domplate(
             D.DIV({"class": "fontInfoGroup fontInfoGeneralInfoTitle"},
                 D.SPAN(Locale.$STR("fontviewer.General Info"))
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "fontInfoGeneralInfoBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "fontInfoGeneralInfoBody", "role": "list",
                     "aria-label": Locale.$STR("fontviewer.General Info")})
             ),
             D.DIV({"class": "fontInfoGroup fontInfoMetaDataTitle",
@@ -175,8 +175,8 @@ Firebug.FontViewerModel.Preview = domplate(
                     Locale.$STR("fontviewer.view source")
                 )
             ),
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY({"class": "fontInfoMetaDataBody", "role": "list",
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY({"class": "fontInfoMetaDataBody", "role": "list",
                     "aria-label": Locale.$STR("fontviewer.Meta Data")})
             ),
             D.DIV({"class": "fontInfoGroup fontInfoPreviewTitle"},
@@ -209,19 +209,19 @@ Firebug.FontViewerModel.Preview = domplate(
 
     propDataTag:
         FOR("prop", "$props",
-            TR({"role": "listitem", _repObject: "$prop.node"},
-                TD({"class": "fontInfoPropName", "role": "presentation"},
+            D.TR({"role": "listitem", _repObject: "$prop.node"},
+                D.TD({"class": "fontInfoPropName", "role": "presentation"},
                     D.SPAN("$prop|getPropName")
                 ),
-                TD({"class": "fontInfoPropValue", "role": "list", "aria-label": "$prop.name"},
+                D.TD({"class": "fontInfoPropValue", "role": "list", "aria-label": "$prop.name"},
                     TAG("$prop|getTag", {node: "$prop.node"})
                 )
             )
         ),
 
     sourceTag:
-        TR({"role": "presentation"},
-            TD({colspan: 2, "role": "presentation"},
+        D.TR({"role": "presentation"},
+            D.TD({colspan: 2, "role": "presentation"},
                 PRE({"class": "source"})
             )
         ),

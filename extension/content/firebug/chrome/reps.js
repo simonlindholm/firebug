@@ -2347,16 +2347,16 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
             TAG("$object|getObjectsTag", {object: "$object.objects"}),
             D.DIV({"class": "errorSourceBox errorSource-$object|getSourceType focusRow subLogRow",
                 role : "listitem"},
-                TABLE({cellspacing: 0, cellpadding: 0},
-                    TBODY(
-                        TR(
-                            TD(
+                D.TABLE({cellspacing: 0, cellpadding: 0},
+                    D.TBODY(
+                        D.TR(
+                            D.TD(
                                 IMG({"class": "$object|isBreakableError a11yFocus",
                                     src:"blank.gif", role: "checkbox",
                                     "aria-checked": "$object|hasErrorBreak",
                                     title: Locale.$STR("console.Break On This Error")})
                             ),
-                            TD(
+                            D.TD(
                                 A({"class": "errorSource a11yFocus"},
                                     PRE({"class": "errorSourceCode",
                                         title: "$object|getSourceTitle"}, "$object|getSource")
@@ -2364,9 +2364,9 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
                                 TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
                             )
                         ),
-                        TR({$collapsed: "$object|hideErrorCaret"},
-                            TD(),
-                            TD(
+                        D.TR({$collapsed: "$object|hideErrorCaret"},
+                            D.TD(),
+                            D.TD(
                                 D.DIV({"class": "errorColPosition"},
                                     "$object|getColumnPosition"
                                 ),

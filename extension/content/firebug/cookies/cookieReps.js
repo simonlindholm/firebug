@@ -75,58 +75,58 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
 
     cookieTag:
         FOR("cookie", "$cookies",
-            TR({"class": "cookieRow", _repObject: "$cookie", onclick: "$onClickRow",
+            D.TR({"class": "cookieRow", _repObject: "$cookie", onclick: "$onClickRow",
                 $sessionCookie: "$cookie|isSessionCookie",
                 $rejectedCookie: "$cookie|isRejected"},
-                TD({"class": "cookieDebugCol cookieCol"},
+                D.TD({"class": "cookieDebugCol cookieCol"},
                    D.DIV({"class": "sourceLine cookieRowHeader", onclick: "$onClickRowHeader"},
                         "&nbsp;"
                    )
                 ),
-                TD({"class": "cookieNameCol cookieCol"},
+                D.TD({"class": "cookieNameCol cookieCol"},
                     D.DIV({"class": "cookieNameLabel cookieLabel"}, "$cookie|getName")
                 ),
-                TD({"class": "cookieValueCol cookieCol"},
+                D.TD({"class": "cookieValueCol cookieCol"},
                     D.DIV({"class": "cookieValueLabel cookieLabel"}, 
                         D.SPAN("$cookie.cookie.value|getValue")
                     )
                 ),
-                TD({"class": "cookieRawValueCol cookieCol"},
+                D.TD({"class": "cookieRawValueCol cookieCol"},
                     D.DIV({"class": "cookieRawValueLabel cookieLabel"}, 
                         D.SPAN("$cookie.cookie.rawValue|getValue")
                     )
                 ),
-                TD({"class": "cookieDomainCol cookieCol"},
+                D.TD({"class": "cookieDomainCol cookieCol"},
                     D.SPAN({"class": "cookieDomainLabel cookieLabel", onclick: "$onClickDomain"}, 
                         "$cookie|getDomain")
                 ),
-                TD({"class": "cookieRawSizeCol cookieCol"},
+                D.TD({"class": "cookieRawSizeCol cookieCol"},
                     D.DIV({"class": "cookieRawSizeLabel cookieLabel"}, "$cookie|getRawSize")
                 ),
-                TD({"class": "cookieSizeCol cookieCol"},
+                D.TD({"class": "cookieSizeCol cookieCol"},
                     D.DIV({"class": "cookieSizeLabel cookieLabel"}, "$cookie|getSize")
                 ),
-                TD({"class": "cookiePathCol cookieCol"},
+                D.TD({"class": "cookiePathCol cookieCol"},
                     D.DIV({"class": "cookiePathLabel cookieLabel", "title": "$cookie|getPath"},
                         D.SPAN("$cookie|getPath")
                     )
                 ),
-                TD({"class": "cookieExpiresCol cookieCol"},
+                D.TD({"class": "cookieExpiresCol cookieCol"},
                     D.DIV({"class": "cookieExpiresLabel cookieLabel"}, "$cookie|getExpires")
                 ),
-                TD({"class": "cookieHttpOnlyCol cookieCol"},
+                D.TD({"class": "cookieHttpOnlyCol cookieCol"},
                     D.DIV({"class": "cookieHttpOnlyLabel cookieLabel"}, "$cookie|isHttpOnly")
                 ),
-                TD({"class": "cookieSecurityCol cookieCol"},
+                D.TD({"class": "cookieSecurityCol cookieCol"},
                     D.DIV({"class": "cookieSecurityLabel cookieLabel"}, "$cookie|isSecure")
                 )
             )
         ),
 
     bodyRow:
-        TR({"class": "cookieInfoRow"},
-            TD({"class": "sourceLine cookieRowHeader"}),
-            TD({"class": "cookieInfoCol", colspan: 11})
+        D.TR({"class": "cookieInfoRow"},
+            D.TD({"class": "sourceLine cookieRowHeader"}),
+            D.TD({"class": "cookieInfoCol", colspan: 11})
         ),
 
     bodyTag:
@@ -701,10 +701,10 @@ CookieReps.CookieChanged = domplate(CookieReps.Rep,
     // Console
     tag:
         D.DIV({"class": "cookieEvent", _repObject: "$object"},
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY(
-                    TR(
-                        TD({width: "100%"},
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY(
+                    D.TR(
+                        D.TD({width: "100%"},
                             D.SPAN(Locale.$STR("cookies.console.cookie"), " "),
                             D.SPAN({"class": "cookieNameLabel", onclick: "$onClick"}, 
                                 "$object|getName", 
@@ -715,7 +715,7 @@ CookieReps.CookieChanged = domplate(CookieReps.Rep,
                             D.SPAN({"class": "cookieValueLabel"}, 
                                 "$object|getValue")
                         ),
-                        TD(
+                        D.TD(
                             D.SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain",
                                 title: "$object|getOriginalURI"}, "$object|getDomain"),
                             D.SPAN("&nbsp;") 
@@ -848,17 +848,17 @@ CookieReps.CookieRejected = domplate(CookieReps.Rep,
 
     tag:
         D.DIV({"class": "cookieEvent", _repObject: "$object"},
-            TABLE({cellpadding: 0, cellspacing: 0},
-                TBODY(
-                    TR(
-                        TD({width: "100%"},
+            D.TABLE({cellpadding: 0, cellspacing: 0},
+                D.TBODY(
+                    D.TR(
+                        D.TD({width: "100%"},
                             D.SPAN({"class": "cookieRejectedLabel"},
                                 Locale.$STR("cookies.console.cookiesrejected")),
                             " ",
                             D.SPAN({"class": "cookieRejectedList"},
                                 "$object|getCookieList")
                         ),
-                        TD(
+                        D.TD(
                             D.SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain"}, 
                                 "$object|getDomain"),
                             D.SPAN("&nbsp;") 
@@ -941,8 +941,8 @@ CookieReps.CookieCleared = domplate(CookieReps.Rep,
 CookieReps.SizeInfoTip = domplate(Firebug.Rep,
 {
     tag:
-        TABLE({"class": "sizeInfoTip", "id": "cookiesSizeInfoTip", role:"presentation"},
-            TBODY(
+        D.TABLE({"class": "sizeInfoTip", "id": "cookiesSizeInfoTip", role:"presentation"},
+            D.TBODY(
                 FOR("size", "$sizeInfo",
                     TAG("$size|sizeTag", {size: "$size"})
                 )
@@ -950,10 +950,10 @@ CookieReps.SizeInfoTip = domplate(Firebug.Rep,
         ),
 
     sizeTag:
-        TR({"class": "sizeInfoRow"},
-            TD({"class": "sizeInfoLabelCol"}, "$size.label"),
-            TD({"class": "sizeInfoSizeCol"}, "$size|formatSize"),
-            TD({"class": "sizeInfoDetailCol"}, "$size|formatNumber")
+        D.TR({"class": "sizeInfoRow"},
+            D.TD({"class": "sizeInfoLabelCol"}, "$size.label"),
+            D.TD({"class": "sizeInfoSizeCol"}, "$size|formatSize"),
+            D.TD({"class": "sizeInfoDetailCol"}, "$size|formatNumber")
         ),
 
     formatSize: function(size)
@@ -994,67 +994,67 @@ CookieReps.CookieTable = domplate(CookieReps.Rep,
     inspectable: false,
 
     tableTag:
-        TABLE({"class": "cookieTable", cellpadding: 0, cellspacing: 0, hiddenCols: ""},
-            TBODY(
-                TR({"class": "cookieHeaderRow", onclick: "$onClickHeader"},
-                    TD({id: "cookieBreakpointBar", width: "1%", "class": "cookieHeaderCell"},
+        D.TABLE({"class": "cookieTable", cellpadding: 0, cellspacing: 0, hiddenCols: ""},
+            D.TBODY(
+                D.TR({"class": "cookieHeaderRow", onclick: "$onClickHeader"},
+                    D.TD({id: "cookieBreakpointBar", width: "1%", "class": "cookieHeaderCell"},
                         "&nbsp;"
                     ),
-                    TD({id: "colName", role: "columnheader",
+                    D.TD({id: "colName", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.name.tooltip")},
                         Locale.$STR("cookies.header.name"))
                     ),
-                    TD({id: "colValue", role: "columnheader",
+                    D.TD({id: "colValue", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.value.tooltip")}, 
                         Locale.$STR("cookies.header.value"))
                     ),
-                    TD({id: "colRawValue", role: "columnheader",
+                    D.TD({id: "colRawValue", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.rawValue.tooltip")}, 
                             Locale.$STR("cookies.header.rawValue"))
                     ),
-                    TD({id: "colDomain", role: "columnheader",
+                    D.TD({id: "colDomain", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.domain.tooltip")}, 
                         Locale.$STR("cookies.header.domain"))
                     ),
-                    TD({id: "colRawSize", role: "columnheader",
+                    D.TD({id: "colRawSize", role: "columnheader",
                         "class": "cookieHeaderCell a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.size.tooltip")}, 
                         Locale.$STR("cookies.header.rawSize"))
                     ),
-                    TD({id: "colSize", role: "columnheader",
+                    D.TD({id: "colSize", role: "columnheader",
                         "class": "cookieHeaderCell a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.size.tooltip")}, 
                         Locale.$STR("cookies.header.size"))
                     ),
-                    TD({id: "colPath", role: "columnheader",
+                    D.TD({id: "colPath", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.path.tooltip")}, 
                         Locale.$STR("cookies.header.path"))
                     ),
-                    TD({id: "colExpires", role: "columnheader",
+                    D.TD({id: "colExpires", role: "columnheader",
                         "class": "cookieHeaderCell a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.expires.tooltip")}, 
                         Locale.$STR("cookies.header.expires"))
                     ),
-                    TD({id: "colHttpOnly", role: "columnheader",
+                    D.TD({id: "colHttpOnly", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.httponly.tooltip")}, 
                         Locale.$STR("cookies.header.httponly"))
                     ),
-                    TD({id: "colSecurity", role: "columnheader",
+                    D.TD({id: "colSecurity", role: "columnheader",
                         "class": "cookieHeaderCell alphaValue a11yFocus"},
                         D.DIV({"class": "cookieHeaderCellBox",
                             title: Locale.$STR("cookies.header.security.tooltip")}, 

@@ -892,11 +892,11 @@ Firebug.Spy.XHR = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "spyHead", _repObject: "$object"},
-            TABLE({"class": "spyHeadTable focusRow outerFocusRow", cellpadding: 0, cellspacing: 0,
+            D.TABLE({"class": "spyHeadTable focusRow outerFocusRow", cellpadding: 0, cellspacing: 0,
                 "role": "listitem", "aria-expanded": "false"},
-                TBODY({"role": "presentation"},
-                    TR({"class": "spyRow"},
-                        TD({"class": "spyTitleCol spyCol", onclick: "$onToggleBody"},
+                D.TBODY({"role": "presentation"},
+                    D.TR({"class": "spyRow"},
+                        D.TD({"class": "spyTitleCol spyCol", onclick: "$onToggleBody"},
                             D.DIV({"class": "spyTitle"},
                                 "$object|getCaption"
                             ),
@@ -904,16 +904,16 @@ Firebug.Spy.XHR = domplate(Firebug.Rep,
                                 "$object|getFullUri"
                             )
                         ),
-                        TD({"class": "spyCol"},
+                        D.TD({"class": "spyCol"},
                             D.DIV({"class": "spyStatus"}, "$object|getStatus")
                         ),
-                        TD({"class": "spyCol"},
+                        D.TD({"class": "spyCol"},
                             IMG({"class": "spyIcon", src: "blank.gif"})
                         ),
-                        TD({"class": "spyCol"},
+                        D.TD({"class": "spyCol"},
                             D.SPAN({"class": "spyTime"})
                         ),
-                        TD({"class": "spyCol"},
+                        D.TD({"class": "spyCol"},
                             TAG(FirebugReps.SourceLink.tag, {object: "$object.sourceLink"})
                         )
                     )
