@@ -28,8 +28,6 @@ function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events, A
     BaseObserver, MenuUtils, CookieUtils, Cookie, Breakpoints, CookieEvents,
     CookiePermissions, EditCookie, CookieClipboard) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -1396,5 +1394,4 @@ Firebug.registerRep(
 return CookieReps;
 
 // ********************************************************************************************* //
-}});
-
+});

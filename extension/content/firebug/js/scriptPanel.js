@@ -1807,8 +1807,6 @@ function getExpressionAt(text, charOffset)
 // ********************************************************************************************* //
 // Domplate Templates
 
-with (D) {
-
 /**
  * @domplate Displays various warning messages within the Script panel.
  */
@@ -1968,10 +1966,6 @@ Firebug.ScriptPanel.BreakpointInfoTip = D.domplate(Firebug.Rep,
         this.tag.replace({expr: expr}, parentNode, this);
     }
 });
-
-// ********************************************************************************************* //
-
-}; // END with (Domplate)
 
 // ********************************************************************************************* //
 // Registration

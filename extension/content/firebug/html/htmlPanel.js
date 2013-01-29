@@ -33,8 +33,6 @@ function(Obj, Firebug, D, FirebugReps, Locale, HTMLLib, Events,
     SourceLink, Css, Dom, Win, Options, Xpath, Str, Xml, Arr, Persist, Menu,
     Url, CSSModule, CSSInfoTip) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -3164,4 +3162,4 @@ Firebug.registerRep(Firebug.HTMLModule.BreakpointRep);
 return Firebug.HTMLModule;
 
 // ********************************************************************************************* //
-}});
+});

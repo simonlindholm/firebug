@@ -35,8 +35,6 @@ define([
 function(Obj, Firebug, Firefox, D, Locale, Events, Options, Url, Css, Dom, Win, Search, Str,
     Json, Arr, ToggleBranch, DragDrop, NetUtils, NetProgress, Http) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -2094,4 +2092,4 @@ Firebug.registerRep(Firebug.NetMonitor.NetRequestTable);
 return Firebug.NetMonitor.NetRequestTable;
 
 // ********************************************************************************************* //
-}});
+});

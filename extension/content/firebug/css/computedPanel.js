@@ -22,8 +22,6 @@ define([
 function(Obj, Firebug, D, Locale, Events, Css, Dom, Xml, Url, Arr, SourceLink, Menu,
     Options, Str, Persist, CSSModule, CSSInfoTip) {
 
-with (D) {
-
 //********************************************************************************************* //
 // Constants
 
@@ -877,4 +875,4 @@ Firebug.registerPanel(CSSComputedPanel);
 return CSSComputedPanel;
 
 //********************************************************************************************* //
-}});
+});

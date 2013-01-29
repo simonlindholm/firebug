@@ -17,7 +17,6 @@ const infoTipMargin = 10;
 
 // ********************************************************************************************* //
 
-with (D) {
 Firebug.InfoTip = Obj.extend(Firebug.Module,
 {
     dispatchName: "infoTip",
@@ -173,7 +172,6 @@ Firebug.InfoTip = Obj.extend(Firebug.Module,
         this.showPanel(browser, panel);
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

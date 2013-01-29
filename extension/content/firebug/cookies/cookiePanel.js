@@ -28,8 +28,6 @@ function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events, A
     MenuUtils, CookieReps, HeaderResizer, CookieObserver, CookieUtils, Cookie, Breakpoints,
     CookiePermissions, CookieClipboard) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -575,5 +573,4 @@ Firebug.registerPanel(CookiePanel);
 return CookiePanel;
 
 // ********************************************************************************************* //
-}});
-
+});

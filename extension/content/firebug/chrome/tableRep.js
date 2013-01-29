@@ -15,7 +15,6 @@ function(D, Locale, FirebugReps, Dom, Css, Arr) {
 
 // ********************************************************************************************* //
 
-with (D) {
 FirebugReps.Table = D.domplate(Firebug.Rep,
 {
     className: "table",
@@ -327,7 +326,6 @@ FirebugReps.Table = D.domplate(Firebug.Rep,
         return true;
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

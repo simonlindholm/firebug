@@ -15,8 +15,6 @@ define([
 ],
 function(Obj, Firebug, D, Locale, Events, Wrapper, Dom, Css, Str, Arr, Persist) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -306,5 +304,4 @@ Firebug.registerRep(BreakpointRep);
 return DOMBreakpointGroup;
 
 // ********************************************************************************************* //
-}});
-
+});

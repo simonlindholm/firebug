@@ -10,7 +10,6 @@ Firebug.BalloonNote = function(doc, object)
     this.initialize(doc, object);
 };
 
-with (D) {
 Firebug.BalloonNote.prototype = D.domplate(
 {
     tag:
@@ -53,7 +52,6 @@ Firebug.BalloonNote.prototype = D.domplate(
         // move from Firebug.BreakNotification
     }
 });
-};
 
 // ********************************************************************************************* //
 });

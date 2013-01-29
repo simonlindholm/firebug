@@ -39,8 +39,6 @@ function(Obj, Firebug, Firefox, D, Xpcom, Locale,
     Events, Options, Url, SourceLink, Http, Css, Dom, Win, Search, Str,
     Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -1676,4 +1674,4 @@ Firebug.registerPanel(NetPanel);
 return Firebug.NetMonitor;
 
 // ********************************************************************************************* //
-}});
+});

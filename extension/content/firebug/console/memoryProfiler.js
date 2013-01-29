@@ -556,7 +556,6 @@ ObjectIterator.prototype =
 // ********************************************************************************************* //
 // Domplate Templates
 
-with (D) {
 Firebug.MemoryProfiler.ProfileTable = D.domplate(
 {
     tag:
@@ -838,8 +837,6 @@ Firebug.MemoryProfiler.ProfileSummary = D.domplate(Firebug.Rep,
         return Firebug.MemoryProfiler.ProfileCall.getColumnLabel(call);
     }
 });
-
-} // END with Domplate
 
 // ********************************************************************************************* //
 // Private Functions

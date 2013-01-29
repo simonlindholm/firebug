@@ -12,7 +12,6 @@ define([
     "firebug/css/selectorModule",
 ],
 function(Firebug, Obj, Locale, Events, Dom, D, Menu, SelectorEditor) {
-with (D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -457,4 +456,4 @@ Firebug.registerPanel(SelectorPanel);
 return SelectorPanel;
 
 // ********************************************************************************************* //
-}});
+});

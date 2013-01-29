@@ -155,7 +155,6 @@ Firebug.FontViewerModel = Obj.extend(Firebug.Module,
 
 // ********************************************************************************************* //
 
-with (D) {
 Firebug.FontViewerModel.Preview = D.domplate(
 {
     bodyTag:
@@ -691,7 +690,6 @@ Firebug.FontViewerModel.Preview = D.domplate(
             this.insertMetaDataFormatted(body, fontObject.metadata);
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

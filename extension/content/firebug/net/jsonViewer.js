@@ -159,7 +159,6 @@ Firebug.JSONViewerModel = Obj.extend(Firebug.Module,
 
 // ********************************************************************************************* //
 
-with (D) {
 Firebug.JSONViewerModel.Preview = D.domplate(
 {
     bodyTag:
@@ -214,7 +213,6 @@ Firebug.JSONViewerModel.Preview = D.domplate(
         body.jsonTree.render(file.jsonObject, parentNode, context);
     }
 });
-};
 
 // ********************************************************************************************* //
 

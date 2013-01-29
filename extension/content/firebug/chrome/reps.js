@@ -32,8 +32,6 @@ function(Obj, Arr, Firebug, D, Firefox, Xpcom, Locale, HTMLLib, Events, Wrapper,
     Url, SourceLink, StackFrame, Css, Dom, Win, System, Xpath, Str, Xml, ToggleBranch,
     EventMonitor, ClosureInspector, Menu, CompilationUnit) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -3388,4 +3386,4 @@ Firebug.setDefaultReps(FirebugReps.Func, FirebugReps.Obj);
 return Firebug.Reps = FirebugReps;
 
 // ********************************************************************************************* //
-}});
+});

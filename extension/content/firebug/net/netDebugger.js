@@ -137,7 +137,6 @@ Breakpoint.prototype =
 // ********************************************************************************************* //
 // Breakpoint UI
 
-with (D) {
 var BreakpointRep = D.domplate(Firebug.Rep,
 {
     inspectable: false,
@@ -240,7 +239,6 @@ var BreakpointRep = D.domplate(Firebug.Rep,
         return object instanceof Breakpoint;
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

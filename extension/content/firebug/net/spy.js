@@ -886,7 +886,6 @@ function onHTTPSpyAbort(spy)
  * @domplate Represents a template for XHRs logged in the Console panel. The body of the
  * log (displayed when expanded) is rendered using {@link Firebug.NetMonitor.NetInfoBody}.
  */
-with (D) {
 Firebug.Spy.XHR = D.domplate(Firebug.Rep,
 /** @lends Firebug.Spy.XHR */
 {
@@ -1109,7 +1108,6 @@ Firebug.Spy.XHR = D.domplate(Firebug.Rep,
         return items;
     }
 });
-};
 
 // ********************************************************************************************* //
 

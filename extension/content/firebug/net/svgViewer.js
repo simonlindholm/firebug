@@ -142,7 +142,6 @@ Firebug.SVGViewerModel = Obj.extend(Firebug.Module,
  * @domplate Represents a template for displaying SVG parser errors. Used by
  * <code>Firebug.SVGViewerModel</code>.
  */
-with (D) {
 Firebug.SVGViewerModel.ParseError = D.domplate(Firebug.Rep,
 {
     tag:
@@ -170,7 +169,6 @@ Firebug.SVGViewerModel.ParseError = D.domplate(Firebug.Rep,
         return parts.join("\n");
     }
 });
-};
 
 // ************************************************************************************************
 // Registration

@@ -37,8 +37,6 @@ function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events, A
     CookieClipboard, TabWatcher, HttpObserver, System, Cookie, CookiePermissions, EditCookie,
     TraceListener, TraceModule, Firefox) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -1377,4 +1375,4 @@ Firebug.registerActivableModule(Firebug.CookieModule);
 return Firebug.CookieModule;
 
 // ********************************************************************************************* //
-}});
+});

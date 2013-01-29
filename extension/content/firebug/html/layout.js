@@ -18,7 +18,6 @@ function(Obj, Firebug, D, Locale, Events, Css, Dom, Xml, Menu) {
 
 function LayoutPanel() {}
 
-with (D) {
 LayoutPanel.prototype = Obj.extend(Firebug.Panel,
 {
     template: D.domplate(
@@ -532,7 +531,6 @@ LayoutEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
         return false;
     }
 });
-};
 
 // ************************************************************************************************
 // Local Helpers

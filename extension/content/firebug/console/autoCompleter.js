@@ -974,7 +974,6 @@ Firebug.JSEditor = function()
 {
 };
 
-with (D) {
 Firebug.JSEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
 {
     setupCompleter: function(completionBox, options)
@@ -1023,7 +1022,6 @@ Firebug.JSEditor.prototype = D.domplate(Firebug.InlineEditor.prototype,
         Firebug.Editor.update();
     }
 });
-}
 
 function EditorJSAutoCompleter(box, completionBox, options)
 {

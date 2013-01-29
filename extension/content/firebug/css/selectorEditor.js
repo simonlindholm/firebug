@@ -9,7 +9,6 @@ define([
     "firebug/lib/array",
 ],
 function(Firebug, D, Locale, Css, Str, Arr) {
-with (D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -249,4 +248,4 @@ SelectorEditor.stripCompletedParens = function(list, postExpr)
 return SelectorEditor;
 
 // ********************************************************************************************* //
-}});
+});

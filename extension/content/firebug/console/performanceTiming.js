@@ -13,7 +13,6 @@ define([
     "firebug/lib/css",
 ],
 function(Firebug, FBTrace, D, Obj, Locale, Dom, Events, Str, Wrapper, Css) {
-with (D) {
 
 // ********************************************************************************************* //
 // Docs
@@ -627,4 +626,4 @@ Firebug.registerModule(PerformanceTimingModule);
 return PerformanceTimingModule;
 
 // ********************************************************************************************* //
-}});
+});

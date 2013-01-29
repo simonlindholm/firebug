@@ -243,7 +243,6 @@ Firebug.Breakpoint = Obj.extend(Firebug.Module,
 
 // ************************************************************************************************
 
-with (D) {
 Firebug.Breakpoint.BreakpointListRep = D.domplate(Firebug.Rep,
 {
     tag:
@@ -449,7 +448,6 @@ Firebug.Breakpoint.BreakpointRep = D.domplate(Firebug.Rep,
         panel.refresh();
     }
 });
-};
 
 // ********************************************************************************************* //
 

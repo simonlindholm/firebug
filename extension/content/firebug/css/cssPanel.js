@@ -32,8 +32,6 @@ function(Obj, Firebug, D, FirebugReps, Locale, Events, Url, SourceLink, Css, Dom
     Search, Str, Arr, Fonts, Xml, Persist, System, Menu, Options, CSSModule, CSSInfoTip,
     SelectorEditor) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -2699,4 +2697,4 @@ Firebug.registerPanel(Firebug.CSSStyleSheetPanel);
 return Firebug.CSSStyleSheetPanel;
 
 // ********************************************************************************************* //
-}});
+});

@@ -12,7 +12,6 @@ define([
     "firebug/lib/url",
 ],
 function(FBTrace, Obj, D, Reps, StackFrame, Events, Css, Dom, Url) {
-with (D) {
 
 // ********************************************************************************************* //
 // Function Monitor
@@ -189,4 +188,4 @@ Firebug.registerRep(FunctionMonitorRep);
 return FunctionMonitor;
 
 // ********************************************************************************************* //
-}});
+});

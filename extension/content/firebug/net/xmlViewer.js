@@ -150,7 +150,6 @@ Firebug.XMLViewerModel = Obj.extend(Firebug.Module,
  * @domplate Represents a template for displaying XML parser errors. Used by
  * <code>Firebug.XMLViewerModel</code>.
  */
-with (D) {
 Firebug.XMLViewerModel.ParseError = D.domplate(Firebug.Rep,
 {
     tag:
@@ -178,7 +177,6 @@ Firebug.XMLViewerModel.ParseError = D.domplate(Firebug.Rep,
         return parts.join("\n");
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

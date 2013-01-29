@@ -12,8 +12,6 @@ define([
 ],
 function(Obj, Locale, Str, D, Dom, Css, Events, CookieUtils) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -404,4 +402,4 @@ Firebug.registerRep(Breakpoints.BreakpointTemplate);
 return Breakpoints;
 
 // ********************************************************************************************* //
-}});
+});

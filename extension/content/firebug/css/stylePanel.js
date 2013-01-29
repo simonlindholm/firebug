@@ -24,8 +24,6 @@ define([
 function(Obj, Firebug, Firefox, D, FirebugReps, Xpcom, Locale, Events, Url, Arr,
     SourceLink, Dom, Css, Xpath, Fonts, Options, CSSModule, CSSStyleSheetPanel, Menu) {
 
-with (D) {
-
 // ********************************************************************************************* //
 // Constants
 
@@ -931,4 +929,4 @@ Firebug.registerPanel(CSSStylePanel);
 return CSSStylePanel;
 
 // ********************************************************************************************* //
-}});
+});

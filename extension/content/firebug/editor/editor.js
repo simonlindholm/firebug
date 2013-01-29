@@ -567,7 +567,6 @@ Firebug.InlineEditor = function(doc)
     this.initializeInline(doc);
 };
 
-with (D) {
 Firebug.InlineEditor.prototype = D.domplate(Firebug.BaseEditor,
 {
     enterOnBlur: true,
@@ -1071,7 +1070,6 @@ Firebug.InlineEditor.prototype = D.domplate(Firebug.BaseEditor,
             Dom.scrollIntoCenterView(this.box, null, true);
     }
 });
-};
 
 // ********************************************************************************************* //
 // Autocompletion

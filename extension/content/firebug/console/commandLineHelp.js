@@ -11,7 +11,6 @@ define([
     "firebug/lib/events",
 ],
 function(Firebug, D, Locale, Dom, CommandLineExposed, Win, Xpcom, Events) {
-with (D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -216,4 +215,4 @@ Firebug.registerCommand("help", {
 return CommandLineHelp;
 
 // ********************************************************************************************* //
-}});
+});

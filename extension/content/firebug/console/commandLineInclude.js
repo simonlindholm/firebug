@@ -16,7 +16,6 @@ define([
     "firebug/editor/editor",
 ],
 function(FirebugReps, D, Locale, Dom, Win, Css, Str, Options, Menu, System, Xpcom, Obj) {
-with (D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -586,4 +585,4 @@ Firebug.registerModule(CommandLineInclude);
 return CommandLineInclude;
 
 // ********************************************************************************************* //
-}});
+});
