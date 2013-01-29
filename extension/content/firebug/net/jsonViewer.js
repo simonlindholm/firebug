@@ -17,7 +17,7 @@ define([
     "firebug/dom/domPanel",
     "firebug/chrome/reps"
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Css, Dom, Http, Str, Json,
+function(Obj, Firebug, D, Locale, Events, Css, Dom, Http, Str, Json,
     ToggleBranch, Arr, System) {
 
 // ********************************************************************************************* //
@@ -159,7 +159,7 @@ Firebug.JSONViewerModel = Obj.extend(Firebug.Module,
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 Firebug.JSONViewerModel.Preview = domplate(
 {
     bodyTag:

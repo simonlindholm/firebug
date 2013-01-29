@@ -12,8 +12,8 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/css",
 ],
-function(Firebug, FBTrace, Domplate, Obj, Locale, Dom, Events, Str, Wrapper, Css) {
-with (Domplate) {
+function(Firebug, FBTrace, D, Obj, Locale, Dom, Events, Str, Wrapper, Css) {
+with (D) {
 
 // ********************************************************************************************* //
 // Docs

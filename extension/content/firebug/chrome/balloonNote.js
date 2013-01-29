@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 
-define(["firebug/lib/domplate"], function(Domplate) {
+define(["firebug/lib/domplate"], function(D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -10,7 +10,7 @@ Firebug.BalloonNote = function(doc, object)
     this.initialize(doc, object);
 };
 
-with (Domplate) {
+with (D) {
 Firebug.BalloonNote.prototype = domplate(
 {
     tag:

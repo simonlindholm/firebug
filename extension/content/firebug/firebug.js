@@ -24,7 +24,7 @@ define([
     "firebug/trace/traceListener",
     "firebug/console/commandLineExposed",
 ],
-function(FBL, Obj, Firefox, ChromeFactory, Domplate, Options, Locale, Events,
+function(FBL, Obj, Firefox, ChromeFactory, D, Options, Locale, Events,
     Wrapper, Url, Css, Win, Str, Arr, Dom, Http, TraceListener, CommandLineExposed) {
 
 // ********************************************************************************************* //
@@ -2476,7 +2476,7 @@ Firebug.MeasureBox =
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 Firebug.Rep = domplate(
 {
     className: "",
@@ -2780,7 +2780,7 @@ if (preFirebugKeys)
 // Registration
 
 Firebug.Firefox = Firefox;
-Firebug.Domplate = Domplate;
+Firebug.Domplate = D;
 Firebug.ChromeFactory = ChromeFactory;
 
 return Firebug;

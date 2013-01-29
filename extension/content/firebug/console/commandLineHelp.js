@@ -10,8 +10,8 @@ define([
     "firebug/lib/xpcom",
     "firebug/lib/events",
 ],
-function(Firebug, Domplate, Locale, Dom, CommandLineExposed, Win, Xpcom, Events) {
-with (Domplate) {
+function(Firebug, D, Locale, Dom, CommandLineExposed, Win, Xpcom, Events) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

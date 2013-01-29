@@ -35,11 +35,11 @@ define([
     "firebug/net/netMonitor",
     "firebug/net/netReps"
 ],
-function(Obj, Firebug, Firefox, Domplate, Xpcom, Locale,
+function(Obj, Firebug, Firefox, D, Xpcom, Locale,
     Events, Options, Url, SourceLink, Http, Css, Dom, Win, Search, Str,
     Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

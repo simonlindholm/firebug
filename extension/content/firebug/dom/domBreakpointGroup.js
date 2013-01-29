@@ -13,9 +13,9 @@ define([
     "firebug/lib/array",
     "firebug/lib/persist",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Wrapper, Dom, Css, Str, Arr, Persist) {
+function(Obj, Firebug, D, Locale, Events, Wrapper, Dom, Css, Str, Arr, Persist) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

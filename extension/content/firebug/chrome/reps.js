@@ -28,11 +28,11 @@ define([
     "firebug/chrome/menu",
     "arch/compilationunit",
 ],
-function(Obj, Arr, Firebug, Domplate, Firefox, Xpcom, Locale, HTMLLib, Events, Wrapper, Options,
+function(Obj, Arr, Firebug, D, Firefox, Xpcom, Locale, HTMLLib, Events, Wrapper, Options,
     Url, SourceLink, StackFrame, Css, Dom, Win, System, Xpath, Str, Xml, ToggleBranch,
     EventMonitor, ClosureInspector, Menu, CompilationUnit) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

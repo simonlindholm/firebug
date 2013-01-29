@@ -9,7 +9,7 @@ define([
     "firebug/lib/url",
     "firebug/lib/dom",
 ],
-function(Obj, Firebug, Firefox, Locale, Domplate, Url, Dom) {
+function(Obj, Firebug, Firefox, Locale, D, Url, Dom) {
 
 // ************************************************************************************************
 // Constants
@@ -274,7 +274,7 @@ Firebug.PanelActivation = Obj.extend(Firebug.Module,
 /**
  * @domplate This template renders default content for disabled panels.
  */
-with (Domplate) {
+with (D) {
 Firebug.DisabledPanelBox = domplate(Firebug.Rep,
 /** @lends Firebug.DisabledPanelBox */
 {

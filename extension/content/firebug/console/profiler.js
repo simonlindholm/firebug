@@ -15,7 +15,7 @@ define([
     "firebug/lib/string",
     "firebug/js/fbs",
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, Url, StackFrame, Events,
+function(Obj, Firebug, D, FirebugReps, Locale, Wrapper, Url, StackFrame, Events,
     Css, Dom, Str, FBS) {
 
 // ********************************************************************************************* //
@@ -254,7 +254,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 Firebug.Profiler.ProfileTable = domplate(
 {
     tag:

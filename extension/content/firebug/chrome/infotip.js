@@ -8,7 +8,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/dom"
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Dom) {
+function(Obj, Firebug, D, Locale, Events, Dom) {
 
 // ********************************************************************************************* //
 // Constants
@@ -17,7 +17,7 @@ const infoTipMargin = 10;
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 Firebug.InfoTip = Obj.extend(Firebug.Module,
 {
     dispatchName: "infoTip",

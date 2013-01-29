@@ -15,8 +15,8 @@ define([
     "firebug/lib/object",
     "firebug/editor/editor",
 ],
-function(FirebugReps, Domplate, Locale, Dom, Win, Css, Str, Options, Menu, System, Xpcom, Obj) {
-with (Domplate) {
+function(FirebugReps, D, Locale, Dom, Win, Css, Str, Options, Menu, System, Xpcom, Obj) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

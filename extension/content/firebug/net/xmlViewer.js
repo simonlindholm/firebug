@@ -10,7 +10,7 @@ define([
     "firebug/lib/http",
     "firebug/net/netUtils"
 ],
-function(Obj, Firebug, Domplate, Locale, Xpcom, Css, Http, NetUtils) {
+function(Obj, Firebug, D, Locale, Xpcom, Css, Http, NetUtils) {
 
 // ********************************************************************************************* //
 // Constants
@@ -150,7 +150,7 @@ Firebug.XMLViewerModel = Obj.extend(Firebug.Module,
  * @domplate Represents a template for displaying XML parser errors. Used by
  * <code>Firebug.XMLViewerModel</code>.
  */
-with (Domplate) {
+with (D) {
 Firebug.XMLViewerModel.ParseError = domplate(Firebug.Rep,
 {
     tag:

@@ -13,7 +13,7 @@ define([
     "firebug/chrome/menu",
     "firebug/trace/debug",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Css, Dom, Str, Arr, Menu, Debug) {
+function(Obj, Firebug, D, Locale, Events, Css, Dom, Str, Arr, Menu, Debug) {
 
 // ********************************************************************************************* //
 // Constants
@@ -567,7 +567,7 @@ Firebug.InlineEditor = function(doc)
     this.initializeInline(doc);
 };
 
-with (Domplate) {
+with (D) {
 Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
 {
     enterOnBlur: true,

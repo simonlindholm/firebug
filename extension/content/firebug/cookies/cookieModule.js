@@ -32,12 +32,12 @@ define([
     "firebug/chrome/firefox",
     "firebug/cookies/legacy",
 ],
-function(Xpcom, Obj, Locale, Domplate, Dom, Options, Persist, Str, Http, Css, Events, Arr,
+function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events, Arr,
     BaseObserver, MenuUtils, CookieReps, CookieUtils, Cookier, Breakpoints, CookieObserver,
     CookieClipboard, TabWatcher, HttpObserver, System, Cookie, CookiePermissions, EditCookie,
     TraceListener, TraceModule, Firefox) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

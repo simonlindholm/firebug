@@ -11,7 +11,8 @@ define([
     "firebug/lib/dom",
     "firebug/lib/url",
 ],
-function(FBTrace, Obj, Domplate, Reps, StackFrame, Events, Css, Dom, Url) { with (Domplate) {
+function(FBTrace, Obj, D, Reps, StackFrame, Events, Css, Dom, Url) {
+with (D) {
 
 // ********************************************************************************************* //
 // Function Monitor

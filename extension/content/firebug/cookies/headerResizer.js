@@ -15,7 +15,7 @@ define([
     "firebug/cookies/baseObserver",
     "firebug/cookies/menuUtils",
 ],
-function(Xpcom, Obj, Locale, Domplate, Dom, Options, Persist, Str, Http, Css, Events,
+function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events,
     BaseObserver, MenuUtils) {
 
 // ********************************************************************************************* //

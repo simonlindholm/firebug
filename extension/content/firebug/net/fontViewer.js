@@ -17,7 +17,7 @@ define([
     "firebug/net/netUtils",
     "firebug/lib/options"
 ],
-function(Obj, Firebug, Domplate, Locale, Xpcom, Events, Win, Css, Dom, Str, Fonts, Url, Http,
+function(Obj, Firebug, D, Locale, Xpcom, Events, Win, Css, Dom, Str, Fonts, Url, Http,
     NetUtils, Options) {
 
 // ********************************************************************************************* //
@@ -155,7 +155,7 @@ Firebug.FontViewerModel = Obj.extend(Firebug.Module,
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 Firebug.FontViewerModel.Preview = domplate(
 {
     bodyTag:

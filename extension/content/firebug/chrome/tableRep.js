@@ -8,14 +8,14 @@ define([
     "firebug/lib/css",
     "firebug/lib/array",
 ],
-function(Domplate, Locale, FirebugReps, Dom, Css, Arr) {
+function(D, Locale, FirebugReps, Dom, Css, Arr) {
 
 // ********************************************************************************************* //
 // Constants
 
 // ********************************************************************************************* //
 
-with (Domplate) {
+with (D) {
 FirebugReps.Table = domplate(Firebug.Rep,
 {
     className: "table",

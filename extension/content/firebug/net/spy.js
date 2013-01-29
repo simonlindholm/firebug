@@ -26,7 +26,7 @@ define([
     "firebug/net/netPanel",
     "firebug/console/errors",
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Events, HttpRequestObserver, StackFrame,
+function(Obj, Firebug, D, FirebugReps, Events, HttpRequestObserver, StackFrame,
     Http, Css, Dom, Win, System, Str, Url, Arr, Debug, NetHttpActivityObserver, NetUtils,
     TraceListener, TraceModule, Wrapper, Xpcom) {
 
@@ -886,7 +886,7 @@ function onHTTPSpyAbort(spy)
  * @domplate Represents a template for XHRs logged in the Console panel. The body of the
  * log (displayed when expanded) is rendered using {@link Firebug.NetMonitor.NetInfoBody}.
  */
-with (Domplate) {
+with (D) {
 Firebug.Spy.XHR = domplate(Firebug.Rep,
 /** @lends Firebug.Spy.XHR */
 {

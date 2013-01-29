@@ -21,10 +21,10 @@ define([
     "firebug/css/cssPanel",
     "firebug/chrome/menu"
 ],
-function(Obj, Firebug, Firefox, Domplate, FirebugReps, Xpcom, Locale, Events, Url, Arr,
+function(Obj, Firebug, Firefox, D, FirebugReps, Xpcom, Locale, Events, Url, Arr,
     SourceLink, Dom, Css, Xpath, Fonts, Options, CSSModule, CSSStyleSheetPanel, Menu) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

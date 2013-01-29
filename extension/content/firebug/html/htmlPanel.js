@@ -29,11 +29,11 @@ define([
     "firebug/html/inspector",
     "firebug/html/layout"
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, HTMLLib, Events,
+function(Obj, Firebug, D, FirebugReps, Locale, HTMLLib, Events,
     SourceLink, Css, Dom, Win, Options, Xpath, Str, Xml, Arr, Persist, Menu,
     Url, CSSModule, CSSInfoTip) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

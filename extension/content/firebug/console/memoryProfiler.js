@@ -13,7 +13,7 @@ define([
     "firebug/lib/string",
     "firebug/js/fbs",
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, StackFrame, Dom, Css, Str, FBS) {
+function(Obj, Firebug, D, FirebugReps, Locale, Wrapper, StackFrame, Dom, Css, Str, FBS) {
 
 // ********************************************************************************************* //
 
@@ -556,7 +556,7 @@ ObjectIterator.prototype =
 // ********************************************************************************************* //
 // Domplate Templates
 
-with (Domplate) {
+with (D) {
 Firebug.MemoryProfiler.ProfileTable = domplate(
 {
     tag:

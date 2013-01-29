@@ -11,8 +11,8 @@ define([
     "firebug/css/selectorEditor",
     "firebug/css/selectorModule",
 ],
-function(Firebug, Obj, Locale, Events, Dom, Domplate, Menu, SelectorEditor) {
-with (Domplate) {
+function(Firebug, Obj, Locale, Events, Dom, D, Menu, SelectorEditor) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

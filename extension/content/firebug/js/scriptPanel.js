@@ -28,7 +28,7 @@ define([
     "firebug/js/sourceBox",
     "firebug/js/watchPanel",
 ],
-function (Obj, Firebug, Firefox, FirebugReps, Domplate, JavaScriptTool, CompilationUnit,
+function (Obj, Firebug, Firefox, FirebugReps, D, JavaScriptTool, CompilationUnit,
     Locale, Events, Url, SourceLink, StackFrame, Css, Dom, Win, Search, Persist,
     System, Menu, Debug, Keywords) {
 
@@ -1807,7 +1807,7 @@ function getExpressionAt(text, charOffset)
 // ********************************************************************************************* //
 // Domplate Templates
 
-with (Domplate) {
+with (D) {
 
 /**
  * @domplate Displays various warning messages within the Script panel.

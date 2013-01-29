@@ -24,11 +24,11 @@ define([
     "firebug/cookies/editCookie",
     "firebug/cookies/cookieClipboard",
 ],
-function(Xpcom, Obj, Locale, Domplate, Dom, Options, Persist, Str, Http, Css, Events, Arr, System,
+function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events, Arr, System,
     BaseObserver, MenuUtils, CookieUtils, Cookie, Breakpoints, CookieEvents,
     CookiePermissions, EditCookie, CookieClipboard) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

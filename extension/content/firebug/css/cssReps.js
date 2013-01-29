@@ -11,9 +11,9 @@ define([
     "firebug/lib/string",
     "firebug/lib/fonts"
 ],
-function(Obj, InfoTip, Domplate, SourceLink, Locale, Dom, Css, Str, Fonts) {
+function(Obj, InfoTip, D, SourceLink, Locale, Dom, Css, Str, Fonts) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

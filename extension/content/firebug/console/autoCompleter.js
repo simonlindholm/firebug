@@ -13,7 +13,7 @@ define([
     "firebug/console/closureInspector",
     "firebug/editor/editor"
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Wrapper, Dom, Str, Arr, ClosureInspector, Editor) {
+function(Obj, Firebug, D, Locale, Events, Wrapper, Dom, Str, Arr, ClosureInspector, Editor) {
 
 // ********************************************************************************************* //
 // Constants
@@ -974,7 +974,7 @@ Firebug.JSEditor = function()
 {
 };
 
-with (Domplate) {
+with (D) {
 Firebug.JSEditor.prototype = domplate(Firebug.InlineEditor.prototype,
 {
     setupCompleter: function(completionBox, options)

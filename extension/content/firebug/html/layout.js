@@ -12,13 +12,13 @@ define([
     "firebug/chrome/menu",
     "firebug/editor/editor",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Css, Dom, Xml, Menu) {
+function(Obj, Firebug, D, Locale, Events, Css, Dom, Xml, Menu) {
 
 // ************************************************************************************************
 
 function LayoutPanel() {}
 
-with (Domplate) {
+with (D) {
 LayoutPanel.prototype = Obj.extend(Firebug.Panel,
 {
     template: domplate(

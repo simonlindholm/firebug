@@ -12,7 +12,7 @@ define([
     "firebug/lib/array",
     "firebug/net/netUtils",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Url, Css, Dom, Arr, NetUtils) {
+function(Obj, Firebug, D, Locale, Events, Url, Css, Dom, Arr, NetUtils) {
 
 // ********************************************************************************************* //
 // Constants
@@ -137,7 +137,7 @@ Breakpoint.prototype =
 // ********************************************************************************************* //
 // Breakpoint UI
 
-with (Domplate) {
+with (D) {
 var BreakpointRep = domplate(Firebug.Rep,
 {
     inspectable: false,

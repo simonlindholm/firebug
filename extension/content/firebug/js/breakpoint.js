@@ -19,7 +19,7 @@ define([
     "firebug/editor/editor",
     "firebug/console/autoCompleter"
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, SourceLink,
+function(Obj, Firebug, D, FirebugReps, Locale, Events, SourceLink,
     StackFrame, Css, Dom, Str, Arr, Persist, Menu, FBS) {
 
 // ********************************************************************************************* //
@@ -243,7 +243,7 @@ Firebug.Breakpoint = Obj.extend(Firebug.Module,
 
 // ************************************************************************************************
 
-with (Domplate) {
+with (D) {
 Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
 {
     tag:
@@ -947,7 +947,7 @@ Firebug.Breakpoint.ConditionEditor = function(doc)
     this.initialize(doc);
 };
 
-with (Domplate) {
+with (D) {
 Firebug.Breakpoint.ConditionEditor.prototype = domplate(Firebug.JSEditor.prototype,
 {
     tag:

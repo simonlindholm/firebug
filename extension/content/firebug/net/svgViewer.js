@@ -10,7 +10,7 @@ define([
     "firebug/lib/http",
     "firebug/net/netUtils"
 ],
-function(Obj, Firebug, Domplate, Locale, Xpcom, Css, Http, NetUtils) {
+function(Obj, Firebug, D, Locale, Xpcom, Css, Http, NetUtils) {
 
 // ************************************************************************************************
 // Constants
@@ -142,7 +142,7 @@ Firebug.SVGViewerModel = Obj.extend(Firebug.Module,
  * @domplate Represents a template for displaying SVG parser errors. Used by
  * <code>Firebug.SVGViewerModel</code>.
  */
-with (Domplate) {
+with (D) {
 Firebug.SVGViewerModel.ParseError = domplate(Firebug.Rep,
 {
     tag:

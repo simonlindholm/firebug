@@ -10,9 +10,9 @@ define([
     "firebug/lib/events",
     "firebug/cookies/cookieUtils"
 ],
-function(Obj, Locale, Str, Domplate, Dom, Css, Events, CookieUtils) {
+function(Obj, Locale, Str, D, Dom, Css, Events, CookieUtils) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants
@@ -184,7 +184,7 @@ var Breakpoints =
 // ********************************************************************************************* //
 // Cookie Breakpoints
 
-Breakpoints.BreakpointTemplate = Domplate.domplate(Firebug.Rep,
+Breakpoints.BreakpointTemplate = D.domplate(Firebug.Rep,
 {
     inspectable: false,
 
@@ -295,7 +295,7 @@ Breakpoints.ConditionEditor = function(doc)
     Firebug.Breakpoint.ConditionEditor.apply(this, arguments);
 };
 
-Breakpoints.ConditionEditor.prototype = Domplate.domplate(Firebug.Breakpoint.ConditionEditor.prototype,
+Breakpoints.ConditionEditor.prototype = D.domplate(Firebug.Breakpoint.ConditionEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {

@@ -14,12 +14,12 @@ define([
     "firebug/console/console",
     "firebug/chrome/infotip",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Url, Css, Dom, Xml, Xpath) {
+function(Obj, Firebug, D, Locale, Events, Url, Css, Dom, Xml, Xpath) {
 
 // ************************************************************************************************
 // Constants
 
-var singleSpaceTag = Domplate.DIV({"class" : "a11y1emSize"}, "x");
+var singleSpaceTag = D.DIV({"class" : "a11y1emSize"}, "x");
 
 var KeyEvent = window.KeyEvent;
 

@@ -28,11 +28,11 @@ define([
     "firebug/editor/editorSelector",
     "firebug/chrome/searchBox"
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, Url, SourceLink, Css, Dom, Win,
+function(Obj, Firebug, D, FirebugReps, Locale, Events, Url, SourceLink, Css, Dom, Win,
     Search, Str, Arr, Fonts, Xml, Persist, System, Menu, Options, CSSModule, CSSInfoTip,
     SelectorEditor) {
 
-with (Domplate) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

@@ -19,10 +19,10 @@ define([
     "firebug/css/cssModule",
     "firebug/css/cssReps"
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Css, Dom, Xml, Url, Arr, SourceLink, Menu,
+function(Obj, Firebug, D, Locale, Events, Css, Dom, Xml, Url, Arr, SourceLink, Menu,
     Options, Str, Persist, CSSModule, CSSInfoTip) {
 
-with (Domplate) {
+with (D) {
 
 //********************************************************************************************* //
 // Constants

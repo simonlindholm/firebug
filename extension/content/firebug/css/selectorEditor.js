@@ -8,8 +8,8 @@ define([
     "firebug/lib/string",
     "firebug/lib/array",
 ],
-function(Firebug, Domplate, Locale, Css, Str, Arr) {
-with (Domplate) {
+function(Firebug, D, Locale, Css, Str, Arr) {
+with (D) {
 
 // ********************************************************************************************* //
 // Constants

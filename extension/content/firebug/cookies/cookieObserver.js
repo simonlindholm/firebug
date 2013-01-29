@@ -21,7 +21,7 @@ define([
     "firebug/cookies/cookieEvents",
     "firebug/lib/array",
 ],
-function(Xpcom, Obj, Locale, Domplate, Dom, Options, Persist, Str, Http, Css, Events,
+function(Xpcom, Obj, Locale, D, Dom, Options, Persist, Str, Http, Css, Events,
     BaseObserver, TabWatcher, CookieReps, CookieUtils, Cookie, Breakpoints, CookieEvents, Arr) {
 
 // ********************************************************************************************* //
