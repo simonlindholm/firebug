@@ -31,11 +31,11 @@ const prompts = Xpcom.CCSV("@mozilla.org/embedcomp/prompt-service;1", "nsIPrompt
 var HelpCaption = domplate(
 {
     tag:
-        SPAN({"class": "helpTitle"},
-            SPAN({"class": "helpCaption"},
+        D.SPAN({"class": "helpTitle"},
+            D.SPAN({"class": "helpCaption"},
                 Locale.$STR("console.cmd.help_title")
             ),
-            SPAN({"class": "helpCaptionDesc"},
+            D.SPAN({"class": "helpCaptionDesc"},
                 Locale.$STR("console.cmd.help_title_desc")
             )
         )

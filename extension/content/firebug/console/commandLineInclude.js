@@ -72,11 +72,11 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
     getUrlTag: function(href, aliasName)
     {
         var urlTag =
-            SPAN({style:"height:100%"},
+            D.SPAN({style:"height:100%"},
                 A({"href": href, "target": "_blank", "class": "url"},
                     Str.cropString(href, 100)
                 ),
-                SPAN({"class": "commands"}
+                D.SPAN({"class": "commands"}
                 // xxxFlorent: temporarily disabled, see: 
                 //    http://code.google.com/p/fbug/issues/detail?id=5878#c27
                 /*,
@@ -109,7 +109,7 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
         {
             var aliasName = keys[i];
             arrayToDisplay.push({
-                "alias": SPAN({"class":"aliasName", "data-aliasname": aliasName}, aliasName),
+                "alias": D.SPAN({"class":"aliasName", "data-aliasname": aliasName}, aliasName),
                 "URL": this.getUrlTag(store.getItem(aliasName), aliasName, context)
             });
         }

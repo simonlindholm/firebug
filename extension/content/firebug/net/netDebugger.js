@@ -148,11 +148,11 @@ var BreakpointRep = domplate(Firebug.Rep,
             D.DIV({"class": "breakpointBlockHead"},
                 INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex: "-1", onclick: "$onEnable"}),
-                SPAN({"class": "breakpointName", title: "$bp|getTitle"}, "$bp|getName"),
+                D.SPAN({"class": "breakpointName", title: "$bp|getTitle"}, "$bp|getName"),
                 IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
             D.DIV({"class": "breakpointCondition"},
-                SPAN("$bp.condition")
+                D.SPAN("$bp.condition")
             )
         ),
 

@@ -410,10 +410,10 @@ Firebug.Profiler.ProfileTable = domplate(
 Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
 {
     tag:
-        SPAN({"class": "profileTitle", "role": "status"},
-            SPAN({"class": "profileCaption"}, "$object"),
+        D.SPAN({"class": "profileTitle", "role": "status"},
+            D.SPAN({"class": "profileCaption"}, "$object"),
             " ",
-            SPAN({"class": "profileTime"}, "")
+            D.SPAN({"class": "profileTime"}, "")
         )
 });
 

@@ -459,7 +459,7 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
                         D.DIV({"class": "netSendingBar", style: "left: $file.offset"}),
                         D.DIV({"class": "netWaitingBar", style: "left: $file.offset"}),
                         D.DIV({"class": "netReceivingBar", style: "left: $file.offset; width: $file.width"},
-                            SPAN({"class": "netTimeLabel"}, "$file|getElapsedTime")
+                            D.SPAN({"class": "netTimeLabel"}, "$file|getElapsedTime")
                         )
                         // Page timings (vertical lines) are dynamically appended here.
                     )
@@ -498,12 +498,12 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
                 D.DIV({"class": "netSummaryBar", style: "width: 100%"},
                     D.DIV({"class": "netCacheSizeLabel netSummaryLabel", collapsed: "true"},
                         "(",
-                        SPAN("0 B"),
-                        SPAN(" " + Locale.$STR("FromCache")),
+                        D.SPAN("0 B"),
+                        D.SPAN(" " + Locale.$STR("FromCache")),
                         ")"
                     ),
                     D.DIV({"class": "netTimeBar"},
-                        SPAN({"class": "netTotalTimeLabel netSummaryLabel"}, "0ms")
+                        D.SPAN({"class": "netTotalTimeLabel netSummaryLabel"}, "0ms")
                     )
                 )
             )
@@ -886,10 +886,10 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     nameTag:
-        SPAN("$param|getParamName"),
+        D.SPAN("$param|getParamName"),
 
     nameWithTooltipTag:
-        SPAN({title: "$param.name"}, "$param|getParamName"),
+        D.SPAN({title: "$param.name"}, "$param|getParamName"),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -1283,7 +1283,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
                     TD({colspan: 2, "role": "presentation"},
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("net.label.Parameters"),
-                            SPAN({"class": "netInfoPostContentType"},
+                            D.SPAN({"class": "netInfoPostContentType"},
                                 "application/x-www-form-urlencoded"
                             )
                         )
@@ -1301,7 +1301,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
                     TD({colspan: 2, "role":"presentation" },
                         D.DIV({"class": "netInfoPostParams"},
                             Locale.$STR("net.label.Parts"),
-                            SPAN({"class": "netInfoPostContentType"},
+                            D.SPAN({"class": "netInfoPostContentType"},
                                 "multipart/form-data"
                             )
                         )
@@ -1578,8 +1578,8 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
     tag:
         D.DIV({"class": "netInfoHeadersTable", "role": "tabpanel"},
             D.DIV({"class": "netInfoHeadersGroup netInfoResponseHeadersTitle collapsed"},
-                SPAN(Locale.$STR("ResponseHeaders")),
-                SPAN({"class": "netHeadersViewSource response collapsed", onclick: "$onViewSource",
+                D.SPAN(Locale.$STR("ResponseHeaders")),
+                D.SPAN({"class": "netHeadersViewSource response collapsed", onclick: "$onViewSource",
                     _sourceDisplayed: false, _rowName: "ResponseHeaders"},
                     Locale.$STR("net.headers.view source")
                 )
@@ -1589,8 +1589,8 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
                     "aria-label": Locale.$STR("ResponseHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoRequestHeadersTitle collapsed"},
-                SPAN(Locale.$STR("RequestHeaders")),
-                SPAN({"class": "netHeadersViewSource request collapsed", onclick: "$onViewSource",
+                D.SPAN(Locale.$STR("RequestHeaders")),
+                D.SPAN({"class": "netHeadersViewSource request collapsed", onclick: "$onViewSource",
                     _sourceDisplayed: false, _rowName: "RequestHeaders"},
                     Locale.$STR("net.headers.view source")
                 )
@@ -1600,14 +1600,14 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
                     "aria-label": Locale.$STR("RequestHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoCachedResponseHeadersTitle collapsed"},
-                SPAN(Locale.$STR("CachedResponseHeaders"))
+                D.SPAN(Locale.$STR("CachedResponseHeaders"))
             ),
             TABLE({cellpadding: 0, cellspacing: 0},
                 TBODY({"class": "netInfoCachedResponseHeadersBody", "role": "list",
                     "aria-label": Locale.$STR("CachedResponseHeaders")})
             ),
             D.DIV({"class": "netInfoHeadersGroup netInfoPostRequestHeadersTitle collapsed"},
-                SPAN(Locale.$STR("PostRequestHeaders"))
+                D.SPAN(Locale.$STR("PostRequestHeaders"))
             ),
             TABLE({cellpadding: 0, cellspacing: 0},
                 TBODY({"class": "netInfoPostRequestHeadersBody", "role": "list",
@@ -1750,7 +1750,7 @@ Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
     separatorTag:
         TR(
             TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
-                SPAN("$label")
+                D.SPAN("$label")
             )
         ),
 
@@ -2007,7 +2007,7 @@ Firebug.NetMonitor.NetLimit = domplate(Firebug.Rep,
                     TBODY(
                         TR(
                             TD(
-                                SPAN({"class": "netLimitLabel"},
+                                D.SPAN({"class": "netLimitLabel"},
                                     Locale.$STRP("plural.Limit_Exceeded2", [0])
                                 )
                             ),
@@ -2066,11 +2066,11 @@ Firebug.NetMonitor.ResponseSizeLimit = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "netInfoResponseSizeLimit"},
-            SPAN("$object.beforeLink"),
+            D.SPAN("$object.beforeLink"),
             A({"class": "objectLink", onclick: "$onClickLink"},
                 "$object.linkText"
             ),
-            SPAN("$object.afterLink")
+            D.SPAN("$object.afterLink")
         ),
 
     reLink: /^(.*)<a>(.*)<\/a>(.*$)/,

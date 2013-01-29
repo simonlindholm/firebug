@@ -1817,20 +1817,20 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "disabledPanelBox"},
             H1({"class": "disabledPanelHead"},
-                SPAN("$pageTitle")
+                D.SPAN("$pageTitle")
             ),
             P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
-                SPAN("$suggestion")
+                D.SPAN("$suggestion")
             )
         ),
 
     enableScriptTag:
-        SPAN({"class": "objectLink", onclick: "$onEnableScript", style: "color: blue"},
+        D.SPAN({"class": "objectLink", onclick: "$onEnableScript", style: "color: blue"},
             Locale.$STR("script.button.enable_javascript")
         ),
 
     focusDebuggerTag:
-        SPAN({"class": "objectLink", onclick: "$onFocusDebugger", style: "color: blue"},
+        D.SPAN({"class": "objectLink", onclick: "$onFocusDebugger", style: "color: blue"},
             Locale.$STR("script.button.Go to that page")
         ),
 

@@ -166,8 +166,8 @@ Firebug.JSONViewerModel.Preview = domplate(
         D.DIV({"class": "jsonPreview", _repObject: "$file"},
             D.DIV({"class": "title"},
                 D.DIV({"class": "sortLink", onclick: "$onSort", $sorted: "$sorted"},
-                    SPAN({"class": "doSort"}, Locale.$STR("jsonviewer.sort")),
-                    SPAN({"class": "doNotSort"}, Locale.$STR("jsonviewer.do not sort"))
+                    D.SPAN({"class": "doSort"}, Locale.$STR("jsonviewer.sort")),
+                    D.SPAN({"class": "doNotSort"}, Locale.$STR("jsonviewer.do not sort"))
                 )
             ),
             D.DIV({"class": "jsonPreviewBody"})

@@ -76,17 +76,17 @@ var CSSPropTag = domplate(CSSDomplateBase,
             role: "option"},
 
             // Use spaces for indent to make "copy to clipboard" nice.
-            SPAN("&nbsp;&nbsp;&nbsp;&nbsp;"),
-            SPAN({"class": "cssPropName", $editable: "$rule|isEditable"},
+            D.SPAN("&nbsp;&nbsp;&nbsp;&nbsp;"),
+            D.SPAN({"class": "cssPropName", $editable: "$rule|isEditable"},
                 "$prop.name"
             ),
 
             // Use a space here, so that "copy to clipboard" has it (issue 3266).
-            SPAN({"class": "cssColon"}, ":&nbsp;"),
-            SPAN({"class": "cssPropValue", $editable: "$rule|isEditable"},
+            D.SPAN({"class": "cssColon"}, ":&nbsp;"),
+            D.SPAN({"class": "cssPropValue", $editable: "$rule|isEditable"},
                 "$prop|getPropertyValue$prop.important"
             ),
-            SPAN({"class": "cssSemi"}, ";")
+            D.SPAN({"class": "cssSemi"}, ";")
         )
 });
 
@@ -100,8 +100,8 @@ var CSSImportRuleTag = domplate(CSSDomplateBase,
         "@import &quot;",
         A({"class": "objectLink", _repObject: "$rule.rule.styleSheet"}, "$rule.rule.href"),
         "&quot;",
-        SPAN({"class": "separator"}, "$rule.rule|getSeparator"),
-        SPAN({"class": "cssMediaQuery", $editable: "$rule|isEditable"},
+        D.SPAN({"class": "separator"}, "$rule.rule|getSeparator"),
+        D.SPAN({"class": "cssMediaQuery", $editable: "$rule|isEditable"},
             "$rule.rule.media.mediaText"),
         ";"
     ),
@@ -116,9 +116,9 @@ var CSSCharsetRuleTag = domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule focusRow cssCharsetRule", _repObject: "$rule.rule"},
-            SPAN({"class": "cssRuleName"}, "@charset"),
+            D.SPAN({"class": "cssRuleName"}, "@charset"),
             "&nbsp;&quot;",
-            SPAN({"class": "cssRuleValue", $editable: "$rule|isEditable"}, "$rule.rule.encoding"),
+            D.SPAN({"class": "cssRuleValue", $editable: "$rule|isEditable"}, "$rule.rule.encoding"),
             "&quot;;"
         )
 });
@@ -127,11 +127,11 @@ var CSSNamespaceRuleTag = domplate(CSSDomplateBase,
 {
     tag:
         D.DIV({"class": "cssRule focusRow cssNamespaceRule", _repObject: "$rule.rule"},
-            SPAN({"class": "cssRuleName"}, "@namespace"),
-            SPAN({"class": "separator"}, "$rule.prefix|getSeparator"),
-            SPAN({"class": "cssNamespacePrefix", $editable: "$rule|isEditable"}, "$rule.prefix"),
+            D.SPAN({"class": "cssRuleName"}, "@namespace"),
+            D.SPAN({"class": "separator"}, "$rule.prefix|getSeparator"),
+            D.SPAN({"class": "cssNamespacePrefix", $editable: "$rule|isEditable"}, "$rule.prefix"),
             "&nbsp;&quot;",
-            SPAN({"class": "cssNamespaceName", $editable: "$rule|isEditable"}, "$rule.name"),
+            D.SPAN({"class": "cssNamespaceName", $editable: "$rule|isEditable"}, "$rule.name"),
             "&quot;;"
         ),
 
@@ -174,7 +174,7 @@ var CSSStyleRuleTag = domplate(CSSDomplateBase,
             _repObject: "$rule.rule",
             role: "presentation"},
             D.DIV({"class": "cssHead focusRow", role: "listitem"},
-                SPAN({"class": "cssSelector", $editable: "$rule|isSelectorEditable"},
+                D.SPAN({"class": "cssSelector", $editable: "$rule|isSelectorEditable"},
                     "$rule.selector"),
                 " {"
             ),

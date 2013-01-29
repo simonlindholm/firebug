@@ -92,7 +92,7 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
                             D.DIV({"class": "perfTimingBox"},
                                 D.DIV({"class": "perfTimingBar $bar.className",
                                     style: "left: $bar.left%; width: $bar.width%"},
-                                    SPAN({"class": "perfTimingBarLabel"}, "$bar.label")
+                                    D.SPAN({"class": "perfTimingBarLabel"}, "$bar.label")
                                 ),
                                 D.DIV({"class": "perfTimingEvent domLoading",
                                     style: "left: $bar.domLoading%;"}
@@ -176,7 +176,7 @@ var PerfInfoTip = domplate(Firebug.Rep,
     separatorTag:
         TR(
             TD({"class": "timeInfoTipSeparator", "colspan": 4, "height": "10px"},
-                SPAN("$label")
+                D.SPAN("$label")
             )
         ),
 
@@ -407,11 +407,11 @@ var DetailsCaption = domplate(
 /** @lends DetailsCaption */
 {
     tag:
-        SPAN({"class": "timingTitle"},
-            SPAN({"class": "timingCaption"},
+        D.SPAN({"class": "timingTitle"},
+            D.SPAN({"class": "timingCaption"},
                 Locale.$STR("perftiming.details_title")
             ),
-            SPAN({"class": "timingCaptionDesc"},
+            D.SPAN({"class": "timingCaptionDesc"},
                 Locale.$STR("perftiming.details_title_desc")
             )
         )

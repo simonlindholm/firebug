@@ -586,7 +586,7 @@ Firebug.InlineEditor.prototype = domplate(Firebug.BaseEditor,
         ),
 
     expanderTag:
-        SPAN({"class": "inlineExpander", style: "-moz-user-focus:ignore;opacity:0.5"}),
+        D.SPAN({"class": "inlineExpander", style: "-moz-user-focus:ignore;opacity:0.5"}),
 
     initialize: function()
     {

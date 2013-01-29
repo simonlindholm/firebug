@@ -88,16 +88,16 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
                 ),
                 TD({"class": "cookieValueCol cookieCol"},
                     D.DIV({"class": "cookieValueLabel cookieLabel"}, 
-                        SPAN("$cookie.cookie.value|getValue")
+                        D.SPAN("$cookie.cookie.value|getValue")
                     )
                 ),
                 TD({"class": "cookieRawValueCol cookieCol"},
                     D.DIV({"class": "cookieRawValueLabel cookieLabel"}, 
-                        SPAN("$cookie.cookie.rawValue|getValue")
+                        D.SPAN("$cookie.cookie.rawValue|getValue")
                     )
                 ),
                 TD({"class": "cookieDomainCol cookieCol"},
-                    SPAN({"class": "cookieDomainLabel cookieLabel", onclick: "$onClickDomain"}, 
+                    D.SPAN({"class": "cookieDomainLabel cookieLabel", onclick: "$onClickDomain"}, 
                         "$cookie|getDomain")
                 ),
                 TD({"class": "cookieRawSizeCol cookieCol"},
@@ -108,7 +108,7 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
                 ),
                 TD({"class": "cookiePathCol cookieCol"},
                     D.DIV({"class": "cookiePathLabel cookieLabel", "title": "$cookie|getPath"},
-                        SPAN("$cookie|getPath")
+                        D.SPAN("$cookie|getPath")
                     )
                 ),
                 TD({"class": "cookieExpiresCol cookieCol"},
@@ -705,20 +705,20 @@ CookieReps.CookieChanged = domplate(CookieReps.Rep,
                 TBODY(
                     TR(
                         TD({width: "100%"},
-                            SPAN(Locale.$STR("cookies.console.cookie"), " "),
-                            SPAN({"class": "cookieNameLabel", onclick: "$onClick"}, 
+                            D.SPAN(Locale.$STR("cookies.console.cookie"), " "),
+                            D.SPAN({"class": "cookieNameLabel", onclick: "$onClick"}, 
                                 "$object|getName", 
                                 " "),
-                            SPAN({"class": "cookieActionLabel"}, 
+                            D.SPAN({"class": "cookieActionLabel"}, 
                                 "$object|getAction", 
                                 ".&nbsp;&nbsp;"),
-                            SPAN({"class": "cookieValueLabel"}, 
+                            D.SPAN({"class": "cookieValueLabel"}, 
                                 "$object|getValue")
                         ),
                         TD(
-                            SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain",
+                            D.SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain",
                                 title: "$object|getOriginalURI"}, "$object|getDomain"),
-                            SPAN("&nbsp;") 
+                            D.SPAN("&nbsp;") 
                         )
                     )
                 )
@@ -852,16 +852,16 @@ CookieReps.CookieRejected = domplate(CookieReps.Rep,
                 TBODY(
                     TR(
                         TD({width: "100%"},
-                            SPAN({"class": "cookieRejectedLabel"},
+                            D.SPAN({"class": "cookieRejectedLabel"},
                                 Locale.$STR("cookies.console.cookiesrejected")),
                             " ",
-                            SPAN({"class": "cookieRejectedList"},
+                            D.SPAN({"class": "cookieRejectedList"},
                                 "$object|getCookieList")
                         ),
                         TD(
-                            SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain"}, 
+                            D.SPAN({"class": "cookieDomainLabel", onclick: "$onClickDomain"}, 
                                 "$object|getDomain"),
-                            SPAN("&nbsp;") 
+                            D.SPAN("&nbsp;") 
                         )
                     )
                 )
@@ -1329,7 +1329,7 @@ CookieReps.CookieRep = domplate(CookieReps.Rep,
 {
     tag:
         OBJECTLINK(
-            SPAN({"class": "objectTitle"}, "$object|getTitle")
+            D.SPAN({"class": "objectTitle"}, "$object|getTitle")
         ),
 
     className: "cookie",

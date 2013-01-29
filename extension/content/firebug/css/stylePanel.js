@@ -61,7 +61,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 D.DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
                     FOR("section", "$inherited",
                         H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
-                            SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
+                            D.SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
                             TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
                         ),
                         D.DIV({role: "group"},
@@ -85,10 +85,10 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
             ),
 
         CSSFontPropValueTag:
-            SPAN({"class": "cssFontPropValue"},
+            D.SPAN({"class": "cssFontPropValue"},
                 FOR("part", "$propValueParts",
-                    SPAN({"class": "$part.type|getClass", _repObject: "$part.font"}, "$part.value"),
-                    SPAN({"class": "cssFontPropSeparator"}, "$part|getSeparator")
+                    D.SPAN({"class": "$part.type|getClass", _repObject: "$part.font"}, "$part.value"),
+                    D.SPAN({"class": "cssFontPropSeparator"}, "$part|getSeparator")
                 )
             ),
 

@@ -161,7 +161,7 @@ Firebug.FontViewerModel.Preview = domplate(
     bodyTag:
         D.DIV({"class": "fontInfo", _repObject: "$fontObject"},
             D.DIV({"class": "fontInfoGroup fontInfoGeneralInfoTitle"},
-                SPAN(Locale.$STR("fontviewer.General Info"))
+                D.SPAN(Locale.$STR("fontviewer.General Info"))
             ),
             TABLE({cellpadding: 0, cellspacing: 0},
                 TBODY({"class": "fontInfoGeneralInfoBody", "role": "list",
@@ -169,8 +169,8 @@ Firebug.FontViewerModel.Preview = domplate(
             ),
             D.DIV({"class": "fontInfoGroup fontInfoMetaDataTitle",
                 $collapsed: "$fontObject|noMetaData"},
-                SPAN(Locale.$STR("fontviewer.Meta Data")),
-                SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
+                D.SPAN(Locale.$STR("fontviewer.Meta Data")),
+                D.SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
                     _sourceDisplayed: false, _rowName: "MetaData"},
                     Locale.$STR("fontviewer.view source")
                 )
@@ -180,8 +180,8 @@ Firebug.FontViewerModel.Preview = domplate(
                     "aria-label": Locale.$STR("fontviewer.Meta Data")})
             ),
             D.DIV({"class": "fontInfoGroup fontInfoPreviewTitle"},
-                SPAN(Locale.$STR("fontviewer.Preview")),
-                SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
+                D.SPAN(Locale.$STR("fontviewer.Preview")),
+                D.SPAN({"class": "fontInfoToggleView", onclick: "$onToggleView",
                   _lettersDisplayed: false, _rowName: "Preview"},
                   Locale.$STR("fontviewer.view characters")
                 )
@@ -192,8 +192,8 @@ Firebug.FontViewerModel.Preview = domplate(
                     FOR("style", "$styles",
                         P({"class": "$fontObject.CSSFamilyName|getFontFaceClass",
                             "style": "font-size: $style|getFontSize"},
-                            SPAN({"class": "fontViewerFontSize"}, "$style"),
-                            SPAN(Locale.$STR("fontviewer.pangram"))
+                            D.SPAN({"class": "fontViewerFontSize"}, "$style"),
+                            D.SPAN(Locale.$STR("fontviewer.pangram"))
                         )
                     )
                 ),
@@ -211,7 +211,7 @@ Firebug.FontViewerModel.Preview = domplate(
         FOR("prop", "$props",
             TR({"role": "listitem", _repObject: "$prop.node"},
                 TD({"class": "fontInfoPropName", "role": "presentation"},
-                    SPAN("$prop|getPropName")
+                    D.SPAN("$prop|getPropName")
                 ),
                 TD({"class": "fontInfoPropValue", "role": "list", "aria-label": "$prop.name"},
                     TAG("$prop|getTag", {node: "$prop.node"})
@@ -254,7 +254,7 @@ Firebug.FontViewerModel.Preview = domplate(
                 LI(
                     TAG("$credit|getLinkedTextTag", {node: "$credit"}),
                     " ",
-                    SPAN({"class": "fontInfoCreditsRole"}, "$credit|getRole")
+                    D.SPAN({"class": "fontInfoCreditsRole"}, "$credit|getRole")
                 )
             )
         ),
@@ -264,7 +264,7 @@ Firebug.FontViewerModel.Preview = domplate(
             "$node|getLinkName"),
 
     textTag:
-        SPAN("$node|getText"),
+        D.SPAN("$node|getText"),
 
     /**
      * Handles toggling of the font information display

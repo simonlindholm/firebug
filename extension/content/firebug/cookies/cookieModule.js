@@ -1106,11 +1106,11 @@ Firebug.CookieModule.NetInfoBody = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "netInfoCookiesList"},
             D.DIV({"class": "netInfoHeadersGroup netInfoCookiesGroup", $collapsed: "$cookiesInfo|hideReceivedCookies"}, 
-                SPAN(Locale.$STR("cookies.netinfo.Received Cookies"))
+                D.SPAN(Locale.$STR("cookies.netinfo.Received Cookies"))
             ),
             D.DIV({"class": "netInfoReceivedCookies netInfoCookies"}),
             D.DIV({"class": "netInfoHeadersGroup netInfoCookiesGroup", $collapsed: "$cookiesInfo|hideSentCookies"}, 
-                SPAN(Locale.$STR("cookies.netinfo.Sent Cookies"))
+                D.SPAN(Locale.$STR("cookies.netinfo.Sent Cookies"))
             ),
             D.DIV({"class": "netInfoSentCookies netInfoCookies"})
         ),

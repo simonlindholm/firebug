@@ -281,12 +281,12 @@ Firebug.DisabledPanelBox = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "disabledPanelBox"},
             H1({"class": "disabledPanelHead"},
-                SPAN("$pageTitle")
+                D.SPAN("$pageTitle")
             ),
             P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
                 Locale.$STR("moduleManager.desc3"),
-                SPAN("&nbsp;"),
-                SPAN({"class": "descImage descImage-$panelName"})
+                D.SPAN("&nbsp;"),
+                D.SPAN({"class": "descImage descImage-$panelName"})
             ),
             A({"class": "objectLink", onclick: "$onEnable"},
                 Locale.$STR("moduleManager.Enable")

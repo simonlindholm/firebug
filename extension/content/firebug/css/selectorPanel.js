@@ -435,7 +435,7 @@ var WarningTemplate = domplate(Firebug.Rep,
     selectErrorTextTag:
         TR({"class": "selectorWarning"},
             TD({"class": "selectionErrorText selectionElement"},
-                SPAN("$object|getErrorMessage")
+                D.SPAN("$object|getErrorMessage")
             )
         ),
 

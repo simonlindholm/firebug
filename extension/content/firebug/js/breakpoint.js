@@ -253,7 +253,7 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
                         $opened: "$group.opened", _repObject: "$group", onclick: "$onClick"},
                     H1({"class": "breakpointHeader groupHeader"},
                         D.DIV({"class": "twisty", role: "presentation"}),
-                        SPAN({"class": "breakpointsHeaderLabel"}, "$group.title")
+                        D.SPAN({"class": "breakpointsHeaderLabel"}, "$group.title")
                     ),
                     D.DIV({"class": "breakpointsGroupListBox", role: "listbox"},
                         FOR("bp", "$group.breakpoints",
@@ -315,7 +315,7 @@ Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
             D.DIV({"class": "breakpointBlockHead"},
                 INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : '-1'}),
-                SPAN({"class": "breakpointName"}, "$bp.name"),
+                D.SPAN({"class": "breakpointName"}, "$bp.name"),
                 TAG(FirebugReps.SourceLink.tag, {object: "$bp|getSourceLink"}),
                 IMG({"class": "closeButton", src: "blank.gif"})
             ),
@@ -1066,10 +1066,10 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                                 src: "chrome://firebug/skin/breakpoint.png"})
                         ),
                         TD({"class": "descCol"},
-                            SPAN({"class": "notificationDesc"}, "$cause|getDescription"),
-                            SPAN("&nbsp;"),
-                            SPAN({"class": "diff"}, "$cause|getDiff"),
-                            SPAN({"class": "targets"}),
+                            D.SPAN({"class": "notificationDesc"}, "$cause|getDescription"),
+                            D.SPAN("&nbsp;"),
+                            D.SPAN({"class": "diff"}, "$cause|getDiff"),
+                            D.SPAN({"class": "targets"}),
                             D.DIV({"class": "noNotificationDesc"})
                         ),
                         TD({"class": "buttonsCol"},
@@ -1098,10 +1098,10 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
         ),
 
     targets:
-        SPAN(
-            SPAN("&nbsp;"),
+        D.SPAN(
+            D.SPAN("&nbsp;"),
             TAG("$cause|getTargetTag", {object: "$cause.target"}),
-            SPAN("&nbsp;"),
+            D.SPAN("&nbsp;"),
             TAG("$cause|getRelatedTargetTag", {object: "$cause.relatedNode"})
         ),
 

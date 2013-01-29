@@ -60,7 +60,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                         $hidden: "$group.props|hasNoStyles", _repObject: "$group"},
                     H1({"class": "cssComputedHeader groupHeader focusRow", role: "listitem"},
                         D.DIV({"class": "twisty", role: "presentation"}),
-                        SPAN({"class": "cssComputedLabel"}, "$group.title")
+                        D.SPAN({"class": "cssComputedLabel"}, "$group.title")
                     ),
                     TAG("$stylesTag", {props: "$group.props"})
                 )
@@ -77,7 +77,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                                 "$prop.property"
                             ),
                             TD({role: "presentation"},
-                                SPAN({"class": "stylePropValue"}, "$prop.value|formatValue"))
+                                D.SPAN({"class": "stylePropValue"}, "$prop.value|formatValue"))
                         ),
                         TR({"class": "focusRow computedStyleRow matchedSelectors", _repObject: "$prop"},
                             TD({colspan: 2},
@@ -98,7 +98,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                             TD({"class": "selectorName", role: "presentation"},
                                 "$selector.selector.text"),
                             TD({"class": "propValue", role: "presentation"},
-                                SPAN({"class": "stylePropValue"}, "$selector.value|formatValue")),
+                                D.SPAN({"class": "stylePropValue"}, "$selector.value|formatValue")),
                             TD({"class": "styleSourceLink", role: "presentation"},
                                 TAG(FirebugReps.SourceLink.tag, {object: "$selector|getSourceLink"})
                             )
