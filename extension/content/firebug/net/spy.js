@@ -914,7 +914,7 @@ Firebug.Spy.XHR = domplate(Firebug.Rep,
                             D.SPAN({"class": "spyTime"})
                         ),
                         D.TD({"class": "spyCol"},
-                            TAG(FirebugReps.SourceLink.tag, {object: "$object.sourceLink"})
+                            D.TAG(FirebugReps.SourceLink.tag, {object: "$object.sourceLink"})
                         )
                     )
                 )

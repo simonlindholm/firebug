@@ -54,19 +54,19 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
             D.DIV({"class": "a11yCSSView", role: "presentation"},
                 D.DIV({"class": "cssNonInherited", role: "list",
                         "aria-label": Locale.$STR("aria.labels.style rules") },
-                    FOR("rule", "$rules",
-                        TAG("$ruleTag", {rule: "$rule"})
+                    D.FOR("rule", "$rules",
+                        D.TAG("$ruleTag", {rule: "$rule"})
                     )
                 ),
                 D.DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
-                    FOR("section", "$inherited",
+                    D.FOR("section", "$inherited",
                         D.H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
                             D.SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
-                            TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
+                            D.TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
                         ),
                         D.DIV({role: "group"},
-                            FOR("rule", "$section.rules",
-                                TAG("$ruleTag", {rule: "$rule"})
+                            D.FOR("rule", "$section.rules",
+                                D.TAG("$ruleTag", {rule: "$rule"})
                             )
                         )
                     )
@@ -75,8 +75,8 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
 
         ruleTag:
             D.DIV({"class": "cssElementRuleContainer"},
-                TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
-                TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+                D.TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
+                D.TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
             ),
 
         newRuleTag:
@@ -86,7 +86,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
 
         CSSFontPropValueTag:
             D.SPAN({"class": "cssFontPropValue"},
-                FOR("part", "$propValueParts",
+                D.FOR("part", "$propValueParts",
                     D.SPAN({"class": "$part.type|getClass", _repObject: "$part.font"}, "$part.value"),
                     D.SPAN({"class": "cssFontPropSeparator"}, "$part|getSeparator")
                 )

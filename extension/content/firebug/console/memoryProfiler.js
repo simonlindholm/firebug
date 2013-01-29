@@ -576,7 +576,7 @@ Firebug.MemoryProfiler.ProfileTable = domplate(
                                 Locale.$STR("Calls")
                             )
                         ),
-                        FOR("column", "$object|getColumns",
+                        D.FOR("column", "$object|getColumns",
                             D.TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 "aria-sort": "descending"},
                                 D.DIV({"class": "headerCellBox"},
@@ -729,13 +729,13 @@ Firebug.MemoryProfiler.ProfileCall = domplate(Firebug.Rep,
             D.TD({"class": "a11yFocus profileCell", "role": "gridcell"},
                 "$object.callCount"
             ),
-            FOR("column", "$object|getColumns",
+            D.FOR("column", "$object|getColumns",
                 D.TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
                     "$column|getColumnLabel"
                 )
             ),
             D.TD({"class": "linkCell profileCell", "role": "presentation"},
-                 TAG("$object|getSourceLinkTag", {object: "$object|getSourceLink"})
+                 D.TAG("$object|getSourceLinkTag", {object: "$object|getSourceLink"})
             )
         ),
 
@@ -814,7 +814,7 @@ Firebug.MemoryProfiler.ProfileSummary = domplate(Firebug.Rep,
             D.TD({"class": "profileCell", "role": "presentation", colspan: 2},
                 Locale.$STR("firebug.Entire Session")
             ),
-            FOR("column", "$object|getColumns",
+            D.FOR("column", "$object|getColumns",
                 D.TD({"class": "a11yFocus profileCell", "role": "gridcell", _sortValue: "$column"},
                     "$column|getColumnLabel"
                 )

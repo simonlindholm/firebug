@@ -48,7 +48,7 @@ var CSSInfoTip = Obj.extend(InfoTip,
             D.DIV({"class": "infoTipFontFamilyBox"},
                 D.STYLE({"class": "infoTipFontFamilyStyle"}),
                 D.DIV({"class": "infoTipFontFamilySample"},
-                    FOR("fontStyle", "$fontStyles",
+                    D.FOR("fontStyle", "$fontStyles",
                         D.DIV({"class": "infoTipFontFace", style: "$fontStyle"},
                             Locale.$STR("css.fontFamilyPreview"))
                     )

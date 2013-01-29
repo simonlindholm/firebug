@@ -25,7 +25,7 @@ Firebug.BalloonNote.prototype = domplate(
                             D.IMG({"class": "balloonCloseButton closeButton", src: "blank.gif",
                                 onclick: "$onCloseAction"}),
                             D.DIV({"class": "balloonContent"},
-                                TAG("$cause|getContentTag", {cause: "$cause"})
+                                D.TAG("$cause|getContentTag", {cause: "$cause"})
                             )
                         )
                     )

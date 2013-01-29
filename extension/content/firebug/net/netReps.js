@@ -403,7 +403,7 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
 Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(),
 {
     fileTag:
-        FOR("file", "$files",
+        D.FOR("file", "$files",
             D.TR({"class": "netRow $file.file|getCategory focusRow outerFocusRow",
                 onclick: "$onClick", "role": "row", "aria-expanded": "false",
                 $hasHeaders: "$file.file|hasRequestHeaders",
@@ -791,8 +791,8 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 {
     tag:
         D.DIV({"class": "netInfoBody", _repObject: "$file"},
-            TAG("$infoTabs", {file: "$file"}),
-            TAG("$infoBodies", {file: "$file"})
+            D.TAG("$infoTabs", {file: "$file"}),
+            D.TAG("$infoBodies", {file: "$file"})
         ),
 
     infoTabs:
@@ -854,13 +854,13 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
         ),
 
     headerDataTag:
-        FOR("param", "$headers",
+        D.FOR("param", "$headers",
             D.TR({"role": "listitem"},
                 D.TD({"class": "netInfoParamName", "role": "presentation"},
-                    TAG("$param|getNameTag", {param: "$param"})
+                    D.TAG("$param|getNameTag", {param: "$param"})
                 ),
                 D.TD({"class": "netInfoParamValue", "role": "list", "aria-label": "$param.name"},
-                    FOR("line", "$param|getParamValueIterator",
+                    D.FOR("line", "$param|getParamValueIterator",
                         D.CODE({"class": "focusRow subFocusRow", "role": "listitem"}, "$line")
                     )
                 )
@@ -1397,7 +1397,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
     sourceBodyTag:
         D.TR({"role": "presentation"},
             D.TD({colspan: 2, "role": "presentation"},
-                FOR("line", "$param|getParamValueIterator",
+                D.FOR("line", "$param|getParamValueIterator",
                     D.CODE({"class":"focusRow subFocusRow", "role": "listitem"}, "$line")
                 )
             )
@@ -1722,7 +1722,7 @@ Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
         ),
 
     timingsTag:
-        FOR("time", "$timings",
+        D.FOR("time", "$timings",
             D.TR({"class": "timeInfoTipRow", $collapsed: "$time|hideBar"},
                 D.TD({"class": "$time|getBarClass timeInfoTipBar",
                     $loaded: "$time.loaded",
@@ -1755,7 +1755,7 @@ Firebug.NetMonitor.TimeInfoTip = domplate(Firebug.Rep,
         ),
 
     eventsTag:
-        FOR("event", "$events",
+        D.FOR("event", "$events",
             D.TR({"class": "timeInfoTipEventRow"},
                 D.TD({"class": "timeInfoTipBar", align: "center"},
                     D.DIV({"class": "$event|getTimeStampClass timeInfoTipEventBar"})
@@ -1915,8 +1915,8 @@ Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
     tag:
         D.TABLE({"class": "sizeInfoTip", "id": "fbNetSizeInfoTip", role:"presentation"},
             D.TBODY(
-                FOR("size", "$sizeInfo",
-                    TAG("$size|getRowTag", {size: "$size"})
+                D.FOR("size", "$sizeInfo",
+                    D.TAG("$size|getRowTag", {size: "$size"})
                 )
             )
         ),

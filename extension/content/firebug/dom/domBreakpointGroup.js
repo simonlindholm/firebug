@@ -199,7 +199,7 @@ var BreakpointRep = domplate(Firebug.Rep,
                 D.IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
             D.DIV({"class": "breakpointCode"},
-                TAG("$bp.object|getObjectTag", {object: "$bp.object"})
+                D.TAG("$bp.object|getObjectTag", {object: "$bp.object"})
             )
         ),
 

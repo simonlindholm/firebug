@@ -27,7 +27,7 @@ FirebugReps.Table = domplate(Firebug.Rep,
                 D.THEAD({"class": "dataTableThead", "role": "presentation"},
                     D.TR({"class": "headerRow focusRow dataTableRow subFocusRow", "role": "row",
                         onclick: "$onClickHeader"},
-                        FOR("column", "$object.columns",
+                        D.FOR("column", "$object.columns",
                             D.TH({"class": "headerCell a11yFocus", "role": "columnheader",
                                 $alphaValue: "$column.alphaValue"},
                                 D.DIV({"class": "headerCellBox"},
@@ -38,11 +38,11 @@ FirebugReps.Table = domplate(Firebug.Rep,
                     )
                 ),
                 D.TBODY({"class": "dataTableTbody", "role": "presentation"},
-                    FOR("row", "$object.data|getRows",
+                    D.FOR("row", "$object.data|getRows",
                         D.TR({"class": "focusRow dataTableRow subFocusRow", "role": "row"},
-                            FOR("column", "$row|getColumns",
+                            D.FOR("column", "$row|getColumns",
                                 D.TD({"class": "a11yFocus dataTableCell", "role": "gridcell"},
-                                    TAG("$column|getValueTag", {object: "$column"})
+                                    D.TAG("$column|getValueTag", {object: "$column"})
                                 )
                             )
                         )

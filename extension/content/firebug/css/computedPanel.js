@@ -55,21 +55,21 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                 Locale.$STR("aria.labels.computed styles")}),
 
         groupedStylesTag:
-            FOR("group", "$groups",
+            D.FOR("group", "$groups",
                 D.DIV({"class": "computedStylesGroup", $opened: "$group.opened", role: "list",
                         $hidden: "$group.props|hasNoStyles", _repObject: "$group"},
                     D.H1({"class": "cssComputedHeader groupHeader focusRow", role: "listitem"},
                         D.DIV({"class": "twisty", role: "presentation"}),
                         D.SPAN({"class": "cssComputedLabel"}, "$group.title")
                     ),
-                    TAG("$stylesTag", {props: "$group.props"})
+                    D.TAG("$stylesTag", {props: "$group.props"})
                 )
             ),
 
         stylesTag:
             D.TABLE({"class": "computedStyleTable", role: "list"},
                 D.TBODY({role: "presentation"},
-                    FOR("prop", "$props",
+                    D.FOR("prop", "$props",
                         D.TR({"class": "focusRow computedStyleRow computedStyle",
                                 $opened: "$prop.opened", role: "listitem",
                                 $hasSelectors: "$prop|hasSelectors", _repObject: "$prop"},
@@ -81,7 +81,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                         ),
                         D.TR({"class": "focusRow computedStyleRow matchedSelectors", _repObject: "$prop"},
                             D.TD({colspan: 2},
-                                TAG("$selectorsTag", {prop: "$prop"})
+                                D.TAG("$selectorsTag", {prop: "$prop"})
                             )
                         )
                     )
@@ -91,7 +91,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
         selectorsTag:
             D.TABLE({"class": "matchedSelectorsTable", role: "list"},
                 D.TBODY({role: "presentation"},
-                    FOR("selector", "$prop.matchedSelectors",
+                    D.FOR("selector", "$prop.matchedSelectors",
                         D.TR({"class": "focusRow computedStyleRow styleSelector "+
                             "$selector.status|getStatusClass", role: "listitem",
                                 _repObject: "$selector"},
@@ -100,7 +100,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                             D.TD({"class": "propValue", role: "presentation"},
                                 D.SPAN({"class": "stylePropValue"}, "$selector.value|formatValue")),
                             D.TD({"class": "styleSourceLink", role: "presentation"},
-                                TAG(FirebugReps.SourceLink.tag, {object: "$selector|getSourceLink"})
+                                D.TAG(FirebugReps.SourceLink.tag, {object: "$selector|getSourceLink"})
                             )
                         )
                     )

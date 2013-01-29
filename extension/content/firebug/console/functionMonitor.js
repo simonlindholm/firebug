@@ -88,10 +88,10 @@ var FunctionMonitorRep = domplate(Firebug.Rep,
             ),
             D.SPAN("("),
             D.SPAN({"class": "arguments"},
-                FOR("arg", "$object|argIterator",
+                D.FOR("arg", "$object|argIterator",
                     D.SPAN({"class": "argName"}, "$arg.name"),
                     D.SPAN("="),
-                    TAG("$arg.tag", {object: "$arg.value"}),
+                    D.TAG("$arg.tag", {object: "$arg.value"}),
                     D.SPAN({"class": "arrayComma"}, "$arg.delim")
                 )
             ),

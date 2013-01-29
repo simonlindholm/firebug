@@ -86,7 +86,7 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
         D.TABLE({"class": "perfTimingTable", cellspacing: 0, cellpadding: 0, width: "100%",
             "role": "grid", _repObject: "$object"},
             D.TBODY({"class": "perfTimingTbody", "role": "presentation"},
-                FOR("bar", "$object.bars",
+                D.FOR("bar", "$object.bars",
                     D.TR(
                         D.TD(
                             D.DIV({"class": "perfTimingBox"},
@@ -160,7 +160,7 @@ var PerfInfoTip = domplate(Firebug.Rep,
         ),
 
     timingsTag:
-        FOR("bar", "$bars",
+        D.FOR("bar", "$bars",
             D.TR({"class": "timeInfoTipRow", $collapsed: "$bar|hideBar"},
                 D.TD({"class": "timeInfoTipBar $bar|getClassName"}),
                 D.TD({"class": "timeInfoTipCell startTime"},
@@ -181,7 +181,7 @@ var PerfInfoTip = domplate(Firebug.Rep,
         ),
 
     eventsTag:
-        FOR("event", "$events",
+        D.FOR("event", "$events",
             D.TR({"class": "timeInfoTipEventRow"},
                 D.TD({"class": "timeInfoTipBar", align: "center"},
                     D.DIV({"class": "$event|getClassName timeInfoTipEventBar"})
@@ -461,7 +461,7 @@ var DetailsEntry = domplate(
 /** @lends DetailsEntry */
 {
     tag:
-        FOR("timing", "$timings",
+        D.FOR("timing", "$timings",
             D.TR({"class": "focusRow timingRow subFocusRow", "role": "row", _repObject: "$timing",
                 onmousemove: "$onMouseMove", onmouseout: "$onMouseOut"},
                 D.TD({"class": "a11yFocus timingCell timingName", "role": "gridcell"},

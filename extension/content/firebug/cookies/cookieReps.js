@@ -74,7 +74,7 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
     inspectable: false,
 
     cookieTag:
-        FOR("cookie", "$cookies",
+        D.FOR("cookie", "$cookies",
             D.TR({"class": "cookieRow", _repObject: "$cookie", onclick: "$onClickRow",
                 $sessionCookie: "$cookie|isSessionCookie",
                 $rejectedCookie: "$cookie|isRejected"},
@@ -943,8 +943,8 @@ CookieReps.SizeInfoTip = domplate(Firebug.Rep,
     tag:
         D.TABLE({"class": "sizeInfoTip", "id": "cookiesSizeInfoTip", role:"presentation"},
             D.TBODY(
-                FOR("size", "$sizeInfo",
-                    TAG("$size|sizeTag", {size: "$size"})
+                D.FOR("size", "$sizeInfo",
+                    D.TAG("$size|sizeTag", {size: "$size"})
                 )
             )
         ),

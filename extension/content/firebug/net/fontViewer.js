@@ -189,7 +189,7 @@ Firebug.FontViewerModel.Preview = domplate(
             D.DIV({"class": "fontInfoPreview"},
                 D.STYLE({"class": "fontInfoPreviewStyle"}),
                 D.DIV({"class": "fontInfoPreviewSample"},
-                    FOR("style", "$styles",
+                    D.FOR("style", "$styles",
                         D.P({"class": "$fontObject.CSSFamilyName|getFontFaceClass",
                             "style": "font-size: $style|getFontSize"},
                             D.SPAN({"class": "fontViewerFontSize"}, "$style"),
@@ -198,7 +198,7 @@ Firebug.FontViewerModel.Preview = domplate(
                     )
                 ),
                 D.DIV({"class": "fontInfoPreviewCharacters"},
-                    FOR("charType", "$charTypes",
+                    D.FOR("charType", "$charTypes",
                         D.P({"class": "$fontObject.CSSFamilyName|getFontFaceClass"},
                             "$charType|getCharacters"
                         )
@@ -208,13 +208,13 @@ Firebug.FontViewerModel.Preview = domplate(
         ),
 
     propDataTag:
-        FOR("prop", "$props",
+        D.FOR("prop", "$props",
             D.TR({"role": "listitem", _repObject: "$prop.node"},
                 D.TD({"class": "fontInfoPropName", "role": "presentation"},
                     D.SPAN("$prop|getPropName")
                 ),
                 D.TD({"class": "fontInfoPropValue", "role": "list", "aria-label": "$prop.name"},
-                    TAG("$prop|getTag", {node: "$prop.node"})
+                    D.TAG("$prop|getTag", {node: "$prop.node"})
                 )
             )
         ),
@@ -229,7 +229,7 @@ Firebug.FontViewerModel.Preview = domplate(
     translatedInfoTag:
         D.DIV({"class": "fontInfoTranslatedInfo"},
             D.DIV({"class": "fontInfoLangInfo"},
-                FOR("lang", "$node|getLanguages",
+                D.FOR("lang", "$node|getLanguages",
                     D.A({"class": "fontInfoLangTab", $selected: "$lang.selected", role: "tab",
                         onclick: "$onTranslatedLangChange"}, "$lang.name")
                 )
@@ -240,19 +240,19 @@ Firebug.FontViewerModel.Preview = domplate(
         ),
 
     vendorTag:
-        TAG("$node|getLinkedTextTag", {node: "$node"}),
+        D.TAG("$node|getLinkedTextTag", {node: "$node"}),
 
     licenseTag:
         D.DIV({"class": "fontInfoLicense"},
-            TAG("$node|getLinkedTextTag", {node: "$node"}),
-            TAG("$translatedInfoTag", {node: "$node"})
+            D.TAG("$node|getLinkedTextTag", {node: "$node"}),
+            D.TAG("$translatedInfoTag", {node: "$node"})
         ),
 
     creditsTag:
         D.UL({"class": "fontInfoCredits"},
-            FOR("credit", "$node|getCredits",
+            D.FOR("credit", "$node|getCredits",
                 D.LI(
-                    TAG("$credit|getLinkedTextTag", {node: "$credit"}),
+                    D.TAG("$credit|getLinkedTextTag", {node: "$credit"}),
                     " ",
                     D.SPAN({"class": "fontInfoCreditsRole"}, "$credit|getRole")
                 )

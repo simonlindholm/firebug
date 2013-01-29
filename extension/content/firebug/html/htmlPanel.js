@@ -2035,7 +2035,7 @@ var AttrTag = Firebug.HTMLPanel.AttrTag =
 
 var TextTag = Firebug.HTMLPanel.TextTag =
     D.SPAN({"class": "nodeText editable"},
-        FOR("char", "$object|getNodeTextGroups",
+        D.FOR("char", "$object|getNodeTextGroups",
             D.SPAN({"class": "$char.class $char.extra"}, "$char.str")
         )
     );
@@ -2050,13 +2050,13 @@ Firebug.HTMLPanel.CompleteElement = domplate(FirebugReps.Element,
                 D.SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem', 'aria-expanded' : 'false'},
                     "&lt;",
                     D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                    FOR("attr", "$object|attrIterator", AttrTag),
+                    D.FOR("attr", "$object|attrIterator", AttrTag),
                     D.SPAN({"class": "nodeBracket"}, "&gt;")
                 )
             ),
             D.DIV({"class": "nodeChildBox", role :"group"},
-                FOR("child", "$object|childIterator",
-                    TAG("$child|getNodeTag", {object: "$child"})
+                D.FOR("child", "$object|childIterator",
+                    D.TAG("$child|getNodeTag", {object: "$child"})
                 )
             ),
             D.DIV({"class": "nodeCloseLabel", role:"presentation"},
@@ -2127,7 +2127,7 @@ Firebug.HTMLPanel.Element = domplate(FirebugReps.Element,
             D.SPAN({"class": "nodeLabelBox repTarget", role: "treeitem", "aria-expanded": "false"},
                 "&lt;",
                 D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                FOR("attr", "$object|attrIterator", AttrTag),
+                D.FOR("attr", "$object|attrIterator", AttrTag),
                 D.SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;")
             )
         ),
@@ -2179,7 +2179,7 @@ Firebug.HTMLPanel.HTMLHtmlElement = domplate(FirebugReps.Element,
                     "aria-expanded": "false"},
                     "&lt;",
                     D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                    FOR("attr", "$object|attrIterator", AttrTag),
+                    D.FOR("attr", "$object|attrIterator", AttrTag),
                     D.SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;")
                 )
             ),
@@ -2202,7 +2202,7 @@ Firebug.HTMLPanel.TextElement = domplate(FirebugReps.Element,
                 D.SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                    FOR("attr", "$object|attrIterator", AttrTag),
+                    D.FOR("attr", "$object|attrIterator", AttrTag),
                     D.SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;"),
                     TextTag,
                     "&lt;/",
@@ -2221,7 +2221,7 @@ Firebug.HTMLPanel.EmptyElement = domplate(FirebugReps.Element,
                 D.SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                    FOR("attr", "$object|attrIterator", AttrTag),
+                    D.FOR("attr", "$object|attrIterator", AttrTag),
                     D.SPAN({"class": "nodeBracket editable insertBefore"}, "&gt;")
                 )
             )
@@ -2236,7 +2236,7 @@ Firebug.HTMLPanel.XEmptyElement = domplate(FirebugReps.Element,
                 D.SPAN({"class": "nodeLabelBox repTarget", role : 'treeitem'},
                     "&lt;",
                     D.SPAN({"class": "nodeTag"}, "$object|getNodeName"),
-                    FOR("attr", "$object|attrIterator", AttrTag),
+                    D.FOR("attr", "$object|attrIterator", AttrTag),
                     D.SPAN({"class": "nodeBracket editable insertBefore"}, "/&gt;")
                 )
             )
@@ -2979,12 +2979,12 @@ Firebug.HTMLModule.BreakpointRep = domplate(Firebug.Rep,
             D.DIV({"class": "breakpointBlockHead"},
                 D.INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : "-1", onclick: "$onEnable"}),
-                TAG("$bp.node|getNodeTag", {object: "$bp.node"}),
+                D.TAG("$bp.node|getNodeTag", {object: "$bp.node"}),
                 D.DIV({"class": "breakpointMutationType"}, "$bp|getChangeLabel"),
                 D.IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
             D.DIV({"class": "breakpointCode"},
-                TAG("$bp.node|getSourceLine", {object: "$bp.node"})
+                D.TAG("$bp.node|getSourceLine", {object: "$bp.node"})
             )
         ),
 

@@ -91,7 +91,7 @@ var CSSPropTag = domplate(CSSDomplateBase,
 });
 
 var CSSRuleTag =
-    TAG("$rule.tag", {rule: "$rule"});
+    D.TAG("$rule.tag", {rule: "$rule"});
 
 var CSSImportRuleTag = domplate(CSSDomplateBase,
 {
@@ -152,8 +152,8 @@ var CSSFontFaceRuleTag = domplate(CSSDomplateBase,
             D.DIV({"class": "cssHead focusRow", role : "listitem"}, "@font-face {"),
             D.DIV({role : "group"},
                 D.DIV({"class": "cssPropertyListBox", role: "listbox"},
-                    FOR("prop", "$rule.props",
-                        TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
+                    D.FOR("prop", "$rule.props",
+                        D.TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
                     )
                 )
             ),
@@ -180,8 +180,8 @@ var CSSStyleRuleTag = domplate(CSSDomplateBase,
             ),
             D.DIV({role: "group"},
                 D.DIV({"class": "cssPropertyListBox", _rule: "$rule", role: "listbox"},
-                    FOR("prop", "$rule.props",
-                        TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
+                    D.FOR("prop", "$rule.props",
+                        D.TAG(CSSPropTag.tag, {rule: "$rule", prop: "$prop"})
                     )
                 )
             ),
@@ -211,7 +211,7 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
     {
         tag:
             D.DIV({"class": "cssSheet insertInto a11yCSSView"},
-                FOR("rule", "$rules",
+                D.FOR("rule", "$rules",
                     CSSRuleTag
                 ),
                 D.DIV({"class": "cssSheet editable insertBefore"}, ""

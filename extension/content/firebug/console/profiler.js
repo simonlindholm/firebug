@@ -434,7 +434,7 @@ Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
             D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.minTime|roundTime\\ms"),
             D.TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.maxTime|roundTime\\ms"),
             D.TD({"class": "linkCell profileCell", "role": "presentation"},
-                TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
+                D.TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
             )
         ),
 

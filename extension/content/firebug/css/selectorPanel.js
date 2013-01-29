@@ -395,10 +395,10 @@ var SelectorTemplate = domplate(BaseRep,
         D.TABLE({"class": "cssSelectionTable", cellpadding: 0, cellspacing: 0},
             D.TBODY({"class": "cssSelectionTBody"},
                 TrialRow,
-                FOR("element", "$object",
+                D.FOR("element", "$object",
                     D.TR({"class": "selectionElementRow", _repObject: "$element"},
                         D.TD({"class": "selectionElement"},
-                            TAG( "$element|getNaturalTag", {object: "$element"})
+                            D.TAG( "$element|getNaturalTag", {object: "$element"})
                         )
                     )
                 )

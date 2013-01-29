@@ -248,7 +248,7 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({role : "list"},
-            FOR("group", "$groups",
+            D.FOR("group", "$groups",
                 D.DIV({"class": "breakpointBlock breakpointBlock-$group.name", role: "list",
                         $opened: "$group.opened", _repObject: "$group", onclick: "$onClick"},
                     D.H1({"class": "breakpointHeader groupHeader"},
@@ -256,8 +256,8 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
                         D.SPAN({"class": "breakpointsHeaderLabel"}, "$group.title")
                     ),
                     D.DIV({"class": "breakpointsGroupListBox", role: "listbox"},
-                        FOR("bp", "$group.breakpoints",
-                            TAG("$bp|getBreakpointRep", {bp: "$bp"})
+                        D.FOR("bp", "$group.breakpoints",
+                            D.TAG("$bp|getBreakpointRep", {bp: "$bp"})
                         )
                     )
                 )
@@ -316,7 +316,7 @@ Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
                 D.INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : '-1'}),
                 D.SPAN({"class": "breakpointName"}, "$bp.name"),
-                TAG(FirebugReps.SourceLink.tag, {object: "$bp|getSourceLink"}),
+                D.TAG(FirebugReps.SourceLink.tag, {object: "$bp|getSourceLink"}),
                 D.IMG({"class": "closeButton", src: "blank.gif"})
             ),
             D.DIV({"class": "breakpointCode"}, "$bp.sourceLine")
@@ -1100,9 +1100,9 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
     targets:
         D.SPAN(
             D.SPAN("&nbsp;"),
-            TAG("$cause|getTargetTag", {object: "$cause.target"}),
+            D.TAG("$cause|getTargetTag", {object: "$cause.target"}),
             D.SPAN("&nbsp;"),
-            TAG("$cause|getRelatedTargetTag", {object: "$cause.relatedNode"})
+            D.TAG("$cause|getRelatedTargetTag", {object: "$cause.relatedNode"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

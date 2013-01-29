@@ -330,10 +330,10 @@ FirebugReps.Obj = domplate(Firebug.Rep,
         OBJECTLINK(
             D.SPAN({"class": "objectTitle"}, "$object|getTitle "),
             D.SPAN({"class": "objectLeftBrace", role: "presentation"}, "{"),
-            FOR("prop", "$object|shortPropIterator",
+            D.FOR("prop", "$object|shortPropIterator",
                 " $prop.name",
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             ),
             D.SPAN({"class": "objectRightBrace"}, "}")
@@ -343,10 +343,10 @@ FirebugReps.Obj = domplate(Firebug.Rep,
         OBJECTLINK(
             D.SPAN({"class": "objectTitle"}, "$object|getTitle "),
             D.SPAN({"class": "objectLeftBrace", role: "presentation"}, "{"),
-            FOR("prop", "$object|shortPropIterator",
+            D.FOR("prop", "$object|shortPropIterator",
                 " $prop.name",
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             ),
             D.SPAN({"class": "objectRightBrace"}, "}")
@@ -710,8 +710,8 @@ FirebugReps.Arr = domplate(FirebugReps.ArrBase,
             $hasTwisty: "$object|hasSpecialProperties",
             onclick: "$onToggleProperties"},
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("item", "$object|longArrayIterator",
-                TAG("$item.tag", {object: "$item.object"}),
+            D.FOR("item", "$object|longArrayIterator",
+                D.TAG("$item.tag", {object: "$item.object"}),
                 D.SPAN({"class": "arrayComma", role: "presentation"}, "$item.delim")
             ),
             D.SPAN({"class": "arrayRightBracket", role: "presentation"}, "]"),
@@ -723,8 +723,8 @@ FirebugReps.Arr = domplate(FirebugReps.ArrBase,
             $hasTwisty: "$object|hasSpecialProperties",
             onclick: "$onToggleProperties"},
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("item", "$object|shortArrayIterator",
-                TAG("$item.tag", {object: "$item.object"}),
+            D.FOR("item", "$object|shortArrayIterator",
+                D.TAG("$item.tag", {object: "$item.object"}),
                 D.SPAN({"class": "arrayComma", role: "presentation"}, "$item.delim")
             ),
             D.SPAN({"class": "arrayRightBracket"}, "]"),
@@ -761,8 +761,8 @@ FirebugReps.ArrayLikeObject = domplate(FirebugReps.ArrBase,
                 "$object|getTitle"
             ),
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("item", "$object|longArrayIterator",
-                TAG("$item.tag", {object: "$item.object"}),
+            D.FOR("item", "$object|longArrayIterator",
+                D.TAG("$item.tag", {object: "$item.object"}),
                 D.SPAN({"class": "arrayComma", role: "presentation"}, "$item.delim")
             ),
             D.SPAN({"class": "arrayRightBracket", role: "presentation"}, "]"),
@@ -777,8 +777,8 @@ FirebugReps.ArrayLikeObject = domplate(FirebugReps.ArrBase,
                 "$object|getTitle"
             ),
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("item", "$object|shortArrayIterator",
-                TAG("$item.tag", {object: "$item.object"}),
+            D.FOR("item", "$object|shortArrayIterator",
+                D.TAG("$item.tag", {object: "$item.object"}),
                 D.SPAN({"class": "arrayComma", role: "presentation"}, "$item.delim")
             ),
             D.SPAN({"class": "arrayRightBracket"}, "]"),
@@ -892,7 +892,7 @@ FirebugReps.Element = domplate(Firebug.Rep,
         OBJECTLINK(
             "&lt;",
             D.SPAN({"class": "nodeTag"}, "$object|getLocalName"),
-            FOR("attr", "$object|attrIterator",
+            D.FOR("attr", "$object|attrIterator",
                 "&nbsp;$attr.localName=&quot;",
                 D.SPAN({"class": "nodeValue"}, "$attr|getAttrValue"),
                 "&quot;"
@@ -1771,7 +1771,7 @@ FirebugReps.Event = domplate(Firebug.Rep,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     tag:
-        TAG("$copyEventTag", {object: "$object|copyEvent"}),
+        D.TAG("$copyEventTag", {object: "$object|copyEvent"}),
 
     copyEventTag:
         OBJECTLINK("$object|summarizeEvent"),
@@ -1820,7 +1820,7 @@ FirebugReps.EventLog = domplate(FirebugReps.Event,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     tag:
-        TAG("$copyEventTag", {object: "$object|copyEvent"}),
+        D.TAG("$copyEventTag", {object: "$object|copyEvent"}),
 
     copyEventTag:
         D.SPAN(
@@ -1828,7 +1828,7 @@ FirebugReps.EventLog = domplate(FirebugReps.Event,
             D.SPAN("&nbsp"),
             D.SPAN("&#187;"),
             D.SPAN("&nbsp"),
-            TAG("$object|getTargetTag", {object: "$object|getTarget"})
+            D.TAG("$object|getTargetTag", {object: "$object|getTarget"})
         ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -2098,10 +2098,10 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
             D.A({"class": "objectLink a11yFocus", _repObject: "$object"}, "$object|getCallName"),
             D.SPAN("("),
             D.SPAN({"class": "arguments"},
-                FOR("arg", "$object|argIterator",
+                D.FOR("arg", "$object|argIterator",
                     D.SPAN({"class": "argName"}, "$arg.name"),
                     D.SPAN("="),
-                    TAG("$arg.tag", {object: "$arg.value"}),
+                    D.TAG("$arg.tag", {object: "$arg.value"}),
                     D.SPAN({"class": "arrayComma"}, "$arg.delim")
                 )
             ),
@@ -2115,11 +2115,11 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
 
     argList:
         D.DIV({"class": "argListBox", onclick: "$onSelectFrame"},
-            FOR("arg", "$object|argIterator",
+            D.FOR("arg", "$object|argIterator",
                 D.DIV({"class": "argBox"},
                     D.SPAN({"class": "argName"}, "$arg.name"),
                     D.SPAN("&nbsp;=&nbsp;"),
-                    TAG("$arg.tag", {object: "$arg.value"})
+                    D.TAG("$arg.tag", {object: "$arg.value"})
                 )
             )
         ),
@@ -2286,8 +2286,8 @@ FirebugReps.StackTrace = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({role : "group", "aria-label" : Locale.$STR("aria.labels.stack trace")},
-            FOR("frame", "$object.frames|frameIterator",
-                TAG(FirebugReps.StackFrame.tag, {object: "$frame"})
+            D.FOR("frame", "$object.frames|frameIterator",
+                D.TAG(FirebugReps.StackFrame.tag, {object: "$frame"})
             )
         ),
 
@@ -2344,7 +2344,7 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
                 )
             ),
             D.DIV({"class": "errorTrace", role: "presentation"}),
-            TAG("$object|getObjectsTag", {object: "$object.objects"}),
+            D.TAG("$object|getObjectsTag", {object: "$object.objects"}),
             D.DIV({"class": "errorSourceBox errorSource-$object|getSourceType focusRow subLogRow",
                 role : "listitem"},
                 D.TABLE({cellspacing: 0, cellpadding: 0},
@@ -2361,7 +2361,7 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
                                     D.PRE({"class": "errorSourceCode",
                                         title: "$object|getSourceTitle"}, "$object|getSource")
                                 ),
-                                TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
+                                D.TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})
                             )
                         ),
                         D.TR({$collapsed: "$object|hideErrorCaret"},
@@ -2652,7 +2652,7 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
 FirebugReps.Except = domplate(Firebug.Rep,
 {
     tag:
-        TAG(FirebugReps.ErrorMessage.tag, {object: "$object|getErrorMessage"}),
+        D.TAG(FirebugReps.ErrorMessage.tag, {object: "$object|getErrorMessage"}),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -2755,7 +2755,7 @@ FirebugReps.SourceText = domplate(Firebug.Rep,
 {
     tag:
         D.DIV(
-            FOR("line", "$object|lineIterator",
+            D.FOR("line", "$object|lineIterator",
                 D.DIV({"class": "sourceRow", role : "presentation"},
                     D.SPAN({"class": "sourceLine", role : "presentation"}, "$line.lineNo"),
                     D.SPAN({"class": "sourceRowText", role : "presentation"}, "$line.text")
@@ -2869,10 +2869,10 @@ FirebugReps.Storage = domplate(Firebug.Rep,
     tag:
         OBJECTLINK(
             D.SPAN({"class": "storageTitle"}, "$object|summarize "),
-            FOR("prop", "$object|longPropIterator",
+            D.FOR("prop", "$object|longPropIterator",
                 "$prop.name",
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             )
         ),
@@ -2880,10 +2880,10 @@ FirebugReps.Storage = domplate(Firebug.Rep,
     shortTag:
         OBJECTLINK(
             D.SPAN({"class": "storageTitle"}, "$object|summarize "),
-            FOR("prop", "$object|shortPropIterator",
+            D.FOR("prop", "$object|shortPropIterator",
                 "$prop.name",
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             )
         ),
@@ -3090,7 +3090,7 @@ FirebugReps.Attr = domplate(Firebug.Rep,
             D.SPAN(
                 D.SPAN({"class": "attrTitle"}, "$object|getTitle"),
                 D.SPAN({"class": "attrEqual"}, "="),
-                TAG("$object|getValueTag", {object: "$object.value"})
+                D.TAG("$object|getValueTag", {object: "$object.value"})
             )
         ),
 
@@ -3148,10 +3148,10 @@ FirebugReps.NamedNodeMap = domplate(Firebug.Rep,
     tag:
         OBJECTLINK(
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("prop", "$object|longPropIterator",
+            D.FOR("prop", "$object|longPropIterator",
                 D.SPAN({"class": "nodeName"}, "$prop.name"),
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             ),
             D.SPAN({"class": "arrayRightBracket", role: "presentation"}, "]")
@@ -3160,10 +3160,10 @@ FirebugReps.NamedNodeMap = domplate(Firebug.Rep,
     shortTag:
         OBJECTLINK(
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
-            FOR("prop", "$object|shortPropIterator",
+            D.FOR("prop", "$object|shortPropIterator",
                 D.SPAN({"class": "nodeName"}, "$prop.name"),
                 D.SPAN({"class": "objectEqual", role: "presentation"}, "$prop.equal"),
-                TAG("$prop.tag", {object: "$prop.object"}),
+                D.TAG("$prop.tag", {object: "$prop.object"}),
                 D.SPAN({"class": "objectComma", role: "presentation"}, "$prop.delim")
             ),
             D.SPAN({"class": "arrayRightBracket", role: "presentation"}, "]")
