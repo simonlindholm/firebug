@@ -98,7 +98,7 @@ var CSSImportRuleTag = domplate(CSSDomplateBase,
     tag:
         D.DIV({"class": "cssRule insertInto focusRow importRule", _repObject: "$rule.rule"},
         "@import &quot;",
-        A({"class": "objectLink", _repObject: "$rule.rule.styleSheet"}, "$rule.rule.href"),
+        D.A({"class": "objectLink", _repObject: "$rule.rule.styleSheet"}, "$rule.rule.href"),
         "&quot;",
         D.SPAN({"class": "separator"}, "$rule.rule|getSeparator"),
         D.SPAN({"class": "cssMediaQuery", $editable: "$rule|isEditable"},
@@ -2453,7 +2453,7 @@ StyleSheetEditor.prototype = domplate(Firebug.BaseEditor,
     multiLine: true,
 
     tag: D.DIV(
-        TEXTAREA({"class": "styleSheetEditor fullPanelEditor", oninput: "$onInput"})
+        D.TEXTAREA({"class": "styleSheetEditor fullPanelEditor", oninput: "$onInput"})
     ),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

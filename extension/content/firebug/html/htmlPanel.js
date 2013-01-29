@@ -2528,7 +2528,7 @@ HTMLEditor.prototype = domplate(Firebug.BaseEditor,
 {
     tag:
         D.DIV(
-            TEXTAREA({"class": "htmlEditor fullPanelEditor", oninput: "$onInput"})
+            D.TEXTAREA({"class": "htmlEditor fullPanelEditor", oninput: "$onInput"})
         ),
 
     getValue: function()
@@ -2977,11 +2977,11 @@ Firebug.HTMLModule.BreakpointRep = domplate(Firebug.Rep,
         D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", _repObject: "$bp",
             role: "option", "aria-checked": "$bp.checked"},
             D.DIV({"class": "breakpointBlockHead"},
-                INPUT({"class": "breakpointCheckbox", type: "checkbox",
+                D.INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : "-1", onclick: "$onEnable"}),
                 TAG("$bp.node|getNodeTag", {object: "$bp.node"}),
                 D.DIV({"class": "breakpointMutationType"}, "$bp|getChangeLabel"),
-                IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
+                D.IMG({"class": "closeButton", src: "blank.gif", onclick: "$onRemove"})
             ),
             D.DIV({"class": "breakpointCode"},
                 TAG("$bp.node|getSourceLine", {object: "$bp.node"})

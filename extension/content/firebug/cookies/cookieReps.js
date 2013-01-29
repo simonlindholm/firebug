@@ -132,21 +132,21 @@ CookieReps.CookieRow = domplate(CookieReps.Rep,
     bodyTag:
         D.DIV({"class": "cookieInfoBody", _repObject: "$cookie"},
             D.DIV({"class": "cookieInfoTabs"},
-                A({"class": "cookieInfoValueTab cookieInfoTab", onclick: "$onClickTab",
+                D.A({"class": "cookieInfoValueTab cookieInfoTab", onclick: "$onClickTab",
                     view: "Value"},
                     Locale.$STR("cookies.info.valuetab.label")
                 ),
-                A({"class": "cookieInfoRawValueTab cookieInfoTab", onclick: "$onClickTab",
+                D.A({"class": "cookieInfoRawValueTab cookieInfoTab", onclick: "$onClickTab",
                     view: "RawValue",
                     $collapsed: "$cookie|hideRawValueTab"},
                     Locale.$STR("cookies.info.rawdatatab.Raw Data")
                 ),
-                A({"class": "cookieInfoJsonTab cookieInfoTab", onclick: "$onClickTab",
+                D.A({"class": "cookieInfoJsonTab cookieInfoTab", onclick: "$onClickTab",
                     view: "Json",
                     $collapsed: "$cookie|hideJsonTab"},
                     Locale.$STR("cookies.info.jsontab.JSON")
                 ),
-                A({"class": "cookieInfoXmlTab cookieInfoTab", onclick: "$onClickTab",
+                D.A({"class": "cookieInfoXmlTab cookieInfoTab", onclick: "$onClickTab",
                     view: "Xml",
                     $collapsed: "$cookie|hideXmlTab"},
                     Locale.$STR("cookies.info.xmltab.XML")

@@ -148,7 +148,7 @@ Firebug.SVGViewerModel.ParseError = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "svgInfoError"},
             D.DIV({"class": "svgInfoErrorMsg"}, "$error.message"),
-            PRE({"class": "svgInfoErrorSource"}, "$error|getSource")
+            D.PRE({"class": "svgInfoErrorSource"}, "$error|getSource")
         ),
 
     getSource: function(error)

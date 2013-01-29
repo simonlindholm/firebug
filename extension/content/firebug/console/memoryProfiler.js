@@ -714,7 +714,7 @@ Firebug.MemoryProfiler.ProfileCaption = domplate(Firebug.Rep,
 
 // FirebugReps.OBJECTLINK is not yet initialized at this moment.
 var OBJECTLINK =
-    A({
+    D.A({
         "class": "objectLink objectLink-$className a11yFocus",
         _repObject: "$object"
     });

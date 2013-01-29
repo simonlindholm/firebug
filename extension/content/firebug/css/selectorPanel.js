@@ -340,7 +340,7 @@ function SelectorPanelEditor(doc)
 SelectorPanelEditor.prototype = domplate(SelectorEditor.prototype,
 {
     tag:
-        INPUT({"class": "fixedWidthEditor a11yFocusNoTab",
+        D.INPUT({"class": "fixedWidthEditor a11yFocusNoTab",
             type: "text",
             title: Locale.$STR("Selector"),
             oninput: "$onInput",

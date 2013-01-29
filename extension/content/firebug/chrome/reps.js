@@ -59,13 +59,13 @@ catch (err)
 
 // use pre here to keep line breaks while copying multiline strings 
 var OBJECTBOX = FirebugReps.OBJECTBOX =
-    PRE({"class": "objectBox inline objectBox-$className", role: "presentation"});
+    D.PRE({"class": "objectBox inline objectBox-$className", role: "presentation"});
 
 var OBJECTBLOCK = FirebugReps.OBJECTBLOCK =
     D.DIV({"class": "objectBox objectBox-$className focusRow subLogRow", role: "listitem"});
 
 var OBJECTLINK = FirebugReps.OBJECTLINK =
-    A({
+    D.A({
         "class": "objectLink objectLink-$className a11yFocus",
         _repObject: "$object"
     });
@@ -757,7 +757,7 @@ FirebugReps.ArrayLikeObject = domplate(FirebugReps.ArrBase,
         OBJECTBOX({_repObject: "$object",
             $hasTwisty: "$object|hasSpecialProperties",
             onclick: "$onToggleProperties"},
-            A({"class": "objectTitle objectLink", onclick: "$onClickTitle"},
+            D.A({"class": "objectTitle objectLink", onclick: "$onClickTitle"},
                 "$object|getTitle"
             ),
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
@@ -773,7 +773,7 @@ FirebugReps.ArrayLikeObject = domplate(FirebugReps.ArrBase,
         OBJECTBOX({_repObject: "$object",
             $hasTwisty: "$object|hasSpecialProperties",
             onclick: "$onToggleProperties"},
-            A({"class": "objectTitle objectLink", onclick: "$onClickTitle"},
+            D.A({"class": "objectTitle objectLink", onclick: "$onClickTitle"},
                 "$object|getTitle"
             ),
             D.SPAN({"class": "arrayLeftBracket", role: "presentation"}, "["),
@@ -2095,7 +2095,7 @@ FirebugReps.StackFrame = domplate(Firebug.Rep,
         OBJECTBLOCK({$hasTwisty: "$object|hasArguments", _repObject: "$object",
             onclick: "$onToggleArguments"},
             D.SPAN({"class":"stackFrameMarker"}, ""),
-            A({"class": "objectLink a11yFocus", _repObject: "$object"}, "$object|getCallName"),
+            D.A({"class": "objectLink a11yFocus", _repObject: "$object"}, "$object|getCallName"),
             D.SPAN("("),
             D.SPAN({"class": "arguments"},
                 FOR("arg", "$object|argIterator",
@@ -2351,14 +2351,14 @@ FirebugReps.ErrorMessage = domplate(Firebug.Rep,
                     D.TBODY(
                         D.TR(
                             D.TD(
-                                IMG({"class": "$object|isBreakableError a11yFocus",
+                                D.IMG({"class": "$object|isBreakableError a11yFocus",
                                     src:"blank.gif", role: "checkbox",
                                     "aria-checked": "$object|hasErrorBreak",
                                     title: Locale.$STR("console.Break On This Error")})
                             ),
                             D.TD(
-                                A({"class": "errorSource a11yFocus"},
-                                    PRE({"class": "errorSourceCode",
+                                D.A({"class": "errorSource a11yFocus"},
+                                    D.PRE({"class": "errorSourceCode",
                                         title: "$object|getSourceTitle"}, "$object|getSource")
                                 ),
                                 TAG(FirebugReps.SourceLink.tag, {object: "$object|getSourceLink"})

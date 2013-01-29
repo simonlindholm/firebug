@@ -38,15 +38,15 @@ var CSSInfoTip = Obj.extend(InfoTip,
 
         imgTag:
             D.DIV({"class": "infoTipImageBox infoTipLoading"},
-                IMG({"class": "infoTipImage", src: "$urlValue", repeat: "$repeat",
+                D.IMG({"class": "infoTipImage", src: "$urlValue", repeat: "$repeat",
                     onload: "$onLoadImage", onerror: "$onErrorImage"}),
-                IMG({"class": "infoTipBgImage", collapsed: true, src: "blank.gif"}),
+                D.IMG({"class": "infoTipBgImage", collapsed: true, src: "blank.gif"}),
                 D.DIV({"class": "infoTipCaption"})
             ),
 
         fontFamilyTag:
             D.DIV({"class": "infoTipFontFamilyBox"},
-                STYLE({"class": "infoTipFontFamilyStyle"}),
+                D.STYLE({"class": "infoTipFontFamilyStyle"}),
                 D.DIV({"class": "infoTipFontFamilySample"},
                     FOR("fontStyle", "$fontStyles",
                         D.DIV({"class": "infoTipFontFace", style: "$fontStyle"},

@@ -60,7 +60,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 ),
                 D.DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
                     FOR("section", "$inherited",
-                        H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
+                        D.H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
                             D.SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
                             TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
                         ),

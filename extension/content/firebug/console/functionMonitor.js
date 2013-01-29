@@ -83,7 +83,7 @@ var FunctionMonitorRep = domplate(Firebug.Rep,
     tag:
         Reps.OBJECTBLOCK({$hasTwisty: "$object|hasStackTrace", _repObject: "$object",
             onclick: "$onToggleStackTrace"},
-            A({"class": "objectLink functionCallTitle a11yFocus", _repObject: "$object"},
+            D.A({"class": "objectLink functionCallTitle a11yFocus", _repObject: "$object"},
                 "$object|getCallName"
             ),
             D.SPAN("("),

@@ -78,7 +78,7 @@ var HelpEntry = domplate(
         FOR("command", "$commands",
             D.TR({"class": "focusRow helpRow subFocusRow", "role": "row"},
                 D.TD({"class": "a11yFocus helpCell commandName", "role": "presentation"},
-                    A({"class": "objectLink", onclick: "$onClick", _repObject: "$command"},
+                    D.A({"class": "objectLink", onclick: "$onClick", _repObject: "$command"},
                         "$command|getName"
                     )
                 ),

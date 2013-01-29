@@ -251,7 +251,7 @@ Firebug.Breakpoint.BreakpointListRep = domplate(Firebug.Rep,
             FOR("group", "$groups",
                 D.DIV({"class": "breakpointBlock breakpointBlock-$group.name", role: "list",
                         $opened: "$group.opened", _repObject: "$group", onclick: "$onClick"},
-                    H1({"class": "breakpointHeader groupHeader"},
+                    D.H1({"class": "breakpointHeader groupHeader"},
                         D.DIV({"class": "twisty", role: "presentation"}),
                         D.SPAN({"class": "breakpointsHeaderLabel"}, "$group.title")
                     ),
@@ -313,11 +313,11 @@ Firebug.Breakpoint.BreakpointRep = domplate(Firebug.Rep,
         D.DIV({"class": "breakpointRow focusRow", $disabled: "$bp|isDisabled", role: "option",
                 "aria-checked": "$bp.checked", _repObject: "$bp", onclick: "$onClick"},
             D.DIV({"class": "breakpointBlockHead"},
-                INPUT({"class": "breakpointCheckbox", type: "checkbox",
+                D.INPUT({"class": "breakpointCheckbox", type: "checkbox",
                     _checked: "$bp.checked", tabindex : '-1'}),
                 D.SPAN({"class": "breakpointName"}, "$bp.name"),
                 TAG(FirebugReps.SourceLink.tag, {object: "$bp|getSourceLink"}),
-                IMG({"class": "closeButton", src: "blank.gif"})
+                D.IMG({"class": "closeButton", src: "blank.gif"})
             ),
             D.DIV({"class": "breakpointCode"}, "$bp.sourceLine")
         ),
@@ -953,9 +953,9 @@ Firebug.Breakpoint.ConditionEditor.prototype = domplate(Firebug.JSEditor.prototy
     tag:
         D.DIV({"class": "conditionEditor"},
             D.DIV({"class": "conditionCaption"}, Locale.$STR("ConditionInput")),
-            INPUT({"class": "conditionInput completionBox", type: "text",
+            D.INPUT({"class": "conditionInput completionBox", type: "text",
                 tabindex: "-1"}),
-            INPUT({"class": "conditionInput completionInput", type: "text",
+            D.INPUT({"class": "conditionInput completionInput", type: "text",
                 "aria-label": Locale.$STR("ConditionInput"),
                 oninput: "$onInput", onkeypress: "$onKeyPress"}
             )
@@ -1062,7 +1062,7 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                 D.TBODY(
                     D.TR(
                         D.TD({"class": "imageCol"},
-                            IMG({"class": "notificationImage",
+                            D.IMG({"class": "notificationImage",
                                 src: "chrome://firebug/skin/breakpoint.png"})
                         ),
                         D.TD({"class": "descCol"},
@@ -1073,17 +1073,17 @@ Firebug.Breakpoint.BreakNotification.prototype = domplate(Firebug.Rep,
                             D.DIV({"class": "noNotificationDesc"})
                         ),
                         D.TD({"class": "buttonsCol"},
-                            BUTTON({"class": "notificationButton copyButton",
+                            D.BUTTON({"class": "notificationButton copyButton",
                                 onclick: "$onCopyAction",
                                 $collapsed: "$cause|hideCopyAction"},
                                 Locale.$STR("Copy")
                             ),
-                            BUTTON({"class": "notificationButton skipButton",
+                            D.BUTTON({"class": "notificationButton skipButton",
                                 onclick: "$onSkipAction",
                                 $collapsed: "$cause|hideSkipAction"},
                                 Locale.$STR("script.balloon.Disable")
                             ),
-                            BUTTON({"class": "notificationButton okButton",
+                            D.BUTTON({"class": "notificationButton okButton",
                                 onclick: "$onOkAction",
                                 $collapsed: "$cause|hideOkAction"},
                                 Locale.$STR("script.balloon.Continue")

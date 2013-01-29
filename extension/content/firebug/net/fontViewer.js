@@ -187,10 +187,10 @@ Firebug.FontViewerModel.Preview = domplate(
                 )
             ),
             D.DIV({"class": "fontInfoPreview"},
-                STYLE({"class": "fontInfoPreviewStyle"}),
+                D.STYLE({"class": "fontInfoPreviewStyle"}),
                 D.DIV({"class": "fontInfoPreviewSample"},
                     FOR("style", "$styles",
-                        P({"class": "$fontObject.CSSFamilyName|getFontFaceClass",
+                        D.P({"class": "$fontObject.CSSFamilyName|getFontFaceClass",
                             "style": "font-size: $style|getFontSize"},
                             D.SPAN({"class": "fontViewerFontSize"}, "$style"),
                             D.SPAN(Locale.$STR("fontviewer.pangram"))
@@ -199,7 +199,7 @@ Firebug.FontViewerModel.Preview = domplate(
                 ),
                 D.DIV({"class": "fontInfoPreviewCharacters"},
                     FOR("charType", "$charTypes",
-                        P({"class": "$fontObject.CSSFamilyName|getFontFaceClass"},
+                        D.P({"class": "$fontObject.CSSFamilyName|getFontFaceClass"},
                             "$charType|getCharacters"
                         )
                     )
@@ -222,7 +222,7 @@ Firebug.FontViewerModel.Preview = domplate(
     sourceTag:
         D.TR({"role": "presentation"},
             D.TD({colspan: 2, "role": "presentation"},
-                PRE({"class": "source"})
+                D.PRE({"class": "source"})
             )
         ),
 
@@ -230,7 +230,7 @@ Firebug.FontViewerModel.Preview = domplate(
         D.DIV({"class": "fontInfoTranslatedInfo"},
             D.DIV({"class": "fontInfoLangInfo"},
                 FOR("lang", "$node|getLanguages",
-                    A({"class": "fontInfoLangTab", $selected: "$lang.selected", role: "tab",
+                    D.A({"class": "fontInfoLangTab", $selected: "$lang.selected", role: "tab",
                         onclick: "$onTranslatedLangChange"}, "$lang.name")
                 )
             ),
@@ -249,9 +249,9 @@ Firebug.FontViewerModel.Preview = domplate(
         ),
 
     creditsTag:
-        UL({"class": "fontInfoCredits"},
+        D.UL({"class": "fontInfoCredits"},
             FOR("credit", "$node|getCredits",
-                LI(
+                D.LI(
                     TAG("$credit|getLinkedTextTag", {node: "$credit"}),
                     " ",
                     D.SPAN({"class": "fontInfoCreditsRole"}, "$credit|getRole")
@@ -260,7 +260,7 @@ Firebug.FontViewerModel.Preview = domplate(
         ),
 
     linkTag:
-        A({"class": "fontInfoLink", href: "$node|getUrl", onclick: "$onOpenUrl"},
+        D.A({"class": "fontInfoLink", href: "$node|getUrl", onclick: "$onOpenUrl"},
             "$node|getLinkName"),
 
     textTag:

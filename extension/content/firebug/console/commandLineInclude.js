@@ -73,14 +73,14 @@ var CommandLineIncludeRep = domplate(FirebugReps.Table,
     {
         var urlTag =
             D.SPAN({style:"height:100%"},
-                A({"href": href, "target": "_blank", "class": "url"},
+                D.A({"href": href, "target": "_blank", "class": "url"},
                     Str.cropString(href, 100)
                 ),
                 D.SPAN({"class": "commands"}
                 // xxxFlorent: temporarily disabled, see: 
                 //    http://code.google.com/p/fbug/issues/detail?id=5878#c27
                 /*,
-                IMG({
+                D.IMG({
                     "src":"blank.gif",
                     "class":"closeButton ",
                     onclick: this.deleteAlias.bind(this, aliasName),

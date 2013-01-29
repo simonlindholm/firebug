@@ -156,7 +156,7 @@ Firebug.XMLViewerModel.ParseError = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "xmlInfoError"},
             D.DIV({"class": "xmlInfoErrorMsg"}, "$error.message"),
-            PRE({"class": "xmlInfoErrorSource"}, "$error|getSource")
+            D.PRE({"class": "xmlInfoErrorSource"}, "$error|getSource")
         ),
 
     getSource: function(error)

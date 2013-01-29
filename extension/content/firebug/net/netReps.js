@@ -797,36 +797,36 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
 
     infoTabs:
         D.DIV({"class": "netInfoTabs focusRow subFocusRow", "role": "tablist"},
-            A({"class": "netInfoParamsTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoParamsTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                 view: "Params",
                 $collapsed: "$file|hideParams"},
                 Locale.$STR("URLParameters")
             ),
-            A({"class": "netInfoHeadersTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoHeadersTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                 view: "Headers"},
                 Locale.$STR("Headers")
             ),
-            A({"class": "netInfoPostTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoPostTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                 view: "Post",
                 $collapsed: "$file|hidePost"},
                 Locale.$STR("Post")
             ),
-            A({"class": "netInfoPutTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoPutTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                 view: "Put",
                 $collapsed: "$file|hidePut"},
                 Locale.$STR("Put")
             ),
-            A({"class": "netInfoResponseTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoResponseTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                 view: "Response",
                 $collapsed: "$file|hideResponse"},
                 Locale.$STR("Response")
             ),
-            A({"class": "netInfoCacheTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoCacheTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                view: "Cache",
                $collapsed: "$file|hideCache"},
                Locale.$STR("Cache")
             ),
-            A({"class": "netInfoHtmlTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
+            D.A({"class": "netInfoHtmlTab netInfoTab a11yFocus", onclick: "$onClickTab", "role": "tab",
                view: "Html",
                $collapsed: "$file|hideHtml"},
                Locale.$STR("HTML")
@@ -848,7 +848,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
                 )
             ),
             D.DIV({"class": "netInfoHtmlText netInfoText", "role": "tabpanel"},
-                IFRAME({"class": "netInfoHtmlPreview", "role": "document"}),
+                D.IFRAME({"class": "netInfoHtmlPreview", "role": "document"}),
                 D.DIV({"class": "htmlPreviewResizer"})
             )
         ),
@@ -861,7 +861,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
                 ),
                 D.TD({"class": "netInfoParamValue", "role": "list", "aria-label": "$param.name"},
                     FOR("line", "$param|getParamValueIterator",
-                        CODE({"class": "focusRow subFocusRow", "role": "listitem"}, "$line")
+                        D.CODE({"class": "focusRow subFocusRow", "role": "listitem"}, "$line")
                     )
                 )
             )
@@ -875,7 +875,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
         ),
 
     customTab:
-        A({"class": "netInfo$tabId\\Tab netInfoTab", onclick: "$onClickTab",
+        D.A({"class": "netInfo$tabId\\Tab netInfoTab", onclick: "$onClickTab",
             view: "$tabId", "role": "tab"},
             "$tabTitle"
         ),
@@ -1398,7 +1398,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
         D.TR({"role": "presentation"},
             D.TD({colspan: 2, "role": "presentation"},
                 FOR("line", "$param|getParamValueIterator",
-                    CODE({"class":"focusRow subFocusRow", "role": "listitem"}, "$line")
+                    D.CODE({"class":"focusRow subFocusRow", "role": "listitem"}, "$line")
                 )
             )
         ),
@@ -1618,7 +1618,7 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
     sourceTag:
         D.TR({"role": "presentation"},
             D.TD({colspan: 2, "role": "presentation"},
-                PRE({"class": "source"})
+                D.PRE({"class": "source"})
             )
         ),
 
@@ -2013,7 +2013,7 @@ Firebug.NetMonitor.NetLimit = domplate(Firebug.Rep,
                             ),
                             D.TD({style: "width:100%"}),
                             D.TD(
-                                BUTTON({"class": "netLimitButton", title: "$limitPrefsTitle",
+                                D.BUTTON({"class": "netLimitButton", title: "$limitPrefsTitle",
                                     onclick: "$onPreferences"},
                                   Locale.$STR("LimitPrefs")
                                 )
@@ -2067,7 +2067,7 @@ Firebug.NetMonitor.ResponseSizeLimit = domplate(Firebug.Rep,
     tag:
         D.DIV({"class": "netInfoResponseSizeLimit"},
             D.SPAN("$object.beforeLink"),
-            A({"class": "objectLink", onclick: "$onClickLink"},
+            D.A({"class": "objectLink", onclick: "$onClickLink"},
                 "$object.linkText"
             ),
             D.SPAN("$object.afterLink")

@@ -58,7 +58,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
             FOR("group", "$groups",
                 D.DIV({"class": "computedStylesGroup", $opened: "$group.opened", role: "list",
                         $hidden: "$group.props|hasNoStyles", _repObject: "$group"},
-                    H1({"class": "cssComputedHeader groupHeader focusRow", role: "listitem"},
+                    D.H1({"class": "cssComputedHeader groupHeader focusRow", role: "listitem"},
                         D.DIV({"class": "twisty", role: "presentation"}),
                         D.SPAN({"class": "cssComputedLabel"}, "$group.title")
                     ),

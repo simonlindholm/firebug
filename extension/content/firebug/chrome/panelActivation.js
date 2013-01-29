@@ -280,15 +280,15 @@ Firebug.DisabledPanelBox = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "disabledPanelBox"},
-            H1({"class": "disabledPanelHead"},
+            D.H1({"class": "disabledPanelHead"},
                 D.SPAN("$pageTitle")
             ),
-            P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
+            D.P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
                 Locale.$STR("moduleManager.desc3"),
                 D.SPAN("&nbsp;"),
                 D.SPAN({"class": "descImage descImage-$panelName"})
             ),
-            A({"class": "objectLink", onclick: "$onEnable"},
+            D.A({"class": "objectLink", onclick: "$onEnable"},
                 Locale.$STR("moduleManager.Enable")
             )
             /* need something here that pushes down any thing appended to the panel */

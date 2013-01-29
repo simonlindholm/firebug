@@ -1816,10 +1816,10 @@ Firebug.ScriptPanel.WarningRep = domplate(Firebug.Rep,
 {
     tag:
         D.DIV({"class": "disabledPanelBox"},
-            H1({"class": "disabledPanelHead"},
+            D.H1({"class": "disabledPanelHead"},
                 D.SPAN("$pageTitle")
             ),
-            P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
+            D.P({"class": "disabledPanelDescription", style: "margin-top: 15px;"},
                 D.SPAN("$suggestion")
             )
         ),
