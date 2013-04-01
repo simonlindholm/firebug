@@ -57,8 +57,10 @@ catch (err)
 // ********************************************************************************************* //
 // Common Tags
 
-// use pre here to keep line breaks while copying multiline strings 
 var OBJECTBOX = FirebugReps.OBJECTBOX =
+    SPAN({"class": "objectBox objectBox-$className", role: "presentation"});
+
+var PREOBJECTBOX =
     PRE({"class": "objectBox inline objectBox-$className", role: "presentation"});
 
 var OBJECTBLOCK = FirebugReps.OBJECTBLOCK =
@@ -142,6 +144,27 @@ FirebugReps.Number = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
+// To support copying strings with multiple spaces, tabs, newlines etc. correctly
+// we are unfortunately required by Firefox to use a <pre> tag (bug 116083).
+// Don't do that with all OBJECTBOX's though - it inserts newlines *everywhere*.
+// (See issues 3816, 6130.)
+var reWeirdWhitespace = /  |[\t\n]/;
+FirebugReps.WeirdWhitespaceString = domplate(Firebug.Rep,
+{
+    tag: PREOBJECTBOX("&quot;$object&quot;"),
+
+    shortTag: OBJECTBOX("&quot;$object|cropMultipleLines&quot;"),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+    className: "string",
+
+    supportsObject: function(object, type)
+    {
+        return (type == "string" && reWeirdWhitespace.test(object));
+    }
+});
+
 FirebugReps.String = domplate(Firebug.Rep,
 {
     tag: OBJECTBOX("&quot;$object&quot;"),
@@ -192,7 +215,15 @@ FirebugReps.Text = domplate(Firebug.Rep,
 {
     tag: OBJECTBOX("$object"),
 
+    // Refer to WeirdWhitespaceString above.
+    weirdWhitespaceTag: PREOBJECTBOX("$object"),
+
     shortTag: OBJECTBOX("$object|cropMultipleLines"),
+
+    getWhitespaceCorrectedTag: function(str)
+    {
+        return reWeirdWhitespace.test(str) ? this.weirdWhitespaceTag : this.tag;
+    },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -3404,6 +3435,7 @@ Firebug.registerRep(
     FirebugReps.Undefined,
     FirebugReps.Null,
     FirebugReps.Number,
+    FirebugReps.WeirdWhitespaceString,
     FirebugReps.String,
     FirebugReps.nsIDOMHistory, // make this early to avoid exceptions
     FirebugReps.ApplicationCache, // this also

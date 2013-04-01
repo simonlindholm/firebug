@@ -599,7 +599,8 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
             }
             else
             {
-                node = FirebugReps.Text.tag.append({object: part}, row);
+                var tag = FirebugReps.Text.getWhitespaceCorrectedTag(part);
+                node = tag.append({object: part}, row);
             }
 
             // Apply custom style if available.
