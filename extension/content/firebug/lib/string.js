@@ -71,14 +71,15 @@ var e = addEntityMapToList,
     text = "text",
     attr = "attributes",
     css = "css",
+    simple = "simple",
     editor = "editor";
 
-e(0x0000, "#0", text, attr, css, editor);
+e(0x0000, "#0", text, simple, attr, css, editor);
 e(0x0022, "quot", attr, css);
-e(0x0026, "amp", attr, text, css);
+e(0x0026, "amp", simple, attr, text, css);
 e(0x0027, "apos", css);
-e(0x003c, "lt", attr, text, css);
-e(0x003e, "gt", attr, text, css);
+e(0x003c, "lt", simple, attr, text, css);
+e(0x003e, "gt", simple, attr, text, css);
 e(0xa9, "copy", text, editor);
 e(0xae, "reg", text, editor);
 e(0x2122, "trade", text, editor);
@@ -203,18 +204,29 @@ function escapeEntityAsName(char)
     }
 }
 
-function escapeEntityAsUnicode(char)
+function escapeEntityAsUnicode(ch, attr)
 {
-    var charCode = char.charCodeAt(0);
+    if (attr)
+    {
+        if (ch == "\"")
+            return "&quot;";
+    }
+    else
+    {
+        if (ch == "<")
+            return "&lt;";
+        if (ch == ">")
+            return "&gt;";
+    }
 
-    if (charCode == 34)
-        return "&quot;";
-    else if (charCode == 38)
+    if (ch == "&")
         return "&amp;";
-    else if (charCode < 32 || charCode >= 127)
+
+    var charCode = ch.charCodeAt(0);
+    if (charCode < 32 || charCode >= 127)
         return "&#" + charCode + ";";
 
-    return char;
+    return ch;
 }
 
 function escapeGroupsForEntities(str, lists, type)
@@ -244,7 +256,7 @@ function escapeGroupsForEntities(str, lists, type)
         if (textListIndex != -1)
         {
             if (type == "unicode")
-                result = escapeEntityAsUnicode(str.charAt(i));
+                result = escapeEntityAsUnicode(str.charAt(i), true);
             else if (type == "names")
                 result = escapeEntityAsName(str.charAt(i));
         }
@@ -365,6 +377,7 @@ var escapeForTextNode = Str.escapeForTextNode = createSimpleEscape("text", "norm
 var escapeForElementAttribute = Str.escapeForElementAttribute = createSimpleEscape("attributes", "normal");
 Str.escapeForHtmlEditor = createSimpleEscape("editor", "normal");
 Str.escapeForCss = createSimpleEscape("css", "normal");
+Str.escapeSimpleHtml = createSimpleEscape("simple", "normal");
 
 // deprecated compatibility functions
 Str.deprecateEscapeHTML = createSimpleEscape("text", "normal");
@@ -374,23 +387,39 @@ Str.escapeHTML = Deprecated.deprecated("use appropriate escapeFor... function",
     Str.deprecateEscapeHTML);
 Str.unescapeHTML = Deprecated.deprecated("use appropriate unescapeFor... function",
     Str.deprecatedUnescapeHTML);
+Str.unescapeForTextNode = function(str) { return str; };
 
 var escapeForSourceLine = Str.escapeForSourceLine = createSimpleEscape("text", "normal");
 
 var unescapeWhitespace = createSimpleEscape("whitespace", "reverse");
 
-Str.unescapeForTextNode = function(str)
+Str.unescapeForURL = createSimpleEscape('text', 'reverse');
+
+Str.escapeHtmlAsUnicode = function(str)
 {
-    if (Options.get("showTextNodesWithWhitespace"))
-        str = unescapeWhitespace(str);
-
-    if (Options.get("entityDisplay") == "names")
-        str = escapeForElementAttribute(str);
-
-    return str;
+    var out = "";
+    for (var i = 0; i < str.length; ++i)
+        out += escapeEntityAsUnicode(str.charAt(i), false);
+    return out;
 };
 
-Str.unescapeForURL = createSimpleEscape('text', 'reverse');
+Str.escapeHtmlWithNamedEntities = function(str)
+{
+    var out = "";
+    for (var i = 0; i < str.length; ++i)
+    {
+        var ch = str.charAt(i);
+        if (ch == "<")
+            out += "&lt;";
+        else if (ch == ">")
+            out += "&gt;";
+        else if (ch == "&")
+            out += "&amp;";
+        else
+            out += escapeEntityAsName(str.charAt(i));
+    }
+    return out;
+};
 
 Str.escapeNewLines = function(value)
 {

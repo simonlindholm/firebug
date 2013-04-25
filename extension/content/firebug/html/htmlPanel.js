@@ -2339,11 +2339,25 @@ TextNodeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         // The text displayed within the HTML panel can be shortened if the 'Show Full Text'
         // option is false, so get the original textContent from the associated page element
         // (issue 2183).
-        var repObject = Firebug.getRepObject(target);
-        if (repObject)
-            return repObject.textContent;
+        var node = Firebug.getRepObject(target);
+        if (!node)
+            return value;
 
-        return value;
+        if (!(node instanceof window.Element) || !("innerHTML" in node))
+            return value;
+
+        // Escape the text as HTML, because the text node editor doubles as an
+        // HTML editor. The manner of escaping depends on the entityDisplay option.
+        value = node.textContent;
+        var type = Options.get("entityDisplay"), html;
+        if (type == "symbols")
+            html = Str.escapeSimpleHtml(value);
+        else if (type == "names")
+            html = Str.escapeHtmlWithNamedEntities(value);
+        else
+            html = Str.escapeHtmlAsUnicode(value);
+        html = html.replace(/\n/g, "&#10;");
+        return html;
     },
 
     beginEditing: function(target, value)
@@ -2352,19 +2366,15 @@ TextNodeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         if (!node || node instanceof window.Element)
             return;
 
-        var document = node.ownerDocument;
-        this.range = document.createRange();
+        var doc = node.ownerDocument;
+        this.range = doc.createRange();
         this.range.setStartBefore(node);
         this.range.setEndAfter(node);
     },
 
     endEditing: function(target, value, cancel)
     {
-        if (this.range)
-        {
-            this.range.detach();
-            delete this.range;
-        }
+        delete this.range;
 
         // Remove empty groups by default
         return true;
@@ -2376,21 +2386,23 @@ TextNodeEditor.prototype = domplate(Firebug.InlineEditor.prototype,
         if (!node)
             return;
 
-        value = Str.unescapeForTextNode(value || "");
+        value = value || "";
+        var htmlValue = value;
+
         target.textContent = value;
 
         if (node instanceof window.Element)
         {
-            if (Xml.isElementMathML(node) || Xml.isElementSVG(node))
-                node.textContent = value;
+            if ("innerHTML" in node)
+                node.innerHTML = htmlValue;
             else
-                node.innerHTML = value;
+                node.textContent = value;
         }
         else
         {
             try
             {
-                var documentFragment = this.range.createContextualFragment(value);
+                var documentFragment = this.range.createContextualFragment(htmlValue);
                 var cnl = documentFragment.childNodes.length;
                 this.range.deleteContents();
                 this.range.insertNode(documentFragment);
