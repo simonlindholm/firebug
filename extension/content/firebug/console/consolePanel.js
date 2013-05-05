@@ -8,6 +8,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
+    "firebug/lib/string",
     "firebug/lib/search",
     "firebug/chrome/menu",
     "firebug/lib/options",
@@ -16,7 +17,7 @@ define([
     "firebug/console/profiler",
     "firebug/chrome/searchBox"
 ],
-function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Search, Menu, Options,
+function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Str, Search, Menu, Options,
     Wrapper, Xpcom) {
 
 // ********************************************************************************************* //
@@ -63,6 +64,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     groups: null,
     limit: null,
     order: 10,
+    usedObject: undefined,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // extends Panel
@@ -76,6 +78,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     initialize: function()
     {
         Firebug.ActivablePanel.initialize.apply(this, arguments);  // loads persisted content
+        Firebug.registerUIListener(this);
 
         if (!this.persistedContent && Firebug.Console.isAlwaysEnabled())
         {
@@ -106,6 +109,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
             FBTrace.sysout("console.destroy; wasScrolledToBottom: " +
                 this.wasScrolledToBottom + ", " + this.context.getName());
 
+        Firebug.unregisterUIListener(this);
         Firebug.ActivablePanel.destroy.apply(this, arguments);  // must be called last
     },
 
@@ -779,6 +783,73 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
         if (this.wasScrolledToBottom)
             Dom.scrollToBottom(this.panelNode);
+    },
+
+    // XXX:
+    // - maybe discard some objects from consideration?
+    // - for HTML panel things, use $0 instead?
+    // - for CSS things, both DOM and Console options are annoying
+    // - certainly shouldn't show up when right-clicking net panel entries / header...
+    //   Maybe restrict to content objects only?
+    //   Exclude CSS things totally?
+    // - Script panel source selector, allows inspecting in DOM, Console
+    // - maybe for strings?
+    onContextMenu: function(items, object, target, context, panel, popup)
+    {
+        var context = this.context;
+
+        if (!object || (typeof object !== "object" && typeof object !== "function"))
+            return;
+
+        // XXX test this for e.g. Net panel
+        var rep = Firebug.getRep(object, context);
+        object = rep && rep.getRealObject(object, context);
+        if (!object || (typeof object !== "object" && typeof object !== "function"))
+            return;
+
+        function useInCommandLine()
+        {
+            this.usedObject = object;
+
+            var panel = Firebug.chrome.getSelectedPanel();
+            if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
+                Firebug.CommandLine.Popup.toggle(context);
+
+            var commandLine = Firebug.CommandLine.getCommandLine(context);
+
+            var valueLength = commandLine.value.length;
+            var ins = (valueLength > 0 ? "/* $p */" : "$p");
+
+            commandLine.value += ins;
+            commandLine.focus();
+            commandLine.setSelectionRange(valueLength, valueLength + ins.length);
+
+            Firebug.CommandLine.autoCompleter.hide();
+            Firebug.CommandLine.update(context);
+        }
+
+        var item = {
+            label: "commandline.Use_in_Command_Line",
+            tooltiptext: "commandline.tip.Use_in_Command_Line",
+            id: "fbUseInCommandLine",
+            command: useInCommandLine.bind(this)
+        };
+
+        // Add the item before the first "Inspect In * Panel" option (or at the bottom together with
+        // a separator if there is none).
+        var before = Array.prototype.filter.call(popup.childNodes, function(node) {
+            return Str.hasPrefix(node.id, "InspectIn");
+        })[0];
+        if (!before)
+            Menu.createMenuSeparator(popup);
+        Menu.createMenuItem(popup, item, before);
+    },
+
+    getAccessorVars: function()
+    {
+        return {
+            "$p": this.usedObject
+        };
     },
 
     showInfoTip: function(infoTip, target, x, y)
