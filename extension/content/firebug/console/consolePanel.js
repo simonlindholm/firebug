@@ -14,11 +14,12 @@ define([
     "firebug/lib/options",
     "firebug/lib/wrapper",
     "firebug/lib/xpcom",
+    "firebug/js/sourceLink",
     "firebug/console/profiler",
     "firebug/chrome/searchBox"
 ],
 function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Str, Search, Menu, Options,
-    Wrapper, Xpcom) {
+    Wrapper, Xpcom, SourceLink) {
 
 // ********************************************************************************************* //
 // Constants
@@ -64,7 +65,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     groups: null,
     limit: null,
     order: 10,
-    usedObject: undefined,
+    rememberedObject: undefined,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // extends Panel
@@ -786,30 +787,27 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     },
 
     // XXX:
-    // - maybe discard some objects from consideration?
+    // - discard more objects from consideration?
     // - for HTML panel things, use $0 instead?
     // - for CSS things, both DOM and Console options are annoying
-    // - certainly shouldn't show up when right-clicking net panel entries / header...
-    //   Maybe restrict to content objects only?
     //   Exclude CSS things totally?
-    // - Script panel source selector, allows inspecting in DOM, Console
     // - maybe for strings?
     onContextMenu: function(items, object, target, context, panel, popup)
     {
         var context = this.context;
 
+        var rep = object && Firebug.getRep(object, context);
+        object = rep && rep.getRealObject(object, context);
+
         if (!object || (typeof object !== "object" && typeof object !== "function"))
             return;
 
-        // XXX test this for e.g. Net panel
-        var rep = Firebug.getRep(object, context);
-        object = rep && rep.getRealObject(object, context);
-        if (!object || (typeof object !== "object" && typeof object !== "function"))
+        if (object instanceof SourceLink.SourceLink || !rep.inspectable)
             return;
 
         function useInCommandLine()
         {
-            this.usedObject = object;
+            this.rememberedObject = object;
 
             var panel = Firebug.chrome.getSelectedPanel();
             if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
@@ -848,7 +846,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     getAccessorVars: function()
     {
         return {
-            "$p": this.usedObject
+            "$p": this.rememberedObject
         };
     },
 

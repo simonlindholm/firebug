@@ -2163,6 +2163,7 @@ FirebugReps.CompilationUnit = domplate(FirebugReps.SourceLink,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     className: "CompilationUnit",
+    inspectable: false,
 
     supportsObject: function(object, type)
     {
