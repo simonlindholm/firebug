@@ -25,7 +25,7 @@ var commandLineCache = new WeakMap();
 // Command Line APIs
 
 // List of command line APIs
-var commandNames = ["$", "$$", "$x", "$n", "cd", "clear", "inspect", "keys",
+var commandNames = ["$", "$$", "$n", "$x", "cd", "clear", "inspect", "keys",
     "values", "debug", "undebug", "monitor", "unmonitor", "traceCalls", "untraceCalls",
     "traceAll", "untraceAll", "copy" /*, "memoryProfile", "memoryProfileEnd"*/];
 
@@ -41,7 +41,7 @@ var userCommands = Object.create(null);
 // List of command line APIs to auto-complete, kept equal to the concatenation
 // of the above minus trace*.
 var completionList = [
-        "$", "$$", "$x", "$n", "cd", "clear", "inspect", "keys",
+        "$", "$$", "$n", "$x", "cd", "clear", "inspect", "keys",
         "values", "debug", "undebug", "monitor", "unmonitor", "copy"
     ].concat(consoleShortcuts, props);
 

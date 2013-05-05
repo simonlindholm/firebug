@@ -57,7 +57,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Members
 
-    wasScrolledToBottom: false,
+    wasScrolledToBottom: true,
     messageCount: 0,
     lastLogTime: 0,
     groups: null,
