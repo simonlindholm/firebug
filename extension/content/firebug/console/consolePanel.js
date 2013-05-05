@@ -788,7 +788,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     // XXX:
     // - discard more objects from consideration?
-    // - for HTML panel things, use $0 instead?
     // - for CSS things, both DOM and Console options are annoying
     //   Exclude CSS things totally?
     // - maybe for strings?
@@ -805,9 +804,12 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (object instanceof SourceLink.SourceLink || !rep.inspectable)
             return;
 
+        var use$0 = (panel.name === "html" && panel.selection === object);
+
         function useInCommandLine()
         {
-            this.rememberedObject = object;
+            if (!use$0)
+                this.rememberedObject = object;
 
             var panel = Firebug.chrome.getSelectedPanel();
             if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
@@ -816,7 +818,8 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
             var commandLine = Firebug.CommandLine.getCommandLine(context);
 
             var valueLength = commandLine.value.length;
-            var ins = (valueLength > 0 ? "/* $p */" : "$p");
+            var varName = (use$0 ? "$0" : "$p");
+            var ins = (valueLength > 0 ? "/* " + varName + " */" : varName);
 
             commandLine.value += ins;
             commandLine.focus();
