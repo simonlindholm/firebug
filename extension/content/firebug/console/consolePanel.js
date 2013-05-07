@@ -788,8 +788,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     // XXX:
     // - discard more objects from consideration?
-    // - for CSS things, both DOM and Console options are annoying
-    //   Exclude CSS things totally?
     // - maybe for strings?
     onContextMenu: function(items, object, target, context, panel, popup)
     {
@@ -798,10 +796,10 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         var rep = object && Firebug.getRep(object, context);
         object = rep && rep.getRealObject(object, context);
 
-        if (!object || (typeof object !== "object" && typeof object !== "function"))
+        if (typeof object === "boolean" || object === undefined || object === null)
             return;
 
-        if (object instanceof SourceLink.SourceLink || !rep.inspectable)
+        if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
             return;
 
         var use$0 = (panel.name === "html" && panel.selection === object);
