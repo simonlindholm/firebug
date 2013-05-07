@@ -802,12 +802,10 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
             return;
 
-        var use$0 = (panel.name === "html" && panel.selection === object);
 
         function useInCommandLine()
         {
-            if (!use$0)
-                this.rememberedObject = object;
+            this.rememberedObject = object;
 
             var panel = Firebug.chrome.getSelectedPanel();
             if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
@@ -816,7 +814,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
             var commandLine = Firebug.CommandLine.getCommandLine(context);
 
             var valueLength = commandLine.value.length;
-            var varName = (use$0 ? "$0" : "$p");
+            var varName = "$p";
             var ins = (valueLength > 0 ? "/* " + varName + " */" : varName);
 
             commandLine.value += ins;
