@@ -702,11 +702,11 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
 
     onContextMenu: function(items, object, target, context, panel, popup)
     {
-        var rep = object && Firebug.getRep(object, context);
-        object = rep && rep.getRealObject(object, context);
-
         if (typeof object === "boolean" || object === undefined || object === null)
             return;
+
+        var rep = Firebug.getRep(object, context);
+        object = rep && rep.getRealObject(object, context);
 
         if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
             return;
