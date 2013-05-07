@@ -813,9 +813,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
             var commandLine = Firebug.CommandLine.getCommandLine(context);
 
-            var valueLength = commandLine.value.length;
-            var varName = "$p";
-            var ins = (valueLength > 0 ? "/* " + varName + " */" : varName);
+            var valueLength = commandLine.value.length, ins = "$p";
 
             commandLine.value += ins;
             commandLine.focus();
