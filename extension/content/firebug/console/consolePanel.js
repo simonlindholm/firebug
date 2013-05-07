@@ -8,7 +8,6 @@ define([
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
-    "firebug/lib/string",
     "firebug/lib/search",
     "firebug/chrome/menu",
     "firebug/lib/options",
@@ -17,7 +16,7 @@ define([
     "firebug/console/profiler",
     "firebug/chrome/searchBox"
 ],
-function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Str, Search, Menu, Options,
+function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Search, Menu, Options,
     Wrapper, Xpcom) {
 
 // ********************************************************************************************* //
@@ -58,7 +57,7 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Members
 
-    wasScrolledToBottom: true,
+    wasScrolledToBottom: false,
     messageCount: 0,
     lastLogTime: 0,
     groups: null,
