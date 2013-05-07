@@ -14,12 +14,11 @@ define([
     "firebug/lib/options",
     "firebug/lib/wrapper",
     "firebug/lib/xpcom",
-    "firebug/js/sourceLink",
     "firebug/console/profiler",
     "firebug/chrome/searchBox"
 ],
 function(Obj, Firebug, FirebugReps, Locale, Events, Css, Dom, Str, Search, Menu, Options,
-    Wrapper, Xpcom, SourceLink) {
+    Wrapper, Xpcom) {
 
 // ********************************************************************************************* //
 // Constants
@@ -65,7 +64,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     groups: null,
     limit: null,
     order: 10,
-    rememberedObject: undefined,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // extends Panel
@@ -79,7 +77,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
     initialize: function()
     {
         Firebug.ActivablePanel.initialize.apply(this, arguments);  // loads persisted content
-        Firebug.registerUIListener(this);
 
         if (!this.persistedContent && Firebug.Console.isAlwaysEnabled())
         {
@@ -110,7 +107,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
             FBTrace.sysout("console.destroy; wasScrolledToBottom: " +
                 this.wasScrolledToBottom + ", " + this.context.getName());
 
-        Firebug.unregisterUIListener(this);
         Firebug.ActivablePanel.destroy.apply(this, arguments);  // must be called last
     },
 
@@ -784,69 +780,6 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
         if (this.wasScrolledToBottom)
             Dom.scrollToBottom(this.panelNode);
-    },
-
-    // XXX:
-    // - discard more objects from consideration?
-    // - maybe for strings?
-    onContextMenu: function(items, object, target, context, panel, popup)
-    {
-        var context = this.context;
-
-        var rep = object && Firebug.getRep(object, context);
-        object = rep && rep.getRealObject(object, context);
-
-        if (typeof object === "boolean" || object === undefined || object === null)
-            return;
-
-        if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
-            return;
-
-        if (!context.getPanel("console", true))
-            return;
-
-        function useInCommandLine()
-        {
-            this.rememberedObject = object;
-
-            var panel = Firebug.chrome.getSelectedPanel();
-            if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
-                Firebug.CommandLine.Popup.toggle(context);
-
-            var commandLine = Firebug.CommandLine.getCommandLine(context);
-
-            var valueLength = commandLine.value.length, ins = "$p";
-
-            commandLine.value += ins;
-            commandLine.focus();
-            commandLine.setSelectionRange(valueLength, valueLength + ins.length);
-
-            Firebug.CommandLine.autoCompleter.hide();
-            Firebug.CommandLine.update(context);
-        }
-
-        var item = {
-            label: "commandline.Use_in_Command_Line",
-            tooltiptext: "commandline.tip.Use_in_Command_Line",
-            id: "fbUseInCommandLine",
-            command: useInCommandLine.bind(this)
-        };
-
-        // Add the item before the first "Inspect In * Panel" option (or at the bottom together with
-        // a separator if there is none).
-        var before = Array.prototype.filter.call(popup.childNodes, function(node) {
-            return Str.hasPrefix(node.id, "InspectIn");
-        })[0];
-        if (!before)
-            Menu.createMenuSeparator(popup);
-        Menu.createMenuItem(popup, item, before);
-    },
-
-    getAccessorVars: function()
-    {
-        return {
-            "$p": this.rememberedObject
-        };
     },
 
     showInfoTip: function(infoTip, target, x, y)

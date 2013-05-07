@@ -446,8 +446,7 @@ function updateVars(commandLine, dglobal, context)
     for (var prop in vars)
         commandLine[prop] = dglobal.makeDebuggeeValue(vars[prop]);
 
-    var consolePanel = context.getPanel("console", true);
-    vars = consolePanel ? consolePanel.getAccessorVars() : null;
+    vars = Firebug.CommandLine.getAccessorVars(context);
     for (var prop in vars)
         commandLine[prop] = dglobal.makeDebuggeeValue(vars[prop]);
 }

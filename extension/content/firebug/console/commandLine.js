@@ -12,9 +12,11 @@ define([
     "firebug/lib/dom",
     "firebug/chrome/firefox",
     "firebug/chrome/window",
+    "firebug/chrome/menu",
     "firebug/lib/system",
     "firebug/lib/string",
     "firebug/lib/persist",
+    "firebug/js/sourceLink",
     "firebug/console/console",
     "firebug/console/commandLineExposed",
     "firebug/console/closureInspector",
@@ -24,8 +26,8 @@ define([
     "firebug/console/commandLineHelp",
     "firebug/console/commandLineInclude",
 ],
-function(Obj, Firebug, FirebugReps, Locale, Events, Url, Dom, Firefox, Win, System, Str, Persist,
-    Console, CommandLineExposed, ClosureInspector, CommandLineAPI) {
+function(Obj, Firebug, FirebugReps, Locale, Events, Url, Dom, Firefox, Win, Menu, System, Str,
+    Persist, SourceLink, Console, CommandLineExposed, ClosureInspector, CommandLineAPI) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -461,6 +463,7 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
     initialize: function()
     {
         Firebug.Module.initialize.apply(this, arguments);
+        Firebug.registerUIListener(this);
 
         this.setAutoCompleter();
         this.commandHistory = new Firebug.CommandHistory();
@@ -526,6 +529,8 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         Events.removeEventListener(commandLine, "keyup", this.onCommandLineKeyUp, true);
         Events.removeEventListener(commandLine, "keydown", this.onCommandLineKeyDown, true);
         Events.removeEventListener(commandLine, "keypress", this.onCommandLineKeyPress, true);
+
+        Firebug.unregisterUIListener(this);
     },
 
     destroyContext: function(context, persistedState)
@@ -693,6 +698,64 @@ Firebug.CommandLine = Obj.extend(Firebug.Module,
         Dom.collapse(Firebug.chrome.$("fbCommandBox"), true);
         Dom.collapse(Firebug.chrome.$("fbPanelSplitter"), true);
         Dom.collapse(Firebug.chrome.$("fbSidePanelDeck"), true);
+    },
+
+    onContextMenu: function(items, object, target, context, panel, popup)
+    {
+        var rep = object && Firebug.getRep(object, context);
+        object = rep && rep.getRealObject(object, context);
+
+        if (typeof object === "boolean" || object === undefined || object === null)
+            return;
+
+        if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
+            return;
+
+        if (!context.getPanel("console", true))
+            return;
+
+        function useInCommandLine()
+        {
+            context.rememberedObject = object;
+
+            var panel = Firebug.chrome.getSelectedPanel();
+            if (panel && panel.name != "console" && !Firebug.CommandLine.Popup.isVisible())
+                Firebug.CommandLine.Popup.toggle(context);
+
+            var commandLine = this.getCommandLine(context);
+
+            var valueLength = commandLine.value.length, ins = "$p";
+
+            commandLine.value += ins;
+            commandLine.focus();
+            commandLine.setSelectionRange(valueLength, valueLength + ins.length);
+
+            this.autoCompleter.hide();
+            this.update(context);
+        }
+
+        var item = {
+            label: "commandline.Use_in_Command_Line",
+            tooltiptext: "commandline.tip.Use_in_Command_Line",
+            id: "fbUseInCommandLine",
+            command: useInCommandLine.bind(this)
+        };
+
+        // Add the item before the first "Inspect In * Panel" option (or at the bottom together with
+        // a separator if there is none).
+        var before = Array.prototype.filter.call(popup.childNodes, function(node) {
+            return Str.hasPrefix(node.id, "InspectIn");
+        })[0];
+        if (!before)
+            Menu.createMenuSeparator(popup);
+        Menu.createMenuItem(popup, item, before);
+    },
+
+    getAccessorVars: function(context)
+    {
+        return {
+            "$p": context.rememberedObject
+        };
     },
 
     getCommandLine: function(context)
