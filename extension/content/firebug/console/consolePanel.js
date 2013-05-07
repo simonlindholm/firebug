@@ -802,6 +802,8 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (!rep || !rep.inspectable || object instanceof SourceLink.SourceLink)
             return;
 
+        if (!context.getPanel("console", true))
+            return;
 
         function useInCommandLine()
         {
