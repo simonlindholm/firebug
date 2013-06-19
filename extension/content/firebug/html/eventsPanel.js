@@ -33,7 +33,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     template: domplate(
     {
-        // XXX domplates!
         cascadedTag:
             DIV(
                 DIV({"class": "listenersNonInherited", role: "list",
@@ -68,8 +67,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         listenerTag:
-            DIV(
-                // XXX indentation
+            DIV({"class": "listenerLine"},
+                SPAN({"class": "listenerIndent"}),
                 TAG(FirebugReps.Func.tag, {object: "$listener.func"})
                 // XXX capturing
                 // XXX source link:
@@ -79,7 +78,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     updateSelection: function(selection)
     {
-FBTrace.sysout("updateselection", selection);
         if (!(selection instanceof Element))
             return;
         if (FBTrace.DBG_EVENTS)

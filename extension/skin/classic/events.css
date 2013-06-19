@@ -1,0 +1,51 @@
+/* See license.txt for terms of usage */
+
+.panelNode-html-events {
+    overflow-x: hidden;
+}
+
+.listenerInheritHeader {
+    margin-top: 1em;
+    position: relative;
+    -moz-user-select: none;
+    cursor: pointer;
+}
+
+.listenerInheritLabel {
+    margin-right: 0.25em; /* perhaps higher, at least when not empty */
+    font-weight: bold;
+}
+
+.listenerCategory {
+    position: relative;
+    margin: 1em 0 0 6px;
+    font-family: monospace;
+    color: #000000;
+}
+
+.listenerCategory:first-child {
+    margin-top: 6px;
+}
+
+.listenerIndent {
+    padding-left: 2em; /* perhaps split into padding: size of button, margin: rest */
+    cursor: pointer;
+}
+
+.listenerLine:hover {
+    background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
+    filter: none;
+}
+
+.listenerLine.disabled {
+    background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
+    filter: url(chrome://firebug/skin/filters.svg#grayscale); /* XXX: this doesn't work very well */
+    color: #CCCCCC;
+}
+
+/* remember: source links are position: absolute. use padding-right 150px + width */
+
+.listenerLine.disabled * {
+    color: inherit;
+}
+
