@@ -4,16 +4,21 @@
     overflow-x: hidden;
 }
 
+.listenerSection {
+    padding-bottom: 6px;
+}
+
 .listenerInheritHeader {
-    margin-top: 1em;
     position: relative;
     -moz-user-select: none;
     cursor: pointer;
 }
 
 .listenerInheritLabel {
-    margin-right: 0.25em; /* perhaps higher, at least when not empty */
     font-weight: bold;
+}
+.listenerInheritLabel::after {
+    content: ' ';
 }
 
 .listenerCategory {
@@ -30,6 +35,7 @@
 .listenerIndent {
     padding-left: 2em; /* perhaps split into padding: size of button, margin: rest */
     cursor: pointer;
+    /* line-height: 1.4; */ /* like CSS panel. blurriness. :( */
 }
 
 .listenerLine:hover {
