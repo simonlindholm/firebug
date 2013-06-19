@@ -53,7 +53,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         sectionTag:
-            DIV({"class": "listenerSection", role: "group", _sectionObject: "$object"},
+            DIV({"class": "listenerSection", role: "group", _sectionTarget: "$object"},
                 FOR("category", "$list",
                     TAG("$categoryTag", {category: "$category"})
                 )
@@ -69,7 +69,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         listenerTag:
-            DIV({"class": "listenerLine", _listenerObject: "$listener"},
+            DIV({"class": "listenerLine", $disabled: "$listener.disabled",
+                _listenerObject: "$listener"},
                 SPAN({"class": "listenerIndent"}),
                 TAG(FirebugReps.Func.tag, {object: "$listener.func"})
                 // XXX capturing
@@ -162,7 +163,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             var el = chain[i];
             var isDoc = (el instanceof Document), isWin = (el instanceof Window);
             var addSpecialTo = (isDoc ? onDoc : (isWin ? onWin : null));
-            var listeners = Events.getEventListenersForElement(el);
+            var listeners = this.getListeners(el);
             var added = [];
 
             for (var j = 0; j < listeners.length; ++j)
@@ -211,7 +212,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         row.classList.toggle("disabled");
 
         var listener = row.listenerObject;
-        var target = Dom.getAncestorByClass(row, "listenerSection").sectionObject;
+        var target = Dom.getAncestorByClass(row, "listenerSection").sectionTarget;
         listener.disabled = shouldDisable;
 
         var disabledMap = this.getDisabledMap(this.context);
@@ -223,13 +224,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         if (shouldDisable)
         {
             map.push(listener);
-            target.removeEventListener(listener.func, listener.capturing, listener.allowsUntrusted);
+            target.removeEventListener(listener.type, listener.func, listener.capturing, listener.allowsUntrusted);
         }
         else
         {
             var index = map.indexOf(listener);
             map.splice(index, 1);
-            target.addEventListener(listener.func, listener.capturing, listener.allowsUntrusted);
+            target.addEventListener(listener.type, listener.func, listener.capturing, listener.allowsUntrusted);
         }
     },
 
