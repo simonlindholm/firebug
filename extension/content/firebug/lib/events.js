@@ -523,7 +523,8 @@ Events.getEventListenersForElement = function(element)
     for (var i = 0; i < listeners.length; ++i)
     {
         var listener = listeners[i];
-        var type = listener.type, capturing = listener.capturing, func;
+        var type = listener.type, capturing = listener.capturing,
+            allowsUntrusted = listener.allowsUntrusted, func = null;
         if (typeof listener.listenerObject !== "undefined")
         {
             func = listener.listenerObject;
@@ -547,6 +548,7 @@ Events.getEventListenersForElement = function(element)
         ret.push({
             type: type,
             capturing: capturing,
+            allowsUntrusted: allowsUntrusted,
             func: func
         });
     }

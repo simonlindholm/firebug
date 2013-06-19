@@ -1,16 +1,17 @@
 /* See license.txt for terms of usage */
 /*jshint esnext:true, curly:false*/
-/*global FBTrace:true, Components:true, Document:true, Window:true, define:true */
+/*global FBTrace:true, Document:true, Window:true, define:true */
 
 define([
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/domplate",
+    "firebug/lib/dom",
     "firebug/lib/locale",
     "firebug/lib/events",
     "firebug/chrome/reps",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, FirebugReps) {
+function(Obj, Firebug, Domplate, Dom, Locale, Events, FirebugReps) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -36,25 +37,26 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         cascadedTag:
             DIV(
                 DIV({"class": "listenersNonInherited", role: "list",
-                        "aria-label": Locale.$STR("aria.labels.event listeners") },
-                    FOR("category", "$own",
-                        TAG("$categoryTag", {category: "$category"})
-                    )
+                        "aria-label": Locale.$STR("a11y.labels.event_listeners")},
+                    TAG("$sectionTag", {object: "$element", list: "$own"})
                 ),
-                DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited event listeners")},
+                DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
                         // XXX collapsible ($section.expanded)
                         H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
                             SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                             TAG("$section.tag", {object: "$section.object"})
                         ),
-                        DIV({role: "group"},
-                            FOR("category", "$section.list",
-                                TAG("$categoryTag", {category: "$category"})
-                            )
-                        )
+                        TAG("$sectionTag", {object: "$section.object", list: "$section.list"})
                     )
                  )
+            ),
+
+        sectionTag:
+            DIV({"class": "listenerSection", role: "group", _sectionObject: "$object"},
+                FOR("category", "$list",
+                    TAG("$categoryTag", {category: "$category"})
+                )
             ),
 
         categoryTag:
@@ -67,7 +69,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         listenerTag:
-            DIV({"class": "listenerLine"},
+            DIV({"class": "listenerLine", _listenerObject: "$listener"},
                 SPAN({"class": "listenerIndent"}),
                 TAG(FirebugReps.Func.tag, {object: "$listener.func"})
                 // XXX capturing
@@ -75,6 +77,29 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 // TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
             )
     }),
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Initialization
+
+    initialize: function()
+    {
+        this.onClick = this.onClick.bind(this);
+        Firebug.Panel.initialize.apply(this, arguments);
+    },
+
+    initializeNode: function()
+    {
+        Firebug.Panel.initializeNode.apply(this, arguments);
+        Events.addEventListener(this.panelNode, "click", this.onClick, false);
+    },
+
+    destroyNode: function()
+    {
+        Events.removeEventListener(this.panelNode, "click", this.onClick, false);
+        Firebug.Panel.destroyNode.apply(this, arguments);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     updateSelection: function(selection)
     {
@@ -91,19 +116,33 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             return;
         }
 
-        this.template.cascadedTag.replace({own: own, inherited: inherited}, this.panelNode);
+        this.template.cascadedTag.replace({element: selection, own: own, inherited: inherited}, this.panelNode);
+    },
+
+    getDisabledMap: function(context)
+    {
+        if (!context.listenerDisabledMap)
+            context.listenerDisabledMap = new WeakMap();
+        return context.listenerDisabledMap;
+    },
+
+    getListeners: function(target)
+    {
+        // List first normal listeners, then disabled ones.
+        var normal = Events.getEventListenersForElement(target);
+        var disabled = this.getDisabledMap(this.context).get(target, []);
+        return normal.concat(disabled);
     },
 
     getOwnSection: function(element)
     {
-        return categorizeListenerList(Events.getEventListenersForElement(element));
+        return categorizeListenerList(this.getListeners(element));
     },
 
     getInheritedSections: function(baseElement)
     {
         var ret = [];
         var context = this.context;
-FBTrace.sysout("context", context);
         function addSection(label, object, list, expanded)
         {
             var rep = Firebug.getRep(object, context);
@@ -155,9 +194,55 @@ FBTrace.sysout("context", context);
         if (onWin.length > 0)
             addSection("", theWin, onWin, false);
 
+        // XXX applicationCache etc.
+
         return ret;
     },
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+    toggleDisableRow: function(row)
+    {
+        var shouldDisable = !row.classList.contains("disabled");
+
+        // Change the disabled styling. N.B.: When the panel is refreshed, this
+        // row will have moved to the bottom. We don't move it there yet though,
+        // because that would be confusing.
+        row.classList.toggle("disabled");
+
+        var listener = row.listenerObject;
+        var target = Dom.getAncestorByClass(row, "listenerSection").sectionObject;
+        listener.disabled = shouldDisable;
+
+        var disabledMap = this.getDisabledMap(this.context);
+        if (!disabledMap.has(target))
+            disabledMap.set(target, []);
+        var map = disabledMap.get(target);
+
+        // XXX need to test these additions/removals
+        if (shouldDisable)
+        {
+            map.push(listener);
+            target.removeEventListener(listener.func, listener.capturing, listener.allowsUntrusted);
+        }
+        else
+        {
+            var index = map.indexOf(listener);
+            map.splice(index, 1);
+            target.addEventListener(listener.func, listener.capturing, listener.allowsUntrusted);
+        }
+    },
+
+    onClick: function(event)
+    {
+        var target = event.target;
+        if (Events.isLeftClick(event) && target.classList.contains("listenerIndent"))
+        {
+            var row = Dom.getAncestorByClass(target, "listenerLine");
+            this.toggleDisableRow(row);
+            Events.cancelEvent(event);
+        }
+    },
 });
 
 // ********************************************************************************************* //
