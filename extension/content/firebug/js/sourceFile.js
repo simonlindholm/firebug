@@ -973,7 +973,7 @@ Firebug.SourceFile.findScriptForFunctionInContext = function(context, fn)
 
         if (!found && FBTrace.DBG_ERRORS)
         {
-            FBTrace.sysout("findScriptForFunctionInContext ",
+            FBTrace.sysout("findScriptForFunctionInContext did not find anything",
                 {fn: fn, wrapValue: jsd.wrapValue(fn), found: found});
         }
     }

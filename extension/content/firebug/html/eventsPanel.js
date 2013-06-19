@@ -1,20 +1,22 @@
 /* See license.txt for terms of usage */
+/*jshint esnext:true, curly:false*/
+/*global FBTrace:true, Components:true, Document:true, Window:true, define:true */
 
 define([
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/domplate",
-    "firebug/lib/wrapper",
+    "firebug/lib/locale",
+    "firebug/lib/events",
+    "firebug/chrome/reps",
 ],
-function(Obj, Firebug, D, Wrapper) {
+function(Obj, Firebug, Domplate, Locale, Events, FirebugReps) {
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-const Cc = Components.classes;
-const Cu = Components.utils;
-
-var service = Cc["@mozilla.org/eventlistenerservice;1"].getService(Ci.nsIEventListenerService);
+const {domplate, DIV, FOR, TAG, H1, SPAN} = Domplate;
 
 // ********************************************************************************************* //
 // Events Panel (HTML side panel)
@@ -24,90 +26,64 @@ function EventsPanel() {}
 EventsPanel.prototype = Obj.extend(Firebug.Panel,
 {
     name: "html-events",
-    title: $STR("events.Events"),
+    title: Locale.$STR("events.Events"),
     parentPanel: "html",
     // XXX: What about a11y...
     order: 4,
 
-    template: D.domplate(
+    template: domplate(
     {
         // XXX domplates!
-        /*
         cascadedTag:
-            DIV({"class": "a11yCSSView", role: "presentation"},
-                DIV({"class": "cssNonInherited", role: "list",
-                        "aria-label": Locale.$STR("aria.labels.style rules") },
-                    FOR("rule", "$rules",
-                        TAG("$ruleTag", {rule: "$rule"})
+            DIV(
+                DIV({"class": "listenersNonInherited", role: "list",
+                        "aria-label": Locale.$STR("aria.labels.event listeners") },
+                    FOR("category", "$own",
+                        TAG("$categoryTag", {category: "$category"})
                     )
                 ),
-                DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited style rules")},
+                DIV({role: "list", "aria-label": Locale.$STR("aria.labels.inherited event listeners")},
                     FOR("section", "$inherited",
-                        H1({"class": "cssInheritHeader groupHeader focusRow", role: "listitem" },
-                            SPAN({"class": "cssInheritLabel"}, "$inheritLabel"),
-                            TAG(FirebugReps.Element.shortTag, {object: "$section.element"})
+                        // XXX collapsible ($section.expanded)
+                        H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
+                            SPAN({"class": "listenerInheritLabel"}, "$section.label"),
+                            TAG("$section.tag", {object: "$section.object"})
                         ),
                         DIV({role: "group"},
-                            FOR("rule", "$section.rules",
-                                TAG("$ruleTag", {rule: "$rule"})
+                            FOR("category", "$section.list",
+                                TAG("$categoryTag", {category: "$category"})
                             )
                         )
                     )
                  )
             ),
 
-        ruleTag:
-            DIV({"class": "cssElementRuleContainer"},
-                TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
-                TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+        categoryTag:
+            DIV({"class": "listenerCategory"},
+                // XXX collapsible headers or something
+                DIV("$category.type"),
+                FOR("listener", "$category.list",
+                    TAG("$listenerTag", {listener: "$listener"})
+                )
             ),
 
-        newRuleTag:
-            DIV({"class": "cssElementRuleContainer"},
-                DIV({"class": "cssRule insertBefore", style: "display: none"}, "")
-            ),
-
-        CSSFontPropValueTag:
-                FOR("part", "$propValueParts",
-                    SPAN({"class": "$part.type|getClass", _repObject: "$part.font"}, "$part.value"),
-                    SPAN({"class": "cssFontPropSeparator"}, "$part|getSeparator")
-                ),
-
-        getSeparator: function(part)
-        {
-            if (part.lastFont || part.type == "important")
-                return "";
-
-            if (part.type == "otherProps")
-                return " ";
-
-            return ",";
-        },
-
-        getClass: function(type)
-        {
-            switch (type)
-            {
-                case "used":
-                    return "cssPropValueUsed";
-
-                case "unused":
-                    return "cssPropValueUnused";
-
-                default:
-                    return "";
-            }
-        }
-        */
+        listenerTag:
+            DIV(
+                // XXX indentation
+                TAG(FirebugReps.Func.tag, {object: "$listener.func"})
+                // XXX capturing
+                // XXX source link:
+                // TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+            )
     }),
 
     updateSelection: function(selection)
     {
 FBTrace.sysout("updateselection", selection);
-        if (!(element instanceof Element))
+        if (!(selection instanceof Element))
             return;
         if (FBTrace.DBG_EVENTS)
-            FBTrace.sysout("events.updateSelection; " + element.localName);
+            FBTrace.sysout("events.updateSelection; " + selection.localName);
 
         var own = this.getOwnSection(selection);
         var inherited = this.getInheritedSections(selection);
@@ -117,35 +93,39 @@ FBTrace.sysout("updateselection", selection);
             return;
         }
 
-        this.tag.replace({own: own, inherited: inherited}, this.panelNode);
+        this.template.cascadedTag.replace({own: own, inherited: inherited}, this.panelNode);
     },
 
     getOwnSection: function(element)
     {
-        return categorizeListenerList(getListeners(element));
+        return categorizeListenerList(Events.getEventListenersForElement(element));
     },
 
     getInheritedSections: function(baseElement)
     {
         var ret = [];
-        function addSection(name, object, list, expanded)
+        var context = this.context;
+FBTrace.sysout("context", context);
+        function addSection(label, object, list, expanded)
         {
+            var rep = Firebug.getRep(object, context);
             ret.push({
-                name: name,
+                label: label,
+                tag: rep.shortTag || rep.tag,
                 object: object,
                 list: categorizeListenerList(list),
                 expanded: expanded
             });
         }
 
-        var chain = service.getEventTargetChainFor(baseElement, {});
+        var chain = Events.getEventTargetChainFor(baseElement);
         var onDoc = [], onWin = [], theDoc = null, theWin = null;
         for (var i = 1; i < chain.length; ++i)
         {
             var el = chain[i];
             var isDoc = (el instanceof Document), isWin = (el instanceof Window);
-            var addSpecialTo = (isDoc ? asDoc : (isWin ? asWin : null));
-            var listeners = getListeners(el);
+            var addSpecialTo = (isDoc ? onDoc : (isWin ? onWin : null));
+            var listeners = Events.getEventListenersForElement(el);
             var added = [];
 
             for (var j = 0; j < listeners.length; ++j)
@@ -201,49 +181,12 @@ function onlyForDocumentAndWindow(type)
     return onlyDocAndWin.hasOwnProperty(type);
 }
 
-function getListeners(element)
-{
-    var listeners = service.getEventListenerInfoFor(el, {});
-    var ret = [];
-    for (var i = 0; i < listeners.length; ++i)
-    {
-        var listener = listeners[i];
-        var type = listener.type, capturing = listener.capturing, func;
-        if (typeof listener.listenerObject !== "undefined")
-        {
-            func = listener.listenerObject;
-        }
-        else
-        {
-            var debugObject = listener.getDebugObject();
-            func = (debugObject && Wrapper.unwrapIValue(debugObject));
-        }
-
-        // Skip chrome event listeners. XXX Is this reasonable?
-        // Should we check whether things are in Firebug's compartment instead?
-        if (!func || listener.inSystemEventGroup)
-            continue;
-        var funcGlobal = Cu.getGlobalForObject(func);
-        if (!(funcGlobal instanceof Window))
-            continue;
-        if (funcGlobal.document.nodePrincipal.subsumes(document.nodePrincipal))
-            continue;
-
-        ret.push({
-            type: type,
-            capturing: capturing,
-            func: func
-        });
-    }
-    return ret;
-}
-
 function categorizeListenerList(list)
 {
     var map = new Map();
     for (let ev of list)
     {
-        var type = ev.type;
+        let type = ev.type;
         if (!map.has(type))
             map.set(type, []);
         map.get(type).push(ev);
@@ -252,10 +195,9 @@ function categorizeListenerList(list)
     var ret = [];
     for (let type of map.keys())
     {
-        var list = map.get(type);
         ret.push({
             type: type,
-            list: list
+            list: map.get(type)
         });
     }
     return ret;
@@ -266,9 +208,9 @@ function categorizeListenerList(list)
 
 // XXX detect Eventbug
 
-Firebug.registerPanel(CSSStylePanel);
+Firebug.registerPanel(EventsPanel);
 
-return CSSStylePanel;
+return EventsPanel;
 
 // ********************************************************************************************* //
 });

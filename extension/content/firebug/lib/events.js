@@ -1,17 +1,22 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/trace"
+    "firebug/lib/trace",
+    "firebug/lib/wrapper" // XXX dependency will go away with jsd2
 ],
-function(FBTrace) {
+function(FBTrace, Wrapper) {
 
 // ********************************************************************************************* //
 // Constants
 
-var Events = {};
+const Cc = Components.classes;
+const Ci = Components.interfaces;
+const Cu = Components.utils;
+var service = Cc["@mozilla.org/eventlistenerservice;1"].getService(Ci.nsIEventListenerService);
 
 // ********************************************************************************************* //
 
+var Events = {};
 Events.dispatch = function(listeners, name, args)
 {
     if (!listeners)
@@ -491,6 +496,8 @@ Events.removeEventListener = function(parent, eventId, listener, capturing)
             }
         }
 
+        // xxxHonza: it's not necessary to pollute the tracing console with this message.
+        /*
         var frames = [];
         for (var frame = Components.stack; frame; frame = frame.caller)
             frames.push(frame.filename + " (" + frame.lineNumber + ")");
@@ -504,9 +511,52 @@ Events.removeEventListener = function(parent, eventId, listener, capturing)
             stack: frames,
         };
 
-        // xxxHonza: it's not necessary to pollute the tracing console with this message.
-        //FBTrace.sysout("Events.removeEventListener; ERROR not registered!", info);
+        FBTrace.sysout("Events.removeEventListener; ERROR not registered!", info);
+        */
     }
+};
+
+Events.getEventListenersForElement = function(element)
+{
+    var listeners = service.getListenerInfoFor(element, {});
+    var ret = [];
+    for (var i = 0; i < listeners.length; ++i)
+    {
+        var listener = listeners[i];
+        var type = listener.type, capturing = listener.capturing, func;
+        if (typeof listener.listenerObject !== "undefined")
+        {
+            func = listener.listenerObject;
+        }
+        else
+        {
+            var debugObject = listener.getDebugObject();
+            func = (debugObject && Wrapper.unwrapIValue(debugObject));
+        }
+
+        // Skip chrome event listeners. XXX Is this reasonable?
+        // Should we check whether things are in Firebug's compartment instead?
+        if (!func || listener.inSystemEventGroup)
+            continue;
+        var funcGlobal = Cu.getGlobalForObject(func);
+        if (!(funcGlobal instanceof Window))
+            continue;
+        if (funcGlobal.document.nodePrincipal.subsumes(document.nodePrincipal))
+            continue;
+
+        ret.push({
+            type: type,
+            capturing: capturing,
+            func: func
+        });
+    }
+    return ret;
+};
+
+Events.getEventTargetChainFor = function(target)
+{
+    var chain = service.getEventTargetChainFor(target, {});
+    return Array.prototype.slice.call(chain);
 };
 
 if (FBTrace.DBG_EVENTLISTENERS && typeof(Firebug) != "undefined")
