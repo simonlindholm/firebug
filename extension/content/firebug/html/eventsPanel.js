@@ -181,7 +181,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             }
 
             if (added.length > 0)
-                addSection("events.ListenersFrom", el, added, true);
+                addSection(Locale.$STR("events.ListenersFrom"), el, added, true);
             if (isDoc)
                 theDoc = el;
             if (isWin)
