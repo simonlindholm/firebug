@@ -415,6 +415,9 @@ Events.detachFamilyListeners = function(family, object, listener)
         object.removeEventListener(types[i], listener, false);
 };
 
+// Table of non-bubbling event types. It's mostly okay if this gets slightly out
+// of date - most event types that don't bubble are only listened to on child
+// nodes, and therefore won't incorrectly appear in any UI.
 var nonBubbling = {
     abort: 1,
     begin: 1,
@@ -447,6 +450,7 @@ var nonBubbling = {
     readystatechange: 1,
     repeat: 1,
     repeatEvent: 1,
+    scroll: 1,
     seeked: 1,
     seeking: 1,
     select: 1,
@@ -459,65 +463,37 @@ var nonBubbling = {
     volumechange: 1,
     waiting: 1,
 };
-Events.eventTypeBubbles = function(type, target)
+
+// Return true iff a type of DOM event bubbles.
+Events.eventTypeBubbles = function(type)
 {
-    if (nonBubbling.hasOwnProperty(type))
-        return false;
-    if (type === "scroll")
-        return (target && target instanceof Document);
-    return true;
+    // N.B.: Technically "scroll" is a special case here, since it only bubbles
+    // from document to window. But since we are only interested in elements we
+    // can ignore that.
+    return !nonBubbling.hasOwnProperty(type);
 };
 
-var onlyDocAndWin = {
-    // document-specific
-    DOMContentLoaded: 1,
-    DOMFrameContentLoaded: 1,
-    fullscreenchange: 1,
-    fullscreenerror: 1,
-    pointerlockchange: 1,
-    pointerlockerror: 1,
-    SVGAbort: 1,
-    SVGError: 1,
-    SVGResize: 1,
-    SVGScroll: 1,
-    visibilitychange: 1,
-    "smartcard-insert": 1,
-    "smartcard-remove": 1,
-    MozScrolledAreaChanged: 1,
+// Regex for event types that bubble from elements to document and window.
+// It's okay if this gets slightly out of date - it would only imply that some
+// event types in the event panel aren't listed on the nodes but as part of
+// "document" or "window" instead.
+var reBubblesToDocument = new RegExp("^(" +
+    "animation(start|end|iteration)|" +
+    "transitionend|" +
+    "click|dblclick|wheel|mouse(down|up|move)|" +
+    "composition(start|end|update)|" +
+    "keydown|keypress|keyup|input|contextmenu|" +
+    "DOM(AttrModified|NodeRemoved|NodeRemovedFromDocument|SubtreeModified|" +
+        "CharacterDataModified|NodeInserted|NodeInsertedIntoDocument)|" +
+    "drag(|end|enter|leave|over|start)|" +
+    "drop|copy|cut|paste|" +
+    "touch(cancel|enter|leave|move|start)" +
+")$");
 
-    // WINDOW_ONLY_EVENT in nsEventNameList.h
-    afterprint: 1,
-    beforeprint: 1,
-    beforeunload: 1,
-    hashchange: 1,
-    message: 1,
-    offline: 1,
-    online: 1,
-    pagehide: 1,
-    pageshow: 1,
-    popstate: 1,
-    resize: 1,
-    unload: 1,
-    devicelight: 1,
-    devicemotion: 1,
-    deviceorientation: 1,
-    deviceproximity: 1,
-    userproximity: 1,
-
-    // window-specific
-    gamepadconnected: 1,
-    gamepaddisconnected: 1,
-    storage: 1,
-
-    // expected future additions
-    devicehumidity: 1,
-    devicenoise: 1,
-    devicepressure: 1,
-    devicetemperature: 1,
-};
-Event.eventTypeIsForDocumentOrWindow = function(type)
+// Return true iff a type of event can bubble up from nodes to document and window.
+Events.eventTypeBubblesToDocument = function(type)
 {
-    return onlyDocAndWin.hasOwnProperty(type);
+    return reBubblesToDocument.test(type);
 };
 
 // ********************************************************************************************* //

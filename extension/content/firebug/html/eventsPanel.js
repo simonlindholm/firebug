@@ -172,9 +172,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 // Add the listener to where it belongs. Events specific to
                 // document and window are moved to those special sections,
                 // and non-bubbling events are ignored.
-                if (onlyForDocumentAndWindow(type) && addSpecialTo)
+                if (addSpecialTo && !Events.eventTypeBubblesToDocument(type))
                     addSpecialTo.push(listener);
-                else if (bubbles(type, baseElement))
+                else if (Events.eventTypeBubbles(type))
                     added.push(listener);
                 else if (addSpecialTo)
                     addSpecialTo.push(listener);
@@ -248,21 +248,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 // ********************************************************************************************* //
 // Helpers
 
-var nonBubbling = {"blur": 1, "focus": 1, "beforeunload": 1, "load": 1, "error": 1, "unload": 1};
-function bubbles(type, element)
-{
-    if (nonBubbling.hasOwnProperty(type))
-        return false;
-    if (type === "scroll")
-        return (element instanceof Document);
-    return true;
-}
-
-var onlyDocAndWin = {"DOMContentLoaded": 1, "message": 1}; // XXX etc.
-function onlyForDocumentAndWindow(type)
-{
-    return onlyDocAndWin.hasOwnProperty(type);
-}
 
 function categorizeListenerList(list)
 {
