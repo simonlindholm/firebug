@@ -316,18 +316,6 @@ const eventTypes =
         "DOMFocusOut"
     ],
 
-    // xxxHonza: As Simon says, XUL events must die!
-    /*xul: [
-        "popupshowing",
-        "popupshown",
-        "popuphiding",
-        "popuphidden",
-        "close",
-        "command",
-        "broadcast",
-        "commandupdate"
-    ],*/
-
     clipboard: [
         "cut",
         "copy",
@@ -425,6 +413,111 @@ Events.detachFamilyListeners = function(family, object, listener)
     var types = eventTypes[family];
     for (var i = 0; i < types.length; ++i)
         object.removeEventListener(types[i], listener, false);
+};
+
+var nonBubbling = {
+    abort: 1,
+    begin: 1,
+    beginEvent: 1,
+    blur: 1,
+    canplay: 1,
+    canplaythrough: 1,
+    durationchange: 1,
+    emptied: 1,
+    end: 1,
+    ended: 1,
+    endEvent: 1,
+    error: 1,
+    focus: 1,
+    invalid: 1,
+    load: 1,
+    loadeddata: 1,
+    loadedmetadata: 1,
+    loadend: 1,
+    loadstart: 1,
+    mouseenter: 1,
+    mouseleave: 1,
+    pagehide: 1,
+    pageshow: 1,
+    pause: 1,
+    play: 1,
+    playing: 1,
+    progress: 1,
+    ratechange: 1,
+    readystatechange: 1,
+    repeat: 1,
+    repeatEvent: 1,
+    seeked: 1,
+    seeking: 1,
+    select: 1,
+    show: 1,
+    stalled: 1,
+    suspend: 1,
+    SVGLoad: 1,
+    SVGUnload: 1,
+    timeupdate: 1,
+    volumechange: 1,
+    waiting: 1,
+};
+Events.eventTypeBubbles = function(type, target)
+{
+    if (nonBubbling.hasOwnProperty(type))
+        return false;
+    if (type === "scroll")
+        return (target && target instanceof Document);
+    return true;
+};
+
+var onlyDocAndWin = {
+    // document-specific
+    DOMContentLoaded: 1,
+    DOMFrameContentLoaded: 1,
+    fullscreenchange: 1,
+    fullscreenerror: 1,
+    pointerlockchange: 1,
+    pointerlockerror: 1,
+    SVGAbort: 1,
+    SVGError: 1,
+    SVGResize: 1,
+    SVGScroll: 1,
+    visibilitychange: 1,
+    "smartcard-insert": 1,
+    "smartcard-remove": 1,
+    MozScrolledAreaChanged: 1,
+
+    // WINDOW_ONLY_EVENT in nsEventNameList.h
+    afterprint: 1,
+    beforeprint: 1,
+    beforeunload: 1,
+    hashchange: 1,
+    message: 1,
+    offline: 1,
+    online: 1,
+    pagehide: 1,
+    pageshow: 1,
+    popstate: 1,
+    resize: 1,
+    unload: 1,
+    devicelight: 1,
+    devicemotion: 1,
+    deviceorientation: 1,
+    deviceproximity: 1,
+    userproximity: 1,
+
+    // window-specific
+    gamepadconnected: 1,
+    gamepaddisconnected: 1,
+    storage: 1,
+
+    // expected future additions
+    devicehumidity: 1,
+    devicenoise: 1,
+    devicepressure: 1,
+    devicetemperature: 1,
+};
+Event.eventTypeIsForDocumentOrWindow = function(type)
+{
+    return onlyDocAndWin.hasOwnProperty(type);
 };
 
 // ********************************************************************************************* //
