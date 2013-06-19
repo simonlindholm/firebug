@@ -7,11 +7,12 @@ define([
     "firebug/firebug",
     "firebug/lib/domplate",
     "firebug/lib/dom",
+    "firebug/lib/wrapper",
     "firebug/lib/locale",
     "firebug/lib/events",
     "firebug/chrome/reps",
 ],
-function(Obj, Firebug, Domplate, Dom, Locale, Events, FirebugReps) {
+function(Obj, Firebug, Domplate, Dom, Wrapper, Locale, Events, FirebugReps) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -207,7 +208,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var shouldDisable = !row.classList.contains("disabled");
 
         // Change the disabled styling. N.B.: When the panel is refreshed, this
-        // row will have moved to the bottom. We don't move it there yet though,
+        // row will be placed to the bottom. We don't move it there yet though,
         // because that would be confusing.
         row.classList.toggle("disabled");
 
@@ -220,17 +221,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             disabledMap.set(target, []);
         var map = disabledMap.get(target);
 
-        // XXX need to test these additions/removals
+        var uwTarget = Wrapper.unwrapObject(target);
+        var args = [listener.type, listener.func, listener.capturing, listener.allowsUntrusted];
         if (shouldDisable)
         {
             map.push(listener);
-            target.removeEventListener(listener.type, listener.func, listener.capturing, listener.allowsUntrusted);
+            uwTarget.removeEventListener.apply(uwTarget, args);
         }
         else
         {
             var index = map.indexOf(listener);
             map.splice(index, 1);
-            target.addEventListener(listener.type, listener.func, listener.capturing, listener.allowsUntrusted);
+            uwTarget.addEventListener.apply(uwTarget, args);
         }
     },
 
