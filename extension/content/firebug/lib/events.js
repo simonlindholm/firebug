@@ -624,12 +624,6 @@ Events.getEventListenersForElement = function(element)
     return ret;
 };
 
-Events.getEventTargetChainFor = function(target)
-{
-    var chain = service.getEventTargetChainFor(target, {});
-    return Array.prototype.slice.call(chain);
-};
-
 if (FBTrace.DBG_EVENTLISTENERS && typeof(Firebug) != "undefined")
 {
     Firebug.Events = {};

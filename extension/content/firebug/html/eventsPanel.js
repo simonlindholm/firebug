@@ -147,6 +147,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var context = this.context;
         function addSection(label, object, list, expanded)
         {
+            if (!list.length)
+                return;
             var rep = Firebug.getRep(object, context);
             ret.push({
                 label: label,
@@ -157,44 +159,48 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             });
         }
 
-        var chain = Events.getEventTargetChainFor(baseElement);
-        var onDoc = [], onWin = [], theDoc = null, theWin = null;
-        for (var i = 1; i < chain.length; ++i)
+        var element = baseElement.parentElement;
+        while (element)
         {
-            var el = chain[i];
-            var isDoc = (el instanceof Document), isWin = (el instanceof Window);
-            var addSpecialTo = (isDoc ? onDoc : (isWin ? onWin : null));
-            var listeners = this.getListeners(el);
-            var added = [];
-
-            for (var j = 0; j < listeners.length; ++j)
+            var added = this.getListeners(element).filter(function(listener)
             {
-                var listener = listeners[j], type = listener.type;
-
-                // Add the listener to where it belongs. Events specific to
-                // document and window are moved to those special sections,
-                // and non-bubbling events are ignored.
-                if (addSpecialTo && !Events.eventTypeBubblesToDocument(type))
-                    addSpecialTo.push(listener);
-                else if (Events.eventTypeBubbles(type))
-                    added.push(listener);
-                else if (addSpecialTo)
-                    addSpecialTo.push(listener);
-            }
-
-            if (added.length > 0)
-                addSection(Locale.$STR("events.ListenersFrom"), el, added, true);
-            if (isDoc)
-                theDoc = el;
-            if (isWin)
-                theWin = el;
+                return Events.eventTypeBubbles(listener.type);
+            });
+            addSection(Locale.$STR("events.ListenersFrom"), element, added, true);
+            element = element.parentElement;
         }
 
-        // Add the special "document" and "window" sections.
-        if (onDoc.length > 0)
-            addSection("", theDoc, onDoc, false);
-        if (onWin.length > 0)
-            addSection("", theWin, onWin, false);
+        // Add special "document" and "window" sections, split into two parts:
+        // the ones that are part of event bubbling and the ones that are not.
+
+        var doc = baseElement.ownerDocument, docInherited = [], docOwn = [];
+        if (doc)
+        {
+            for (let listener of this.getListeners(doc))
+            {
+                if (Events.eventTypeBubblesToDocument(listener.type))
+                    docInherited.push(listener);
+                else
+                    docOwn.push(listener);
+            }
+        }
+
+        var win = doc && doc.defaultView, winInherited = [], winOwn = [];
+        if (win)
+        {
+            for (let listener of this.getListeners(win))
+            {
+                if (Events.eventTypeBubblesToDocument(listener.type))
+                    winInherited.push(listener);
+                else
+                    winOwn.push(listener);
+            }
+        }
+
+        addSection(Locale.$STR("events.ListenersFrom"), doc, docInherited, true);
+        addSection(Locale.$STR("events.ListenersFrom"), win, winInherited, true);
+        addSection("", doc, docOwn, false);
+        addSection("", win, winOwn, false);
 
         // XXX applicationCache etc.
 
