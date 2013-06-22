@@ -130,7 +130,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
         catch (exc)
         {
-            if (FBTrace.DBG_EVENTS)
+            if (FBTrace.DBG_ERRORS)
                 FBTrace.sysout("events.updateSelection FAILS", exc);
         }
     },
@@ -142,10 +142,54 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         return context.listenerDisabledMap;
     },
 
+    getNormalEventListeners: function(target)
+    {
+        var listeners = Events.getEventListenersForElement(target);
+        var hasOneHandler = new Set();
+        listeners.forEach(function(li)
+        {
+            li.disabled = false;
+            li.target = target;
+
+            var handlerName = "on" + li.type;
+            if (handlerName in Object.getPrototypeOf(target) &&
+                !hasOneHandler.has(handlerName) &&
+                !li.capturing &&
+                target[handlerName] === li.func)
+            {
+                // Inline event handler
+                hasOneHandler.add(handlerName);
+                li.enable = function()
+                {
+                    target[handlerName] = li.func;
+                };
+                li.disable = function()
+                {
+                    target[handlerName] = null;
+                }
+            }
+            else
+            {
+                // Standard event listener
+                var uwTarget = Wrapper.unwrapObject(target);
+                var args = [li.type, li.func, li.capturing, li.allowsUntrusted];
+                li.enable = function()
+                {
+                    uwTarget.addEventListener.apply(uwTarget, args);
+                };
+                li.disable = function()
+                {
+                    uwTarget.removeEventListener.apply(uwTarget, args);
+                };
+            }
+        });
+        return listeners;
+    },
+
     getListeners: function(target)
     {
         // List first normal listeners, then disabled ones.
-        var normal = Events.getEventListenersForElement(target);
+        var normal = this.getNormalEventListeners(target);
         var disabled = this.getDisabledMap(this.context).get(target, []);
         return normal.concat(disabled);
     },
@@ -225,34 +269,34 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     toggleDisableRow: function(row)
     {
-        var shouldDisable = !row.classList.contains("disabled");
+        var listener = row.listenerObject;
+        var shouldDisable = !listener.disabled;
+        listener.disabled = shouldDisable;
 
         // Change the disabled styling. N.B.: When the panel is refreshed, this
         // row will be placed to the bottom. We don't move it there yet though,
         // because that would be confusing.
-        row.classList.toggle("disabled");
+        if (shouldDisable)
+            row.classList.add("disabled");
+        else
+            row.classList.remove("disabled");
 
-        var listener = row.listenerObject;
-        var target = Dom.getAncestorByClass(row, "listenerSection").sectionTarget;
-        listener.disabled = shouldDisable;
-
+        var target = listener.target;
         var disabledMap = this.getDisabledMap(this.context);
         if (!disabledMap.has(target))
             disabledMap.set(target, []);
         var map = disabledMap.get(target);
 
-        var uwTarget = Wrapper.unwrapObject(target);
-        var args = [listener.type, listener.func, listener.capturing, listener.allowsUntrusted];
         if (shouldDisable)
         {
             map.push(listener);
-            uwTarget.removeEventListener.apply(uwTarget, args);
+            listener.disable();
         }
         else
         {
             var index = map.indexOf(listener);
             map.splice(index, 1);
-            uwTarget.addEventListener.apply(uwTarget, args);
+            listener.enable();
         }
     },
 
