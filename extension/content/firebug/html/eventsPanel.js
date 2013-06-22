@@ -43,12 +43,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 ),
                 DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
-                        // XXX collapsible ($section.expanded)
-                        H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
-                            SPAN({"class": "listenerInheritLabel"}, "$section.label"),
-                            TAG("$section.tag", {object: "$section.object"})
-                        ),
-                        TAG("$sectionTag", {object: "$section.object", list: "$section.list"})
+                        DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.opened"},
+                            H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
+                                DIV({"class": "twisty", role: "presentation"}),
+                                SPAN({"class": "listenerInheritLabel"}, "$section.label"),
+                                TAG("$section.tag", {object: "$section.object"})
+                            ),
+                            TAG("$sectionTag", {object: "$section.object", list: "$section.list"})
+                        )
                     )
                  )
             ),
@@ -145,7 +147,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     {
         var ret = [];
         var context = this.context;
-        function addSection(label, object, list, expanded)
+        function addSection(label, object, list, opened)
         {
             if (!list.length)
                 return;
@@ -155,7 +157,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 tag: rep.shortTag || rep.tag,
                 object: object,
                 list: categorizeListenerList(list),
-                expanded: expanded
+                opened: opened
             });
         }
 
@@ -242,10 +244,34 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
+    // XXX This is almost identical to code in css/computedPanel,
+    // css/selectorPanel and js/breakpoints - we should share it somehow.
+    toggleGroup: function(node)
+    {
+        node.classList.toggle("opened");
+        if (node.classList.contains("opened"))
+        {
+            var offset = Dom.getClientOffset(node);
+            var titleAtTop = offset.y < this.panelNode.scrollTop;
+
+            Dom.scrollTo(node, this.panelNode, null,
+                node.offsetHeight > this.panelNode.clientHeight || titleAtTop ? "top" : "bottom");
+        }
+    },
+
     onClick: function(event)
     {
         var target = event.target;
-        if (Events.isLeftClick(event) && target.classList.contains("listenerIndent"))
+        if (!Events.isLeftClick(event))
+            return;
+
+        var header = Dom.getAncestorByClass(target, "listenerInheritHeader");
+        if (header)
+        {
+            this.toggleGroup(header.parentNode);
+            Events.cancelEvent(event);
+        }
+        else if (target.classList.contains("listenerIndent"))
         {
             var row = Dom.getAncestorByClass(target, "listenerLine");
             this.toggleDisableRow(row);

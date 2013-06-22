@@ -8,6 +8,10 @@
     padding-bottom: 6px;
 }
 
+.listenerLabeledSection:not(.opened) > .listenerSection {
+    display: none;
+}
+
 .listenerInheritHeader {
     position: relative;
     -moz-user-select: none;
@@ -15,6 +19,7 @@
 }
 
 .listenerInheritLabel {
+    margin-left: 14px;
     font-weight: bold;
 }
 .listenerInheritLabel::after {
