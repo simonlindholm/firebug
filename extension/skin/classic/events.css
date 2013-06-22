@@ -60,3 +60,11 @@
     color: inherit;
 }
 
+.noOwnListenersText {
+    padding-top: 6px;
+    margin: 0 5px;
+    font-family: Lucida Grande, Tahoma, sans-serif;
+    font-weight: bold;
+    color:  #888888;
+}
+

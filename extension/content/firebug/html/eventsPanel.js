@@ -79,7 +79,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 // XXX capturing
                 // XXX source link:
                 // TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
-            )
+            ),
+
+        noOwnListenersTag:
+            DIV({"class": "noOwnListenersText"}, "$text")
     }),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -112,15 +115,24 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         if (FBTrace.DBG_EVENTS)
             FBTrace.sysout("events.updateSelection; " + selection.localName);
 
-        var own = this.getOwnSection(selection);
-        var inherited = this.getInheritedSections(selection);
-        if (!own.length && !inherited.length)
+        try
         {
-            FirebugReps.Warning.tag.replace({object: "events.NoEventListeners"}, this.panelNode);
-            return;
-        }
+            var own = this.getOwnSection(selection);
+            var inherited = this.getInheritedSections(selection);
+            this.template.cascadedTag.replace({element: selection, own: own, inherited: inherited}, this.panelNode);
 
-        this.template.cascadedTag.replace({element: selection, own: own, inherited: inherited}, this.panelNode);
+            var firstSection = this.panelNode.getElementsByClassName("listenerSection")[0];
+            if (!firstSection.firstChild)
+            {
+                var text = Locale.$STR("events.NoEventListeners");
+                this.template.noOwnListenersTag.replace({text: text}, firstSection);
+            }
+        }
+        catch (exc)
+        {
+            if (FBTrace.DBG_EVENTS)
+                FBTrace.sysout("events.updateSelection FAILS", exc);
+        }
     },
 
     getDisabledMap: function(context)
