@@ -342,17 +342,21 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
 function categorizeListenerList(list)
 {
-    var map = new Map();
+    var map = new Map(), keys = [];
     for (let ev of list)
     {
         let type = ev.type;
         if (!map.has(type))
+        {
             map.set(type, []);
+            keys.push(type);
+        }
         map.get(type).push(ev);
     }
+    keys.sort();
 
     var ret = [];
-    for (let type of map.keys())
+    for (let type of keys)
     {
         ret.push({
             type: type,
