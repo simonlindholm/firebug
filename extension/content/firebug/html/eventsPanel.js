@@ -36,7 +36,7 @@ function(Obj, Firebug, Domplate, Dom, Wrapper, Locale, Events, FirebugReps) {
 // ********************************************************************************************* //
 // Constants
 
-const {domplate, DIV, FOR, TAG, H1, SPAN} = Domplate;
+const {domplate, DIV, FOR, TAG, H1, H2, SPAN} = Domplate;
 
 // ********************************************************************************************* //
 // Events Panel (HTML side panel)
@@ -55,7 +55,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     {
         cascadedTag:
             DIV(
-                DIV({"class": "listenersNonInherited", role: "list",
+                DIV({"class": "listenersNonInherited",
                         "aria-label": Locale.$STR("a11y.labels.event_listeners")},
                     TAG("$sectionTag", {object: "$element", list: "$own"})
                 ),
@@ -83,7 +83,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         categoryTag:
             DIV({"class": "listenerCategory"},
                 // XXX collapsible headers or something
-                DIV("$category.type"),
+                H2({"class": "listenerCategoryHeader"}, "$category.type"),
                 FOR("listener", "$category.list",
                     TAG("$listenerTag", {listener: "$listener"})
                 )
@@ -92,11 +92,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         listenerTag:
             DIV({"class": "listenerLine", $disabled: "$listener.disabled",
                 _listenerObject: "$listener"},
-                SPAN({"class": "listenerIndent"}),
-                TAG(FirebugReps.Func.tag, {object: "$listener.func"})
+                SPAN({"class": "listenerIndent", "role": "presentation"}),
+                TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                 // XXX capturing
-                // XXX source link:
-                // TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+                TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})
             ),
 
         noOwnListenersTag:
@@ -162,12 +161,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getNormalEventListeners: function(target)
     {
+        var context = this.context;
         var listeners = Events.getEventListenersForElement(target);
         var hasOneHandler = new Set();
         listeners.forEach(function(li)
         {
             li.disabled = false;
             li.target = target;
+            li.sourceLink = Firebug.SourceFile.findSourceForFunction(li.func, context);
 
             var handlerName = "on" + li.type;
             if (handlerName in Object.getPrototypeOf(target) &&
