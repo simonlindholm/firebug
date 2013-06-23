@@ -2,6 +2,24 @@
 /*jshint esnext:true, curly:false*/
 /*global FBTrace:true, Document:true, Window:true, define:true */
 
+// TODO:
+// - jQuery events :(
+// - clicking elements in headers, probably
+//  - or else right-clicking elements in headers
+// - clicking event handlers doesn't do anything (are they even in the script panel?)
+// - collapsed headers shouldn't have spacing between them
+// - styling of event groups, collapsible etc.
+// - capture
+// - source links
+// - new issue about having source code as title
+// - seeing closures of event listeners??
+
+// Testing TODO:
+// - disabling event listener, event handlers, attribute event handlers
+// - duplicate listeners and such
+// - jQuery
+// - capture, source links
+
 define([
     "firebug/lib/object",
     "firebug/firebug",
