@@ -37,6 +37,9 @@ const mimeExtensionMap =
     "gif": "image/gif",
     "png": "image/png",
     "bmp": "image/bmp",
+    "woff": "application/font-woff",
+    "ttf": "application/x-font-ttf",
+    "otf": "application/x-font-otf",
     "swf": "application/x-shockwave-flash",
     "xap": "application/x-silverlight-app",
     "flv": "video/x-flv",
@@ -86,6 +89,7 @@ const mimeCategoryMap =
     "audio/wav": "media",
     "audio/x-wav": "media",
     "application/x-woff": "font",
+    "application/font-woff": "font",
     "application/x-font-woff": "font",
     "application/x-ttf": "font",
     "application/x-font-ttf": "font",
@@ -131,6 +135,31 @@ const binaryCategoryMap =
     "image": 1,
     "plugin" : 1,
     "font": 1
+};
+
+const requestProps =
+{
+    "allowPipelining": 1,
+    "allowSpdy": 1,
+    "canceled": 1,
+    "channelIsForDownload": 1,
+    "contentCharset": 1,
+    "contentLength": 1,
+    "contentType": 1,
+    "forceAllowThirdPartyCookie": 1,
+    "loadAsBlocking": 1,
+    "loadUnblocked": 1,
+    "localAddress": 1,
+    "localPort": 1,
+    "name": 1,
+    "redirectionLimit": 1,
+    "remoteAddress": 1,
+    "remotePort": 1,
+    "requestMethod": 1,
+    "requestSucceeded": 1,
+    "responseStatus": 1,
+    "responseStatusText": 1,
+    "status": 1,
 };
 
 // ********************************************************************************************* //
@@ -346,16 +375,14 @@ var NetUtils =
             return file.category = "xhr";
         }
 
+        var ext = Url.getFileExtension(file.href) + "";
+        ext = ext.toLowerCase();
+
         if (!file.mimeType)
         {
-            var ext = Url.getFileExtension(file.href);
             if (ext)
-                file.mimeType = mimeExtensionMap[ext.toLowerCase()];
+                file.mimeType = mimeExtensionMap[ext];
         }
-
-        /*if (FBTrace.DBG_NET)
-            FBTrace.sysout("net.getFileCategory; " + mimeCategoryMap[file.mimeType] +
-                ", mimeType: " + file.mimeType + " for: " + file.href, file);*/
 
         if (!file.mimeType)
             return "";
@@ -365,7 +392,24 @@ var NetUtils =
         if (mimeType)
             mimeType = mimeType.split(";")[0];
 
-        return (file.category = mimeCategoryMap[mimeType]);
+        file.category = mimeCategoryMap[mimeType];
+
+        // Work around application/octet-stream for js files (see issue 6530).
+        // Files with js extensions are JavaScript files and should respect the
+        // Net panel filter.
+        if (ext == "js")
+            file.category = "js";
+
+        // The last chance to set the category if it isn't set yet.
+        // Let's use the file extension.
+        if (!file.category)
+        {
+            mimeType = mimeExtensionMap[ext];
+            if (mimeType)
+                file.category = mimeCategoryMap[mimeType];
+        }
+
+        return file.category;
     },
 
     getPageTitle: function(context)
@@ -461,6 +505,42 @@ var NetUtils =
         }
 
         FBTrace.sysout(msg + " " + file.href, timeLog);
+    },
+
+    /**
+     * Returns a 'real objct' that is used by 'Inspect in DOM Panel' or
+     * 'Use in Command Line' features. Firebug is primarily a tool for web developers
+     * and so, it shouldn't expose internal chrome objects.
+     */
+    getRealObject: function(file)
+    {
+        var realObject = {};
+
+        // Iterate over all properties of the request object (nsIHttpChannel)
+        // and pick only those that are specified in 'requestProps' list.
+        var request = file.request;
+        for (var p in request)
+        {
+            if (!(p in requestProps))
+                continue;
+
+            try
+            {
+                var prop = request[p];
+                realObject[p] = prop;
+            }
+            catch (err)
+            {
+            }
+        }
+
+        // Display additional props from |file|
+        realObject["responseBody"] = file.responseText;
+        realObject["postBody"] = file.postBody;
+        realObject["requestHeaders"] = file.requestHeaders;
+        realObject["responseHeaders"] = file.responseHeaders;
+
+        return realObject;
     }
 };
 

@@ -50,6 +50,11 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/html/eventsPanel",
         "firebug/dom/domSidePanel",
         "firebug/console/commandLinePopup",
+
+        // Commands
+        "firebug/console/commands/lastCommandLineResult",
+        "firebug/console/commands/useInCommandLine",
+
         "firebug/accessible/a11y",
         "firebug/js/scriptPanel",
         "firebug/js/callstack",

@@ -14,7 +14,7 @@ define([
     "firebug/lib/options",
     "firebug/lib/wrapper",
     "firebug/lib/xpcom",
-    "firebug/console/profiler",
+    "firebug/console/commands/profiler",
     "firebug/chrome/searchBox"
 ],
 function(Obj, Firebug, Domplate, FirebugReps, Locale, Events, Css, Dom, Search, Menu, Options,
@@ -97,6 +97,18 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (!this.persistedContent && Firebug.Console.isAlwaysEnabled())
             this.insertLogLimit(this.context);
 
+        // Initialize filter button tooltips
+        var doc = this.context.chrome.window.document;
+        var filterButtons = doc.getElementsByClassName("fbConsoleFilter");
+        for (var i=0, len=filterButtons.length; i<len; ++i)
+        {
+            if (filterButtons[i].id != "fbConsoleFilter-all")
+            {
+                filterButtons[i].tooltipText = Locale.$STRF("firebug.labelWithShortcut",
+                    [filterButtons[i].tooltipText, Locale.$STR("tooltip.multipleFiltersHint")]);
+            }
+        }
+
         // Listen for set filters, so the panel is properly updated when needed
         Firebug.Console.addListener(this);
     },
@@ -155,6 +167,8 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
                 " " + this.context.getName(), state);
 
         this.showCommandLine(true);
+        Firebug.CommandLine.focus(this.context);
+
         this.showToolbarButtons("fbConsoleButtons", true);
 
         if (!this.filterTypes)
