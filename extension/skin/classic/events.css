@@ -45,22 +45,21 @@
 .listenerIndent {
     padding-left: 2em; /* perhaps split into padding: size of button, margin: rest */
     cursor: pointer;
-    /* line-height: 1.4; */ /* like CSS panel. blurriness. :( */
+    /* line-height: 1.4; */
 }
 
 .listenerLine {
     position: relative;
 }
 
-.listenerLine:hover {
+.listenerLine:hover > .listenerIndent {
     background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
     filter: none;
 }
 
-.listenerLine.disabled {
+.listenerLine.disabled > .listenerIndent {
     background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
-    filter: url(chrome://firebug/skin/filters.svg#grayscale); /* XXX: this doesn't work very well */
-    color: #CCCCCC;
+    filter: url(resource://firebugui/filters.svg#grayscale); /* XXX: See issue 6520 */
 }
 
 .listenerLine > .objectLink-sourceLink {
@@ -70,7 +69,7 @@
 /* remember: source links are position: absolute. use padding-right 150px + width */
 
 .listenerLine.disabled * {
-    color: inherit;
+    color: #CCCCCC;
 }
 
 .noOwnListenersText {
