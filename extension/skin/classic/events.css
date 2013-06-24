@@ -45,7 +45,7 @@
 .listenerIndent {
     padding-left: 2em; /* perhaps split into padding: size of button, margin: rest */
     cursor: pointer;
-    /* line-height: 1.4; */
+    line-height: 1.4;
 }
 
 .listenerLine {
