@@ -441,32 +441,124 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    getMessageId: function(object, rep, sourceLink)
+    getMessageMatcher: function(object, rep, sourceLink)
     {
-        // Firebug internal message objects could provide their own custom ID
-        if (object instanceof Object && typeof(object.getId) == "function")
-            return object.getId();
-
-        // The rep for the object could provide its own custom ID
-        if (rep instanceof Object && typeof(rep.getId) == "function")
-            return rep.getId();
-
-        // object may not be an object
-        if (typeof object != "object")
-            return object + (sourceLink ? sourceLink.href + ":" + sourceLink.line : "");
-
-        // object may be NaN
-        if (object !== object)
-            return "NotANumber";
-
-        // Use all direct properties of the object
-        if (object && (typeof object === "object" || typeof object === "function"))
+FBTrace.sysout("object: " + object.toSource(), object);
+        function matchesMetadata(otherRep, otherLink)
         {
-            var id = Obj.getObjHash(object);
-            return id + (sourceLink ? sourceLink.href + ":" + sourceLink.line : "");
+            if (otherRep !== rep || (rep && rep.noGrouping))
+                return false;
+            var ourTag = (sourceLink ? sourceLink.href + ":" + sourceLink.line : "");
+            var otherTag = (otherLink ? otherLink.href + ":" + otherLink.line : "");
+            return ourTag === otherTag;
         }
 
-        return Obj.getUniqueId().toString();
+        // returns true if two values are definitely equal, false if they are
+        // definitely unequal, undefined if they are both objects of similar
+        // types (which are treated differently in different context).
+        function equal(a, b)
+        {
+            if (typeof a === "number")
+            {
+                if (a !== a)
+                    return (b !== b);
+                // We want 0 == -0, so this is enough.
+                return (a === b);
+            }
+
+            if (a === b)
+                return true;
+            if (typeof a !== "object" || typeof b !== "object" || a === null || b === null)
+                return false;
+
+            // Do some slightly less strict checks.
+            if (Object.getPrototypeOf(a) !== Object.getPrototypeOf(b))
+                return false;
+            var str = Object.prototype.toString.call(a);
+            if (str !== Object.prototype.toString.call(b))
+                return false;
+
+            if (str === "[object Date]")
+                return a.getTime() === b.getTime();
+
+            return undefined;
+        }
+
+        // Check whether two content objects are approximately the same, one level deep.
+        function looselyEqual(a, b)
+        {
+            var r = equal(a, b);
+            if (r !== undefined)
+                return r;
+
+            var proto = Object.getPrototypeOf(a);
+            if (!(Object.getPrototypeOf(proto) === null && "hasOwnProperty" in proto) && !Array.isArray(a))
+            {
+                // Our object is complicated, so we shouldn't attempt a loose comparison.
+                return false;
+            }
+
+            if (Array.isArray(a) && a.length !== b.length)
+                return false;
+
+            var count = 0;
+            for (var prop in a)
+            {
+                var pdA = Object.getOwnPropertyDescriptor(a, prop);
+                var pdB = Object.getOwnPropertyDescriptor(b, prop);
+                if (!pdA || !pdB || pdA.get || pdB.get || pdA.set || pdB.set)
+                    return false;
+                if (equal(pdA.value, pdB.value) !== true)
+                    return false;
+                count++;
+            }
+            for (var prop in b)
+                count--;
+            return (count === 0);
+        }
+
+        return function(otherObject, otherRep, otherSourceLink)
+        {
+            try
+            {
+                if (!matchesMetadata(otherRep, otherSourceLink))
+                    return false;
+
+                var r = equal(object, otherObject);
+                if (r !== undefined)
+                    return r;
+
+                if (rep && rep.groupObjects)
+                    return rep.groupObjects(object, otherObject);
+
+                var str = Object.prototype.toString.call(object);
+                var isArray = (str === "[object Arguments]" || str === "[object Array]");
+                if (isArray && rep !== FirebugReps.Arr)
+                {
+                    // console.log et al.
+                    if (object.length !== otherObject.length)
+                        return false;
+                    for (var i = 0; i < object.length; ++i)
+                    {
+                        if (!looselyEqual(object[i], otherObject[i]))
+                            return false;
+                    }
+                    return true;
+                }
+
+                // Internal chrome objects are allowed to implement a custom "getId" function.
+                if (object instanceof Object && "getId" in object)
+                    return ("getId" in otherObject.getId && object.getId() === otherObject.getId());
+
+                return looselyEqual(object, otherObject);
+            }
+            catch (exc)
+            {
+                if (FBTrace.DBG_CONSOLE)
+                    FBTrace.sysout("consolePanel.getMessageMatcher; failed to check equality");
+                return false;
+            }
+        };
     },
 
     increaseRowCount: function(row)
@@ -474,11 +566,9 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         var counter = row.getElementsByClassName("logCounter").item(0);
         if (!counter)
             return;
-        var value = counter.getElementsByClassName("logCounterValue");
+        var value = counter.getElementsByClassName("logCounterValue").item(0);
         if (!value)
             return;
-
-        value = value.item(0);
 
         var count = parseInt(value.textContent);
         if (isNaN(count))
@@ -491,58 +581,54 @@ Firebug.ConsolePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     append: function(appender, objects, className, rep, sourceLink, noRow)
     {
-        var row;
-        var container = this.getTopContainer();
         if (noRow)
         {
             appender.apply(this, [objects]);
+            return;
+        }
+
+        var row;
+        var container = this.getTopContainer();
+        if (this.lastMsgMatcher && this.lastMsgMatcher(objects, rep, sourceLink))
+        {
+            this.increaseRowCount(container.lastChild);
+
+            row = container.lastChild;
         }
         else
         {
-            var msgId = this.getMessageId(objects, rep, sourceLink);
+            row = this.createRow("logRow", className);
+            var logContent = row.getElementsByClassName("logContent").item(0);
+            appender.apply(this, [objects, logContent, rep]);
 
-            if (msgId && msgId == this.lastMsgId)
-            {
-                this.increaseRowCount(container.lastChild);
+            // If sourceLink is not provided and the object is an instance of Error
+            // convert it into ErrorMessageObj instance, which implements getSourceLink
+            // method.
+            // xxxHonza: is there a better place where to make this kind of conversion?
+            if (!sourceLink && (objects instanceof Error))
+                objects = FirebugReps.Except.getErrorMessage(objects);
 
-                row = container.lastChild;
-            }
-            else
-            {
-                row = this.createRow("logRow", className);
-                row.msgId = msgId;
-                var logContent = row.getElementsByClassName("logContent").item(0);
-                appender.apply(this, [objects, logContent, rep]);
+            if (!sourceLink && objects && objects.getSourceLink)
+                sourceLink = objects.getSourceLink();
 
-                // If sourceLink is not provided and the object is an instance of Error
-                // convert it into ErrorMessageObj instance, which implements getSourceLink
-                // method.
-                // xxxHonza: is there a better place where to make this kind of conversion?
-                if (!sourceLink && (objects instanceof Error))
-                    objects = FirebugReps.Except.getErrorMessage(objects);
+            if (sourceLink)
+                FirebugReps.SourceLink.tag.append({object: sourceLink}, row.firstChild);
 
-                if (!sourceLink && objects && objects.getSourceLink)
-                    sourceLink = objects.getSourceLink();
-
-                if (sourceLink)
-                    FirebugReps.SourceLink.tag.append({object: sourceLink}, row.firstChild);
-
-                container.appendChild(row);
-            }
-
-            this.lastMsgId = msgId;
-
-            this.filterLogRow(row, this.wasScrolledToBottom);
-
-            if (FBTrace.DBG_CONSOLE)
-                FBTrace.sysout("console.append; wasScrolledToBottom " + this.wasScrolledToBottom +
-                    " " + row.textContent);
-
-            if (this.wasScrolledToBottom)
-                Dom.scrollToBottom(this.panelNode);
-
-            return row;
+            container.appendChild(row);
         }
+
+        this.lastMsgMatcher = this.getMessageMatcher(objects, rep, sourceLink);
+
+        this.filterLogRow(row, this.wasScrolledToBottom);
+
+        if (FBTrace.DBG_CONSOLE)
+            FBTrace.sysout("console.append; wasScrolledToBottom " + this.wasScrolledToBottom +
+                " " + row.textContent);
+
+        if (this.wasScrolledToBottom)
+            Dom.scrollToBottom(this.panelNode);
+
+        return row;
     },
 
     clear: function()

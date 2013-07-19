@@ -52,6 +52,8 @@ FirebugReps.Table = domplate(Firebug.Rep,
             )
         ),
 
+    noGrouping: true,
+
     getValueTag: function(object)
     {
         var rep = Firebug.getRep(object);
@@ -326,13 +328,6 @@ FirebugReps.Table = domplate(Firebug.Rep,
         }
 
         return true;
-    },
-
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    getId: function()
-    {
-        return Obj.getUniqueId();
     }
 });
 };

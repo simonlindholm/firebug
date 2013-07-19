@@ -43,10 +43,7 @@ var HelpCaption = domplate(
             )
         ),
 
-    getId: function()
-    {
-        return Obj.getUniqueId();
-    }
+    noGrouping: true
 });
 
 // The table UI should be based on tableRep
@@ -150,10 +147,7 @@ var TipsCaption = domplate(
             )
         ),
 
-    getId: function()
-    {
-        return Obj.getUniqueId();
-    }
+    noGrouping: true
 });
 
 var TipsList = domplate(

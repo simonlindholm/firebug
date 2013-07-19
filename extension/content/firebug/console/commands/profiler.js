@@ -164,11 +164,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
     logProfileRow: function(context, title)
     {
         var now = new Date().toISOString();
-        var objects =
-        {
-            getId: function() { return title + now; },
-            title: title
-        };
+        var objects = {title: title};
         var row = Firebug.Console.openGroup(objects, context, "profile",
             Firebug.Profiler.ProfileCaption, true, null, true);
         Css.setClass(row, "profilerRunning");
@@ -449,7 +445,9 @@ Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
             SPAN({"class": "profileCaption"}, "$object.title"),
             " ",
             SPAN({"class": "profileTime"}, "")
-        )
+        ),
+
+    noGrouping: true
 });
 
 // ********************************************************************************************* //

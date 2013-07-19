@@ -367,7 +367,7 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
 
         // the sourceLine will cause the source to be loaded.
         var error = new FirebugReps.ErrorMessageObj(object.errorMessage, object.sourceName,
-            object.lineNumber, object.sourceLine, category, context, null, msgId);
+            object.lineNumber, object.sourceLine, category, context, null);
 
         // Display column info only if it isn't zero.
         if (object.columnNumber > 0)
@@ -393,6 +393,8 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
         var msgId = lessTalkMoreAction(context, object, isWarning);
         if (!msgId)
             return null;
+
+        error.msgId = msgId;
 
         // clear global: either we copied it or we don't use it.
         Firebug.errorStackTrace = null;

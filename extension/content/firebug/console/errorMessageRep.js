@@ -98,6 +98,20 @@ var ErrorMessage = domplate(Firebug.Rep,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    groupObjects: function(lhs, rhs)
+    {
+        if (lhs.msgId !== rhs.msgId)
+            return false;
+        if (lhs.trace !== rhs.trace)
+        {
+            if (lhs.trace === null || rhs.trace === null)
+                return false;
+            if (lhs.trace.toString() !== rhs.trace.toString())
+                return false;
+        }
+        return true;
+    },
+
     getObjectsTag: function(error)
     {
         return error.objects ? FirebugReps.Arr.tag : SPAN();
