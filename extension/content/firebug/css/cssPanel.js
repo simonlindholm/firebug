@@ -564,19 +564,9 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         return Css.stripUnits(value, true);
     },
 
-    translateName: function(name, value)
+    translateName: function(name, value) // backward compat
     {
-        // Don't show these proprietary Mozilla properties
-        if (value == "-moz-initial" && /^-moz-background-(clip|origin|inline-policy)$/.test(name))
-            return null;
-        if (value == "physical" && /^(margin|padding)-(left|right)-(ltr|rtl)-source$/.test(name))
-            return null;
-
-        // Translate these back to the form the user probably expects
-        if (/^(margin|padding)-(left|right)-value$/.test(name))
-            name = name.slice(0, -6);
-
-        return name;
+        return CSSModule.translateName(name, value);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -832,6 +822,18 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
                 this.insertPropertyRow(row);
                 Events.cancelEvent(event);
             }
+        }
+
+        if (Dom.getAncestorByClass(event.target, "cssSaveButton"))
+        {
+            var row = Dom.getAncestorByClass(event.target, "cssElementRuleContainer");
+            if (row)
+                row = Dom.getChildByClass(row, "cssRule");
+            else
+                row = Dom.getAncestorByClass(event.target, "cssRule");
+
+            var rule = Firebug.getRepObject(row);
+            CSSSaveManager.saveRule(this.context, rule);
         }
     },
 
