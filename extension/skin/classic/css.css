@@ -163,7 +163,7 @@
     display: table-row;
 }
 
-.styleSourceLink > .objectLink-sourceLink {
+.computedSourceLink > .objectLink-sourceLink {
     position: relative;
     top: 0;
     left: 0;
@@ -205,26 +205,41 @@
     white-space: nowrap;
 }
 
-.saveable .cssSaveButton, .cssRule.saveable + .objectLink::before {
+.cssSaveButton {
+    display: none;
     background: url(chrome://firebug/skin/save.png) no-repeat;
     height: 14px;
     width: 14px;
     position: absolute;
-    display: inline;
-    margin: -1px 0 0 1ch;
+    margin: 0 0 0 1ch;
     cursor: pointer;
 }
-.saveable .cssSaveButton:not(:hover), .cssRule.saveable + .objectLink:not(:hover)::before {
+.cssSaveButton:not(:hover) {
     filter: url("chrome://mozapps/skin/extensions/extensions.svg#greyscale");
     opacity: 0.45;
 }
-.cssSaveButton, .cssElementRuleContainer .cssSaveButton {
-    display: none;
+
+.saveable .cssSaveButton {
+    display: inline;
+}
+.saveable + .styleSourceLink {
+    position: absolute;
+    right: 4px;
+    top: 0;
+}
+.saveable + .styleSourceLink > .cssSaveButton {
+    display: block;
+    margin: 0 0 0 -16px;
+}
+.saveable + .styleSourceLink > .objectLink-sourceLink {
+    position: static;
+    padding: 0;
 }
 
-.cssRule.saveable + .objectLink::before {
-    content: "";
-    margin: 1px 0 0 -18px;
+.cssElementRuleContainer > .cssRule > .cssHead > .cssSaveButton {
+    /* The Style panel doesn't have a save button next to the rule -
+       it's next to the source link instead. */
+    display: none !important;
 }
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

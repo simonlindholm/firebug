@@ -76,7 +76,10 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
         ruleTag:
             DIV({"class": "cssElementRuleContainer"},
                 TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
-                TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+                DIV({"class": "styleSourceLink", role: "presentation"},
+                    SPAN({"class": "cssSaveButton", role: "button"}),
+                    TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
+                )
             ),
 
         newRuleTag:
