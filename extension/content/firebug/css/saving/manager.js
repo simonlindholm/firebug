@@ -3,9 +3,10 @@
 define([
     "firebug/firebug",
     "firebug/lib/css",
+    "firebug/lib/url",
     "firebug/css/cssModule",
 ],
-function(Firebug, Css, CSSModule) {
+function(Firebug, Css, Url, CSSModule) {
 
 var Manager =
 {
@@ -38,8 +39,10 @@ var Manager =
 
 function isInCSSFile(rule)
 {
-    // XXX also test against chrome and ignored stylesheets
-    return !!rule.parentStyleSheet.href;
+    var sheet = rule.parentStyleSheet;
+    if (!sheet || Url.isSystemSheet(sheet))
+        return false;
+    return !!sheet.href;
 }
 
 function RuleInfo(rule)
