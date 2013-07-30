@@ -122,24 +122,31 @@ Firebug.CSSModule = Obj.extend(Obj.extend(Firebug.Module, Firebug.EditorSelector
         }
     },
 
-    getRuleData: function(context, rule)
+    getRuleData: function(context, rule, type, initial)
     {
         var rm = context.ruleMap;
-        // Ideally, we'd use a WeakMap here, but WeakMaps don't currently allow
-        // CSS rules to be used as keys. A Map is used instead. (See bug 777373.)
         if (!rm)
-            context.ruleMap = rm = new Map();
+            context.ruleMap = rm = new WeakMap();
         if (!rm.has(rule))
+        {
+            if (!initial)
+                return null;
             rm.set(rule, {});
-        return rm.get(rule);
+        }
+        var map = rm.get(rule);
+        if (initial && !map.hasOwnProperty(type))
+            map[type] = initial;
+        return (map.hasOwnProperty(type) ? map[type] : null);
     },
 
     remapRuleData: function(context, oldRule, newRule)
     {
         var rm = context.ruleMap;
-        if (!rm)
-            context.ruleMap = rm = new Map();
-        rm.set(newRule, rm.get(oldRule));
+        if (!rm || !rm.get(oldRule))
+            return;
+        var data = rm.get(oldRule);
+        rm.delete(oldRule);
+        rm.set(newRule, data);
     },
 
     removeProperty: function(rule, propName, parent)

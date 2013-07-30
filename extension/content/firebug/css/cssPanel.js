@@ -373,11 +373,10 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         if (!Dom.domUtils)
             return null;
 
-        var cssRules = styleSheet.cssRules;
+        var cssRules = styleSheet.cssRules, previousRule = null;
         for (var i = 0; i < cssRules.length; ++i)
         {
             var rule = cssRules[i];
-            var previousRule;
             if (rule instanceof window.CSSStyleRule)
             {
                 var selectorLine = Dom.domUtils.getRuleLine(rule);
@@ -516,27 +515,26 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
 
     addDisabledProperties: function(context, rule, inheritMode, props)
     {
-        var ruleData = CSSModule.getRuleData(context, rule);
-        if (ruleData.disabledMap)
-        {
-            var propMap = {};
-            for (var i = 0; i < props.length; ++i)
-                propMap[props[i].name] = 1;
+        var disabledProps = CSSModule.getRuleData(context, rule, "disabled");
+        if (!disabledProps)
+            return;
 
-            var moreProps = ruleData.disabledMap;
-            for (var i = 0; i < moreProps.length; ++i)
+        var propMap = {};
+        for (var i = 0; i < props.length; ++i)
+            propMap[props[i].name] = 1;
+
+        for (var i = 0; i < disabledProps.length; ++i)
+        {
+            var prop = disabledProps[i];
+            if (propMap.hasOwnProperty(prop.name))
             {
-                var prop = moreProps[i];
-                if (propMap.hasOwnProperty(prop.name))
-                {
-                    // An enabled property with the same name as the disabled
-                    // one has appeared - remove the disabled one entirely.
-                    moreProps.splice(i, 1);
-                    --i;
-                    continue;
-                }
-                this.addProperty(prop.name, prop.value, prop.important, true, inheritMode, props);
+                // An enabled property with the same name as the disabled
+                // one has appeared - remove the disabled one entirely.
+                disabledProps.splice(i, 1);
+                --i;
+                continue;
             }
+            this.addProperty(prop.name, prop.value, prop.important, true, inheritMode, props);
         }
     },
 
@@ -719,17 +717,13 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         CSSModule.deleteProperty(rule, propName, this.context);
 
         // Remove the property from the selector map, if it was disabled
-        var ruleData = CSSModule.getRuleData(this.context, rule);
-        if (ruleData.disabledMap)
+        var disabledMap = CSSModule.getRuleData(this.context, rule, "disabled") || [];
+        for (var i = 0; i < disabledMap.length; ++i)
         {
-            var map = ruleData.disabledMap;
-            for (var i = 0; i < map.length; ++i)
+            if (disabledMap[i].name == propName)
             {
-                if (map[i].name == propName)
-                {
-                    map.splice(i, 1);
-                    break;
-                }
+                disabledMap.splice(i, 1);
+                break;
             }
         }
 
@@ -747,16 +741,12 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         var rule = Firebug.getRepObject(row);
         var propName = Dom.getChildByClass(row, "cssPropName").textContent;
 
-        var ruleData = CSSModule.getRuleData(this.context, rule);
-        if (!ruleData.disabledMap)
-            ruleData.disabledMap = [];
-
-        var map = ruleData.disabledMap;
+        var disabledMap = CSSModule.getRuleData(this.context, rule, "disabled", []);
         var propValue = Dom.getChildByClass(row, "cssPropValue").textContent;
         var parsedValue = parsePriority(propValue);
 
         CSSModule.disableProperty(Css.hasClass(row, "disabledStyle"), rule,
-            propName, parsedValue, map, this.context);
+            propName, parsedValue, disabledMap, this.context);
 
         var ruleRow = Dom.getAncestorByClass(row, "cssRule");
         this.updateRuleForSaving(rule, ruleRow);
