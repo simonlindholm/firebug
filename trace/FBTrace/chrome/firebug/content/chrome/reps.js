@@ -3056,7 +3056,7 @@ FirebugReps.NamedNodeMap = domplate(Firebug.Rep,
 
     supportsObject: function(object, type)
     {
-        return (object instanceof window.NamedNodeMap);
+        return (object instanceof window.MozNamedAttrMap);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
