@@ -46,11 +46,8 @@ function RuleInfo(rule)
 {
     this.selector = rule.selectorText;
 
-    // Note: This is actually wrong in the case where the "expand shorthand
-    // properties" option changes in between comparisons. However, that happens
-    // only seldomly and the effect of it is harmless, so it's not worth fixing.
+    // like parseCSSProps, but with sorting. maybe we should respect expandShorthandProps somehow.
     //this.props = CSSModule.parseCSSProps(rule.style, Firebug.expandShorthandProps);
-
     var style = rule.style, propSet = [];
     for (var i = 0, len = style.length; i < len; ++i)
     {
@@ -60,12 +57,15 @@ function RuleInfo(rule)
     }
     this.text = propSet.sort().join(";");
 }
+
 RuleInfo.prototype.verySimilar = function(other)
 {
     // Treat rules as very similar to the original (-> unsaveable) if the
     // unordered set of properties, and the selector, are the same.
+    // (Currently Firebug doesn't show ordering of properties.)
     return (this.selector === other.selector && this.text === other.text);
 };
+
 RuleInfo.prototype.strCompare = function(other)
 {
     // XXX Need a comparison object. Returns e.g.

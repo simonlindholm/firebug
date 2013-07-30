@@ -122,21 +122,14 @@ Firebug.CSSModule = Obj.extend(Obj.extend(Firebug.Module, Firebug.EditorSelector
         }
     },
 
-    getRuleData: function(context, rule, type, initial)
+    getRuleData: function(context, rule)
     {
         var rm = context.ruleMap;
         if (!rm)
             context.ruleMap = rm = new WeakMap();
         if (!rm.has(rule))
-        {
-            if (!initial)
-                return null;
             rm.set(rule, {});
-        }
-        var map = rm.get(rule);
-        if (initial && !map.hasOwnProperty(type))
-            map[type] = initial;
-        return (map.hasOwnProperty(type) ? map[type] : null);
+        return rm.get(rule);
     },
 
     remapRuleData: function(context, oldRule, newRule)

@@ -373,7 +373,7 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         if (!Dom.domUtils)
             return null;
 
-        var cssRules = styleSheet.cssRules, previousRule = null;
+        var cssRules = styleSheet.cssRules, previousRule = undefined;
         for (var i = 0; i < cssRules.length; ++i)
         {
             var rule = cssRules[i];
@@ -515,7 +515,7 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
 
     addDisabledProperties: function(context, rule, inheritMode, props)
     {
-        var disabledProps = CSSModule.getRuleData(context, rule, "disabled");
+        var disabledProps = CSSModule.getRuleData(context, rule).disabledMap;
         if (!disabledProps)
             return;
 
@@ -717,13 +717,16 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         CSSModule.deleteProperty(rule, propName, this.context);
 
         // Remove the property from the selector map, if it was disabled
-        var disabledMap = CSSModule.getRuleData(this.context, rule, "disabled") || [];
-        for (var i = 0; i < disabledMap.length; ++i)
+        var disabledMap = CSSModule.getRuleData(this.context, rule).disabledMap;
+        if (disabledMap)
         {
-            if (disabledMap[i].name == propName)
+            for (var i = 0; i < disabledMap.length; ++i)
             {
-                disabledMap.splice(i, 1);
-                break;
+                if (disabledMap[i].name == propName)
+                {
+                    disabledMap.splice(i, 1);
+                    break;
+                }
             }
         }
 
@@ -741,12 +744,16 @@ Firebug.CSSStyleSheetPanel.prototype = Obj.extend(Firebug.Panel,
         var rule = Firebug.getRepObject(row);
         var propName = Dom.getChildByClass(row, "cssPropName").textContent;
 
-        var disabledMap = CSSModule.getRuleData(this.context, rule, "disabled", []);
+        var ruleData = CSSModule.getRuleData(this.context, rule);
+        if (!ruleData.disabledMap)
+            ruleData.disabledMap = [];
+
+        var map = ruleData.disabledMap;
         var propValue = Dom.getChildByClass(row, "cssPropValue").textContent;
         var parsedValue = parsePriority(propValue);
 
         CSSModule.disableProperty(Css.hasClass(row, "disabledStyle"), rule,
-            propName, parsedValue, disabledMap, this.context);
+            propName, parsedValue, map, this.context);
 
         var ruleRow = Dom.getAncestorByClass(row, "cssRule");
         this.updateRuleForSaving(rule, ruleRow);
