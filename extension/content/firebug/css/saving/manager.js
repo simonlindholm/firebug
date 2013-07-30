@@ -40,7 +40,7 @@ var Manager =
 function isInCSSFile(rule)
 {
     var sheet = rule.parentStyleSheet;
-    if (!sheet || Url.isSystemSheet(sheet))
+    if (!sheet || Url.isSystemStyleSheet(sheet))
         return false;
     return !!sheet.href;
 }
