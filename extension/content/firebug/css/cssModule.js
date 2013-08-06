@@ -432,14 +432,22 @@ Firebug.CSSModule = Obj.extend(Obj.extend(Firebug.Module, Firebug.EditorSelector
     translateName: function(name, value)
     {
         // Don't show these proprietary Mozilla properties
+        // XXX test this with RTL locale
         if (value == "-moz-initial" && /^-moz-background-(clip|origin|inline-policy)$/.test(name))
             return null;
         if (value == "physical" && /^(margin|padding)-(left|right)-(ltr|rtl)-source$/.test(name))
             return null;
+        if (value == "physical" && /^border-(left|right)-(color|style|width)-(ltr|rtl)-source$/.test(name))
+            return null;
+        if (value == "none" && /^-moz-border-[^-]*-colors$/.test(name))
+            return null;
 
         // Translate these back to the form the user probably expects
-        if (/^(margin|padding)-(left|right)-value$/.test(name))
+        if (/^(margin|padding)-(left|right)-value$/.test(name) ||
+            /^border-(left|right)-(color|style|width)-value$/.test(name))
+        {
             name = name.slice(0, -6);
+        }
 
         return name;
     },

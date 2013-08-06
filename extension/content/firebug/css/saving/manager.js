@@ -64,25 +64,30 @@ function RuleInfo(rule)
 {
     this.selector = rule.selectorText;
 
-    // like parseCSSProps, but with sorting, and with translateName. maybe we
-    // should respect expandShorthandProps somehow. (it would make us able to
-    // describe the addition of "padding: 1px" correctly!)
-    // maybe we should stripUnits(, false).
-    //this.props = CSSModule.parseCSSProps(rule.style, Firebug.expandShorthandProps);
-    var style = rule.style, props = [], propMap = new Map();
-    for (var i = 0, len = style.length; i < len; ++i)
+    // maybe we should respect expandShorthandProps somehow. maybe we should stripUnits(, false).
+
+    // okay, so, the problem here is that we don't know how the original looked, really.
+    // parseCSSProps(, false) seems like a very reasonable guess, but it could be wrong!
+    // so if we see that margin: 1px is changed to margin: 2px, then we should also
+    // remove properties margin-*.
+    // remember the fun case of: "border: 1px solid black; border-left-style: none;"
+    // (not that Firebug handles that nicely either :) ) (well, it does reasonably,
+    // except it leaves behind -moz-border-*-colors: none (wtf, we should exclude
+    // that in translateName))
+
+    var props = CSSModule.parseCSSProps(rule.style, false);
+    var text = "", propMap = new Map();
+    props.forEach(function(prop)
     {
-        var name = style.item(i);
-        var value = style.getPropertyValue(name);
-        var priority = style.getPropertyPriority(name);
-        name = CSSModule.translateName(name, value);
+        var name = CSSModule.translateName(prop.name, prop.value);
         if (!name)
-            continue;
-        props.push(name + ":" + Css.stripUnits(value, true) + " " + priority);
+            return;
+        var value = Css.stripUnits(prop.value, true);
+        text += name + ":" + value + (priority ? "1" : "0") + ";";
         propMap.set(name, value + (priority ? " " + priority : ""));
     }
+    this.text = text;
     this.properties = propMap;
-    this.text = props.sort().join(";");
 }
 
 RuleInfo.prototype.verySimilar = function(other)
