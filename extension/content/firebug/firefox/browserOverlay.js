@@ -5,13 +5,16 @@ define([
     "firebug/lib/options",
     "firebug/lib/locale",
     "firebug/lib/array",
+    "firebug/lib/string",
+    "firebug/lib/xpcom",
     "firebug/firefox/browserOverlayLib",
     "firebug/firefox/browserCommands",
     "firebug/firefox/browserMenu",
     "firebug/firefox/browserToolbar",
+    "firebug/lib/system",
 ],
-function(FBTrace, Options, Locale, Arr, BrowserOverlayLib, BrowserCommands, BrowserMenu,
-    BrowserToolbar) {
+function(FBTrace, Options, Locale, Arr, Str, Xpcom, BrowserOverlayLib, BrowserCommands,
+    BrowserMenu, BrowserToolbar, System) {
 
 with (BrowserOverlayLib) {
 
@@ -25,6 +28,8 @@ var Cu = Components.utils;
 Locale.registerStringBundle("chrome://firebug/locale/firebug.properties");
 Locale.registerStringBundle("chrome://firebug/locale/cookies.properties");
 Locale.registerStringBundle("chrome://firebug/locale/selectors.properties");
+Locale.registerStringBundle("chrome://global-platform/locale/platformKeys.properties");
+Locale.registerStringBundle("chrome://global/locale/keys.properties");
 
 Cu.import("resource://firebug/loader.js");
 Cu.import("resource://firebug/fbtrace.js");
@@ -61,6 +66,10 @@ BrowserOverlay.prototype =
             $(this.doc, "mainBroadcasterSet"));
 
         var node = $stylesheet(this.doc, "chrome://firebug/content/firefox/browserOverlay.css");
+
+        if (System.isMac(this.win))
+            $stylesheet(this.doc, "chrome://firebug/content/firefox/macBrowserOverlay.css");
+
         this.nodesToRemove.push(node);
 
         this.loadContextMenuOverlay();
@@ -79,7 +88,7 @@ BrowserOverlay.prototype =
     internationalize: function()
     {
         // Internationalize all elements with 'fbInternational' class. Clone
-        // before internationalizing.
+        // before internationalization.
         var elements = Arr.cloneArray(this.doc.getElementsByClassName("fbInternational"));
         Locale.internationalizeElements(this.doc, elements, ["label", "tooltiptext", "aria-label"]);
     },
@@ -109,7 +118,7 @@ BrowserOverlay.prototype =
     // Load Rest of Firebug
 
     /**
-     * This method is called by the Fremework to load entire Firebug. It's executed when
+     * This method is called by the Framework to load entire Firebug. It's executed when
      * the user requires Firebug for the first time.
      *
      * @param {Object} callback Executed when Firebug is fully loaded
@@ -183,7 +192,7 @@ BrowserOverlay.prototype =
                 {
                     var checked = Options.get(option);
 
-                    // xxxHonza: I belive that allPagesActivation could be simple boolean option.
+                    // xxxHonza: I believe that allPagesActivation could be simple boolean option.
                     if (option == "allPagesActivation")
                         checked = (checked == "on") ? true : false;
 
@@ -324,7 +333,7 @@ BrowserOverlay.prototype =
         for (var i=0; i<positions.length; i++)
         {
             var pos = positions[i];
-            var label = pos.charAt(0).toUpperCase() + pos.slice(1);
+            var label = Str.capitalize(pos);
 
             var item = $menuitem(this.doc, {
                 label: Locale.$STR("firebug.menu." + label),
@@ -497,7 +506,7 @@ BrowserOverlay.prototype =
 
                 this.win.addEventListener("unload", function()
                 {
-                    clearTimeout(timeout);
+                    self.win.clearTimeout(timeout);
                 }, false);
             }
         }
@@ -526,6 +535,7 @@ BrowserOverlay.prototype =
         }, 400);
     },
 
+    // xxxsz: Can't System.checkFirebugVersion() be used for that?
     checkFirebugVersion: function(currentVersion)
     {
         if (!currentVersion)
@@ -533,9 +543,9 @@ BrowserOverlay.prototype =
 
         var version = this.getVersion();
 
-        // Use Firefox comparator service.
-        var versionChecker = Cc["@mozilla.org/xpcom/version-comparator;1"].
-            getService(Ci.nsIVersionComparator);
+        // Use Firefox comparator service
+        var versionChecker = Xpcom.CCSV("@mozilla.org/xpcom/version-comparator;1",
+            "nsIVersionComparator");
 
         return versionChecker.compare(version, currentVersion);
     }

@@ -162,7 +162,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     getNormalEventListeners: function(target)
     {
         var context = this.context;
-        var listeners = Events.getEventListenersForElement(target);
+        var listeners = Events.getEventListenersForTarget(target);
         var hasOneHandler = new Set();
         listeners.forEach(function(li)
         {

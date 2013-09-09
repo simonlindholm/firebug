@@ -44,16 +44,17 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/firefox/start-button/startButtonOverlay",
         "firebug/firefox/external-editors/externalEditors",
         "firebug/chrome/panelActivation",
-        //"firebug/console/memoryProfiler", xxxHonza: removed from 1.10 (issue 5599)
         "firebug/chrome/tableRep",
         "firebug/html/htmlPanel",
         "firebug/html/eventsPanel",
         "firebug/dom/domSidePanel",
         "firebug/console/commandLinePopup",
+        "firebug/chrome/toggleSidePanels",
 
         // Commands
         "firebug/console/commands/lastCommandLineResult",
         "firebug/console/commands/useInCommandLine",
+        "firebug/console/commands/getEventListeners",
 
         "firebug/accessible/a11y",
         "firebug/js/scriptPanel",
@@ -67,6 +68,8 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/cookies/cookieModule",
         "firebug/cookies/cookiePanel",
         "firebug/css/selectorPanel",
+        "firebug/console/errorMessageRep",
+        "firebug/console/exceptionRep",
     ];
 
     return config;

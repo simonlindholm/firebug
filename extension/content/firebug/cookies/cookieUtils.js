@@ -2,15 +2,36 @@
 
 define([
     "firebug/cookies/cookie",
+    "firebug/lib/wrapper",
     "firebug/lib/string"
 ],
-function(Cookie, Str) {
+function(Cookie, Wrapper, Str) {
+
+// ********************************************************************************************* //
+// Constants
+
+var Cu = Components.utils;
 
 // ********************************************************************************************* //
 // CookieUtils Implementation
 
 var CookieUtils = 
 {
+    isDeletedCookie: function(cookie)
+    {
+        if (cookie.maxAge)
+            return cookie.maxAge <= 0;
+
+        if (cookie.expires)
+        {
+            var expiresDate = new Date(cookie.expires * 1000);
+
+            return expiresDate.getTime() <= Date.now();
+        }
+
+        return false;
+    },
+
     isSessionCookie: function(cookie)
     {
         // maxAge is string value, "0" will not register as session.
@@ -50,7 +71,7 @@ var CookieUtils =
         }
         catch (exc) { }
 
-        var c = {
+        return {
             name        : cookie.name,
             value       : value,
             isDomain    : cookie.isDomain,
@@ -63,8 +84,6 @@ var CookieUtils =
             rawValue    : rawValue,
             rawCookie   : cookie,
         };
-
-        return c;
     },
 
     parseFromString: function(string)
@@ -150,11 +169,13 @@ var CookieUtils =
         return cookies;
     },
 
-    getRealObject: function(cookie)
+    getRealObject: function(cookie, context)
     {
-        var realObject = this.makeCookieObject(cookie);
-        delete realObject.rawCookie;
-        return realObject;
+        cookie = this.makeCookieObject(cookie);
+        delete cookie.rawCookie;
+
+        var global = context.getCurrentGlobal();
+        return Wrapper.cloneIntoContentScope(global, cookie);
     }
 };
 
