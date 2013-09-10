@@ -3,10 +3,9 @@
 
 define([
     "firebug/lib/trace",
-    "firebug/lib/xpcom",
-    "firebug/lib/wrapper" // dependency will go away with jsd2
+    "firebug/lib/xpcom"
 ],
-function(FBTrace, Xpcom, Wrapper) {
+function(FBTrace, Xpcom) {
 "use strict";
 
 // ********************************************************************************************* //
@@ -592,19 +591,10 @@ Events.getEventListenersForTarget = function(target)
         var rawListener = listeners[i];
         var listener = {
             type: rawListener.type,
+            func: rawListener.listenerObject,
             capturing: rawListener.capturing,
-            allowsUntrusted: rawListener.allowsUntrusted,
-            func: null
+            allowsUntrusted: rawListener.allowsUntrusted
         };
-        if ("listenerObject" in rawListener)
-        {
-            listener.func = rawListener.listenerObject;
-        }
-        else
-        {
-            var debugObject = rawListener.getDebugObject();
-            listener.func = (debugObject instanceof Ci.jsdIValue && Wrapper.unwrapIValue(debugObject));
-        }
 
         // Skip chrome event listeners.
         if (!listener.func || rawListener.inSystemEventGroup)
