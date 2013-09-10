@@ -3,14 +3,22 @@
 /*global FBTrace:true, Document:true, Window:true, define:true */
 
 // TODO:
-// - jQuery events :(
-// - clicking elements in headers, probably
+// UI:
+// - derived listeners
+// - clicking elements in headers, probably (though it's problematic with `window` which covers the whole line)
 //  - or else right-clicking elements in headers
 // - clicking event handlers doesn't do anything (are they even in the script panel?)
 // - collapsed headers shouldn't have spacing between them
-// - styling of event groups, collapsible etc.
+// - styling of event groups, collapsible?, headery
 // - capture
-// - source links
+// - a11y
+// Functionality:
+// - derived listeners:
+//   * closures
+//   * jQuery special case
+// - detect eventbug
+// - applicationCache etc.
+// Other:
 // - new issue about having source code as title
 // - seeing closures of event listeners??
 
@@ -36,7 +44,7 @@ function(Obj, Firebug, Domplate, Dom, Wrapper, Locale, Events, FirebugReps) {
 // ********************************************************************************************* //
 // Constants
 
-const {domplate, DIV, FOR, TAG, H1, H2, SPAN} = Domplate;
+var {domplate, DIV, FOR, TAG, H1, H2, SPAN} = Domplate;
 
 // ********************************************************************************************* //
 // Events Panel (HTML side panel)
@@ -94,12 +102,17 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 _listenerObject: "$listener"},
                 SPAN({"class": "listenerIndent", "role": "presentation"}),
                 TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
-                // XXX capturing
+                SPAN({"class": "listenerCapturing", "hidden": "$listener|notCapturing"}, "C"), // XXX
                 TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})
             ),
 
         noOwnListenersTag:
-            DIV({"class": "noOwnListenersText"}, "$text")
+            DIV({"class": "noOwnListenersText"}, "$text"),
+
+        notCapturing: function(listener)
+        {
+            return !listener.capturing;
+        }
     }),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
