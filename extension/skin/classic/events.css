@@ -48,17 +48,22 @@
     line-height: 1.4;
 }
 
+.derivedListener > .listenerIndent::after {
+    content: "→";
+    padding-left: 1px;
+    padding-right: calc(1ch - 1px);
+}
+
 .listenerLine {
     position: relative;
 }
 
-.listenerLine:hover > .listenerIndent {
-    background: transparent url(chrome://firebug/skin/disable.png) no-repeat 2px 1px;
-    filter: none;
+.listenerLineGroup.disabled > .originalListener > .listenerIndent {
+    background: transparent url(chrome://firebug/skin/disableInactive.png) no-repeat 2px 1px;
 }
 
-.listenerLine.disabled > .listenerIndent {
-    background: transparent url(chrome://firebug/skin/disableInactive.png) no-repeat 2px 1px;
+.listenerLineGroup > .originalListener:hover > .listenerIndent {
+    background: transparent url(chrome://firebug/skin/disable.png) no-repeat 2px 1px;
 }
 
 .listenerLine > .objectLink-sourceLink {
