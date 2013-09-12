@@ -4,13 +4,13 @@
 
 // TODO:
 // UI:
-// - derived listeners (simple UI!)
 // - clicking elements in headers, probably (though it's problematic with `window` which covers the whole line)
 //  - or else right-clicking elements in headers
 // - clicking event handlers doesn't do anything (are they even in the script panel?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
-// - replace right arrow symbol by image, for stability
+// - derived listeners
+//  - replace right arrow symbol by image, for cross-platform stability
 // - capture
 // - a11y
 // Functionality:
@@ -20,7 +20,10 @@
 // Other:
 // - new issue about having source code as title
 // - seeing closures of event listeners??
-// - dynamic updates for jQuery listeners will be awful. watch('length') technically works.
+// - dynamic updates for jQuery listeners will be awful. watch('length') technically works...
+// - fix derived listeners on Google Code?
+//  - one listener is "function() { otherfunction(arguments); }"
+//  - another has two steps of indirection, and the second is non-trivial... TODO: see if any is a library
 
 // Testing TODO:
 // - disabling event listener, event handlers, attribute event handlers
