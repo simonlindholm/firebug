@@ -12,7 +12,6 @@ function(FBTrace, Xpcom) {
 // Constants
 
 const Cu = Components.utils;
-const Ci = Components.interfaces;
 var elService = Xpcom.CCSV("@mozilla.org/eventlistenerservice;1", "nsIEventListenerService");
 
 // ********************************************************************************************* //

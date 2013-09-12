@@ -6,18 +6,11 @@ define([
     "firebug/lib/trace",
     "firebug/lib/locale",
     "firebug/lib/wrapper",
-    "firebug/lib/xpcom",
     "firebug/lib/events",
 ],
-function(Firebug, FBTrace, Locale, Wrapper, Xpcom, Events) {
+function(Firebug, FBTrace, Locale, Wrapper, Events) {
 
 "use strict";
-
-// ********************************************************************************************* //
-// Constants
-
-const comparator = Xpcom.CCSV("@mozilla.org/xpcom/version-comparator;1", "nsIVersionComparator");
-const appInfo = Xpcom.CCSV("@mozilla.org/xre/app-info;1", "nsIXULAppInfo");
 
 // ********************************************************************************************* //
 // Command Implementation
