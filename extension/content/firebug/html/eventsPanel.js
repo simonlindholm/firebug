@@ -9,18 +9,20 @@
 // - clicking event handlers doesn't do anything (are they even in the script panel?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
+// - source links overlap function names
 // - derived listeners
 //  - replace right arrow symbol by image, for cross-platform stability
 // - capture
 // - a11y
 // Functionality:
 // - detect eventbug
-// - applicationCache etc.
+// - some more extra event targets?
 // - mutation observers
 // Other:
 // - new issue about having source code as title
 // - seeing closures of event listeners??
 // - dynamic updates for jQuery listeners will be awful. watch('length') technically works...
+// - source links should work even without script panel
 // - fix derived listeners on Google Code?
 //  - one listener is "function() { otherfunction(arguments); }"
 //  - another has two steps of indirection, and the second is non-trivial... TODO: see if any is a library
@@ -120,6 +122,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         noOwnListenersTag:
             DIV({"class": "noOwnListenersText"}, "$text"),
+
+        emptyTag: SPAN(),
 
         notCapturing: function(listener)
         {
@@ -331,10 +335,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             if (!list.length)
                 return;
-            var rep = Firebug.getRep(object, context);
+            var rep = object && Firebug.getRep(object, context);
             ret.push({
                 label: label,
-                tag: rep.shortTag || rep.tag,
+                tag: rep && (rep.shortTag || rep.tag),
                 object: object,
                 list: categorizeListenerList(list),
                 opened: opened
@@ -383,8 +387,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         addSection(Locale.$STR("events.ListenersFrom"), win, winInherited, true);
         addSection("", doc, docOwn, false);
         addSection("", win, winOwn, false);
-
-        // XXX applicationCache etc.
+        var apc = win && win.applicationCache;
+        if (apc)
+            addSection("Application Cache", undefined, this.getListeners(apc), false);
 
         return ret;
     },
