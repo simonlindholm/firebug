@@ -15,17 +15,20 @@
 // - capture
 // - a11y
 // Functionality:
-// - detect eventbug
-// - some more extra event targets?
+// - jQuery event listeners have to be filtered by descendant selector... (try on kth social)
+//  - probably only filter inherited listeners
+// - detect eventbug (maybe)
 // - mutation observers
+
 // Other:
+// - see if there are more extra event targets?
 // - new issue about having source code as title
 // - seeing closures of event listeners??
 // - dynamic updates for jQuery listeners will be awful. watch('length') technically works...
 // - source links should work even without script panel
-// - fix derived listeners on Google Code?
-//  - one listener is "function() { otherfunction(arguments); }"
-//  - another has two steps of indirection, and the second is non-trivial... TODO: see if any is a library
+// - derived listeners on Google Code:
+//  - one listener is "function(ev) { otherfunction(ev); }"
+//  - another has two steps of indirection, and the second is very non-trivial (jQuery-like)...
 
 // Testing TODO:
 // - disabling event listener, event handlers, attribute event handlers
@@ -63,7 +66,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     name: "html-events",
     title: Locale.$STR("events.Events"),
     parentPanel: "html",
-    // XXX: What about a11y...
     order: 4,
 
     template: domplate(
@@ -97,7 +99,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         categoryTag:
             DIV({"class": "listenerCategory"},
-                // XXX collapsible headers or something
                 H2({"class": "listenerCategoryHeader"}, "$category.type"),
                 FOR("listener", "$category.list",
                     TAG("$listenerTag", {listener: "$listener"})
@@ -429,7 +430,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
-    // XXX This is almost identical to code in css/computedPanel,
+    // XXX(simon): This is almost identical to code in css/computedPanel,
     // css/selectorPanel and js/breakpoints - we should share it somehow.
     toggleGroup: function(node)
     {
@@ -442,6 +443,11 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             Dom.scrollTo(node, this.panelNode, null,
                 node.offsetHeight > this.panelNode.clientHeight || titleAtTop ? "top" : "bottom");
         }
+    },
+
+    refresh: function()
+    {
+        this.updateSelection(this.selection);
     },
 
     onClick: function(event)
@@ -463,6 +469,17 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             this.toggleDisableRow(row);
             Events.cancelEvent(event);
         }
+    },
+
+    getContextMenuItems: function()
+    {
+        return [
+            {
+                label: "Refresh",
+                tooltiptext: "panel.tip.Refresh",
+                command: this.refresh.bind(this)
+            }
+        ];
     },
 });
 
@@ -498,8 +515,6 @@ function categorizeListenerList(list)
 
 // ********************************************************************************************* //
 // Registration
-
-// XXX detect Eventbug
 
 Firebug.registerPanel(EventsPanel);
 
