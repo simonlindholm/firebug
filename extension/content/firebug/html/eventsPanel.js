@@ -74,7 +74,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             DIV(
                 DIV({"class": "listenersNonInherited",
                         "aria-label": Locale.$STR("a11y.labels.event_listeners")},
-                    TAG("$sectionTag", {object: "$element", list: "$own"})
+                    TAG("$sectionTag", {object: "$element", inherited: "false", list: "$own", baseElement: "$element"})
                 ),
                 DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
@@ -84,7 +84,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                                 SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                                 TAG("$section.tag", {object: "$section.object"})
                             ),
-                            TAG("$sectionTag", {object: "$section.object", list: "$section.list"})
+                            TAG("$sectionTag", {object: "$section.object", inherited: "$section.inherited", list: "$section.list", baseElement: "$element"})
                         )
                     )
                  )
@@ -93,7 +93,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         sectionTag:
             DIV({"class": "listenerSection", role: "group", _sectionTarget: "$object"},
                 FOR("category", "$list",
-                    TAG("$categoryTag", {category: "$category"})
+                    TAG("$categoryTag", {category: "$category", inherited: "$inherited", baseElement: "$baseElement"})
                 )
             ),
 
@@ -101,7 +101,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             DIV({"class": "listenerCategory"},
                 H2({"class": "listenerCategoryHeader"}, "$category.type"),
                 FOR("listener", "$category.list",
-                    TAG("$listenerTag", {listener: "$listener"})
+                    TAG("$listenerTag", {listener: "$listener", inherited: "$inherited", baseElement: "$baseElement"})
                 )
             ),
 
@@ -113,7 +113,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", "hidden": "$listener|notCapturing"}, "C"), // XXX
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
-                FOR("derivedListener", "$listener.derivedListeners",
+                FOR("derivedListener", "$listener,$inherited,$baseElement|getDerivedListeners",
                     DIV({"class": "listenerLine derivedListener"},
                         SPAN({"class": "listenerIndent", "role": "presentation"}),
                         TAG(FirebugReps.Func.tag, {object: "$derivedListener.func"}),
@@ -129,6 +129,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         notCapturing: function(listener)
         {
             return !listener.capturing;
+        },
+
+        getDerivedListeners: function(listener, inherited, baseElement)
+        {
+            return listener.derivedListeners.filter(function(li)
+            {
+                return (!inherited || !li.shouldShow || li.shouldShow(baseElement));
+            });
         }
     }),
 
@@ -224,7 +232,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var derivedF = DebuggerLib.unwrapDebuggeeValue(dderivedF);
         if (typeof derivedF !== "function")
             return null;
-        return [derivedF];
+        return [{func: derivedF}];
     },
 
     getDerivedJqueryListeners: function(target, type, env, funcName, src)
@@ -250,11 +258,48 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
             var ret = [];
             for (var i = 0; i < listeners.length; i++)
-                ret.push(listeners[i].handler);
+            {
+                var e = listeners[i];
+                var listener = {
+                    func: e.handler
+                };
+
+                if (e.selector)
+                {
+                    // XXX test if this works with older jQuery versions and "live" / "delegate"
+                    listener.shouldShow = function(e, needsToMatch)
+                    {
+                        try
+                        {
+                            // XXX test against the whole chain
+                            var needsContext = e.needsContext;
+                            if (needsContext === undefined)
+                            {
+                                var reNeedsContext = (jq.expr && jq.expr.match && jq.expr.match.needsContext);
+                                needsContext = (reNeedsContext && reNeedsContext.test(e.selector));
+                            }
+                            if (needsContext)
+                                return (jq(e.selector, target).index(needsToMatch) !== -1);
+                            else
+                                return (jq.find(e.selector, target, null, [needsToMatch]).length !== 0);
+                            return r;
+                        }
+                        catch (exc)
+                        {
+                            if (FBTrace.DBG_EVENTS)
+                                FBTrace.sysout("events.getDerivedJqueryListeners.shouldShow threw an error", exc);
+                            return true;
+                        }
+                    }.bind(this, e);
+                }
+                ret.push(listener);
+            }
             return ret;
         }
         catch (exc)
         {
+            if (FBTrace.DBG_EVENTS)
+                FBTrace.sysout("events.getDerivedJqueryListeners threw an error", exc);
             return null;
         }
     },
@@ -275,8 +320,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             li.derivedListeners = derived.map(function(listener)
             {
                 return {
-                    func: listener,
-                    sourceLink: Firebug.SourceFile.findSourceForFunction(listener, context)
+                    func: listener.func,
+                    shouldShow: listener.shouldShow,
+                    sourceLink: Firebug.SourceFile.findSourceForFunction(listener.func, context)
                 };
             });
 
@@ -332,16 +378,30 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     {
         var ret = [];
         var context = this.context;
-        function addSection(label, object, list, opened)
+        var emptyTag = this.template.emptyTag;
+        function addSection(object, list, inherited, opened)
         {
             if (!list.length)
                 return;
-            var rep = object && Firebug.getRep(object, context);
+
+            var label = (inherited ? Locale.$STR("events.ListenersFrom") : ""), tag;
+            if (typeof object === "string")
+            {
+                label = object;
+                tag = emptyTag;
+            }
+            else
+            {
+                var rep = Firebug.getRep(object, context);
+                tag = rep.shortTag || rep.tag;
+            }
+
             ret.push({
                 label: label,
-                tag: rep && (rep.shortTag || rep.tag),
+                tag: tag,
                 object: object,
                 list: categorizeListenerList(list),
+                inherited: inherited,
                 opened: opened
             });
         }
@@ -353,7 +413,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             {
                 return Events.eventTypeBubbles(listener.type);
             });
-            addSection(Locale.$STR("events.ListenersFrom"), element, added, true);
+            var inherited = (element !== baseElement);
+            addSection(element, added, inherited, true);
             element = element.parentElement;
         }
 
@@ -384,13 +445,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             }
         }
 
-        addSection(Locale.$STR("events.ListenersFrom"), doc, docInherited, true);
-        addSection(Locale.$STR("events.ListenersFrom"), win, winInherited, true);
-        addSection("", doc, docOwn, false);
-        addSection("", win, winOwn, false);
+        addSection(doc, docInherited, true, true);
+        addSection(win, winInherited, true, true);
+        addSection(doc, docOwn, false, false);
+        addSection(win, winOwn, false, false);
         var apc = win && win.applicationCache;
+        // XXX localize
         if (apc)
-            addSection("Application Cache", undefined, this.getListeners(apc), false);
+            addSection("Application Cache", this.getListeners(apc), false, false);
 
         return ret;
     },
