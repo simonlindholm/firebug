@@ -15,8 +15,7 @@
 // - capture
 // - a11y
 // Functionality:
-// - jQuery event listeners have to be filtered by descendant selector... (try on kth social)
-//  - probably only filter inherited listeners
+// - jQuery event listeners have to be filtered by descendant selector...
 // - detect eventbug (maybe)
 // - mutation observers
 
@@ -32,6 +31,7 @@
 
 // Testing TODO:
 // - disabling event listener, event handlers, attribute event handlers
+// - jquery filtering by descendant selector
 // - duplicate listeners and such
 // - derived listeners (jQuery and others)
 // - capture, source links
@@ -78,13 +78,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 ),
                 DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
-                        DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.opened"},
+                        DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.inherits"},
                             H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
                                 DIV({"class": "twisty", role: "presentation"}),
                                 SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                                 TAG("$section.tag", {object: "$section.object"})
                             ),
-                            TAG("$sectionTag", {object: "$section.object", inherited: "$section.inherited", list: "$section.list", baseElement: "$element"})
+                            TAG("$sectionTag", {object: "$section.object", inherits: "$section.inherits", list: "$section.list", baseElement: "$element"})
                         )
                     )
                  )
@@ -93,7 +93,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         sectionTag:
             DIV({"class": "listenerSection", role: "group", _sectionTarget: "$object"},
                 FOR("category", "$list",
-                    TAG("$categoryTag", {category: "$category", inherited: "$inherited", baseElement: "$baseElement"})
+                    TAG("$categoryTag", {category: "$category", inherits: "$inherits", baseElement: "$baseElement"})
                 )
             ),
 
@@ -101,7 +101,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             DIV({"class": "listenerCategory"},
                 H2({"class": "listenerCategoryHeader"}, "$category.type"),
                 FOR("listener", "$category.list",
-                    TAG("$listenerTag", {listener: "$listener", inherited: "$inherited", baseElement: "$baseElement"})
+                    TAG("$listenerTag", {listener: "$listener", inherits: "$inherits", baseElement: "$baseElement"})
                 )
             ),
 
@@ -113,7 +113,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", "hidden": "$listener|notCapturing"}, "C"), // XXX
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
-                FOR("derivedListener", "$listener,$inherited,$baseElement|getDerivedListeners",
+                FOR("derivedListener", "$listener,$inherits,$baseElement|getDerivedListeners",
                     DIV({"class": "listenerLine derivedListener"},
                         SPAN({"class": "listenerIndent", "role": "presentation"}),
                         TAG(FirebugReps.Func.tag, {object: "$derivedListener.func"}),
@@ -131,11 +131,15 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             return !listener.capturing;
         },
 
-        getDerivedListeners: function(listener, inherited, baseElement)
+        getDerivedListeners: function(listener, inherits, baseElement)
         {
+            // For objects/listener types not in the inheritance chain, show all listeners.
+            if (!inherits)
+                return listener.derivedListeners;
+
             return listener.derivedListeners.filter(function(li)
             {
-                return (!inherited || !li.shouldShow || li.shouldShow(baseElement));
+                return (!li.shouldShow || li.shouldShow(baseElement));
             });
         }
     }),
@@ -269,9 +273,26 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     // XXX test if this works with older jQuery versions and "live" / "delegate"
                     listener.shouldShow = function(e, needsToMatch)
                     {
+                        // When showing the listeners of the inspected object, show even its
+                        // jQuery descendant listeners.
+                        // XXX should we really do this?
+                        if (target === needsToMatch)
+                            return true;
+
                         try
                         {
-                            // XXX test against the whole chain
+                            // Only show this listener if jQuery runs it on this node, i.e., if the
+                            // element or some ancestor of it matches the listener selector.
+                            var global = Cu.getGlobalForObject(jq);
+                            var elements = Cu.createArrayIn(global), elementSet = new Set();
+                            var cur = needsToMatch;
+                            while (cur)
+                            {
+                                elements.push(cur);
+                                elementSet.add(cur);
+                                cur = cur.parentNode;
+                            }
+
                             var needsContext = e.needsContext;
                             if (needsContext === undefined)
                             {
@@ -279,10 +300,15 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                                 needsContext = (reNeedsContext && reNeedsContext.test(e.selector));
                             }
                             if (needsContext)
-                                return (jq(e.selector, target).index(needsToMatch) !== -1);
-                            else
-                                return (jq.find(e.selector, target, null, [needsToMatch]).length !== 0);
-                            return r;
+                            {
+                                // Handle selectors like "> a".
+                                return (jq(e.selector, target).filter(function()
+                                {
+                                    return elementSet.has(this);
+                                }) !== -1);
+                            }
+
+                            return (jq.find(e.selector, target, null, elements).length !== 0);
                         }
                         catch (exc)
                         {
@@ -379,12 +405,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var ret = [];
         var context = this.context;
         var emptyTag = this.template.emptyTag;
-        function addSection(object, list, inherited, opened)
+        function addSection(object, list, inherits)
         {
             if (!list.length)
                 return;
 
-            var label = (inherited ? Locale.$STR("events.ListenersFrom") : ""), tag;
+            var label = (inherits && object !== baseElement ? Locale.$STR("events.ListenersFrom") : "");
+            var tag;
             if (typeof object === "string")
             {
                 label = object;
@@ -401,8 +428,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 tag: tag,
                 object: object,
                 list: categorizeListenerList(list),
-                inherited: inherited,
-                opened: opened
+                inherits: inherits
             });
         }
 
@@ -413,8 +439,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             {
                 return Events.eventTypeBubbles(listener.type);
             });
-            var inherited = (element !== baseElement);
-            addSection(element, added, inherited, true);
+            addSection(element, added, true);
             element = element.parentElement;
         }
 
@@ -445,14 +470,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             }
         }
 
-        addSection(doc, docInherited, true, true);
-        addSection(win, winInherited, true, true);
-        addSection(doc, docOwn, false, false);
-        addSection(win, winOwn, false, false);
+        addSection(doc, docInherited, true);
+        addSection(win, winInherited, true);
+        addSection(doc, docOwn, false);
+        addSection(win, winOwn, false);
         var apc = win && win.applicationCache;
         // XXX localize
         if (apc)
-            addSection("Application Cache", this.getListeners(apc), false, false);
+            addSection("Application Cache", this.getListeners(apc), false);
 
         return ret;
     },
