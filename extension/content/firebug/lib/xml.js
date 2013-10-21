@@ -51,6 +51,11 @@ var isElementXHTML = Xml.isElementXHTML = function(node)
     return node.nodeName != node.nodeName.toUpperCase() && node.namespaceURI == 'http://www.w3.org/1999/xhtml';
 };
 
+Xml.isElementHTMLOrXHTML = function(node)
+{
+    return node.namespaceURI == "http://www.w3.org/1999/xhtml";
+};
+
 var isElementMathML = Xml.isElementMathML = function(node)
 {
     return node.namespaceURI == 'http://www.w3.org/1998/Math/MathML';

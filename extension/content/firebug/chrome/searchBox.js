@@ -143,6 +143,7 @@ Firebug.Search = Obj.extend(Firebug.Module,
         if (immediate)
         {
             var found = panel.search(value, reverse);
+            panel.searchText = value;
             if (!found && value)
                this.onNotFound();
 
@@ -157,8 +158,6 @@ Firebug.Search = Obj.extend(Firebug.Module,
                 Css.removeClass(panelNode, "searching");
             }
 
-            panel.searchText = value;
-
             return found;
         }
         else
@@ -168,8 +167,14 @@ Firebug.Search = Obj.extend(Firebug.Module,
             panelNode.searchTimeout = setTimeout(function()
             {
                 var found = panel.search(value, reverse);
+                panel.searchText = value;
                 if (!found && value)
-                    Firebug.Search.onNotFound(value);
+                {
+                    var ignore = panel.shouldIgnoreIntermediateSearchFailure;
+                    if (ignore && ignore.call(panel, value))
+                        return;
+                    sBox.onNotFound();
+                }
 
                 if (value)
                 {
@@ -182,7 +187,6 @@ Firebug.Search = Obj.extend(Firebug.Module,
                     Css.removeClass(panelNode, "searching");
                 }
 
-                panel.searchText = value;
                 searchBox.status = (found ? "found" : "notfound");
                 sBox.setPlaceholder();
 
