@@ -609,7 +609,7 @@ function JSAutoCompleter(textBox, completionBox, options)
             {
                 // If completions have been hidden, show them again.
                 this.hide();
-                this.complete(context);
+                this.complete(context, true);
             }
 
             if (this.completions && !this.isPopupOpen())
