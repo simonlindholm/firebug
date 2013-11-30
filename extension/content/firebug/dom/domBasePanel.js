@@ -267,9 +267,7 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Panel,
                 );
             }
 
-            var isDomMemeber = Dom.isDOMMember(rowObject, rowName);
-
-            if (isWatch || (member.deletable && !isStackFrame && !isDomMemeber))
+            if (isWatch || (member.deletable && !isStackFrame))
             {
                 items.push(
                     {
@@ -282,7 +280,8 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Panel,
                 );
             }
 
-            if (!isDomMemeber && member && member.breakable)
+            var isDomMember = Dom.isDOMMember(rowObject, rowName);
+            if (!isDomMember && member.breakable)
             {
                 var bps = this.context.dom.breakpoints;
                 var hasBreakpoint = bps.findBreakpoint(rowObject, rowName);
@@ -527,12 +526,17 @@ Firebug.DOMBasePanel.prototype = Obj.extend(Panel,
         {
             var member = row.domObject;
             var object = member.object;
+            var name = member.name;
 
             if (member.deletable)
             {
                 try
                 {
-                    delete object[member.name];
+                    while (object && !Obj.contentObjectHasOwnProperty(object, name))
+                        object = Object.getPrototypeOf(object);
+
+                    if (object)
+                        delete object[name];
                 }
                 catch (exc)
                 {
