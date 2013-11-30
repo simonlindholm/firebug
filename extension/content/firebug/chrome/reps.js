@@ -1843,9 +1843,6 @@ FirebugReps.Event = domplate(Rep,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     tag:
-        TAG("$copyEventTag", {object: "$object|copyEvent"}),
-
-    copyEventTag:
         OBJECTLINK("$object|summarizeEvent"),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -1865,16 +1862,11 @@ FirebugReps.Event = domplate(Rep,
         return info.join("");
     },
 
-    copyEvent: function(event)
-    {
-        return new Dom.EventCopy(event);
-    },
-
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     supportsObject: function(object, type)
     {
-        return object instanceof window.Event || object instanceof Dom.EventCopy;
+        return object instanceof window.Event;
     },
 
     getTitle: function(event, context)
