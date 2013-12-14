@@ -15,16 +15,11 @@
 
 #fbPanelBar1 toolbarbutton {
     color: #000000;
-    font-size: 12.5px;
+    font-size: 12.3px;
 }
 
 #fbCommandEditorHistoryButton[disabled="true"] {
     color: graytext;
-}
-
-#fbPanelSplitter > #fbPanelSplitterBox,
-#fbPanelBar2-tabBox {
-    height: 32px;
 }
 
 #fbCommandArrow {
@@ -41,10 +36,6 @@
 
 #fbToggleCommandEditorBox {
     margin-bottom: 1px;
-}
-
-#fbCommandToolbar {
-    height: 31px;
 }
 
 panelTab {
