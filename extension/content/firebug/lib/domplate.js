@@ -33,6 +33,15 @@ function DomplateLoop()
 var womb = null;
 var uid = 0;
 
+function clone(obj) {
+    var ret = Object.create(Object.getPrototypeOf(obj));
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop))
+            ret[prop] = obj[prop];
+    }
+    return ret;
+}
+
 // xxxHonza: the only global should be Firebug object.
 var domplate = function()
 {
@@ -45,16 +54,13 @@ var domplate = function()
         var val = lastSubject[name];
         if (isTag(val))
         {
-            if (val.tag.subject)
-            {
-                // Clone the entire domplate tag, e.g. DIV(), that is derived from
-                // an existing template. This allows to hold correct 'subject'
-                // reference that is used when executing callbacks implemented by
-                // templates. Note that 'subject' points to the current template object.
-                // See issue: http://code.google.com/p/fbug/issues/detail?id=4425
-                lastSubject[name] = val = copyObject({}, val);
-                val.tag = copyObject({}, val.tag);
-            }
+            // Clone the entire domplate tag, e.g. DIV(), that is derived from
+            // an existing template. This allows to hold correct 'subject'
+            // reference that is used when executing callbacks implemented by
+            // templates. Note that 'subject' points to the current template object.
+            // See issue: http://code.google.com/p/fbug/issues/detail?id=4425
+            lastSubject[name] = val = clone(val);
+            val.tag = clone(val.tag);
             val.tag.subject = lastSubject;
         }
     }
