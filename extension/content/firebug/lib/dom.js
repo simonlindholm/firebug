@@ -74,6 +74,17 @@ Dom.getAncestorByTagName = function(node, tagName)
     return null;
 };
 
+Dom.getTopAncestorByTagName = function(node, tagName)
+{
+    var topNode = node;
+    for (var parent = node; parent; parent = parent.parentNode)
+    {
+        if (parent.localName && parent.tagName.toLowerCase() == tagName)
+            topNode = parent;
+    }
+    return topNode;
+};
+
 /* @Deprecated  Use native Firefox: node.getElementsByClassName(names).item(0) */
 Dom.getElementByClass = function(node, className)  // className, className, ...
 {
@@ -158,6 +169,18 @@ Dom.getNonFrameBody = function(elt)
     return (body.localName && body.localName.toUpperCase() === "FRAMESET") ? null : body;
 }
 
+/**
+ * @return {@Boolean} true if the given element is currently attached to the document.
+ */
+Dom.isAttached = function(element)
+{
+    var doc = element.ownerDocument;
+    if (!doc)
+        return false;
+
+    return doc.contains(element);
+};
+
 // ********************************************************************************************* //
 // DOM Modification
 
@@ -169,7 +192,11 @@ Dom.insertAfter = function(newNode, referenceNode)
 
 Dom.addScript = function(doc, id, src)
 {
-    var element = doc.createElementNS("http://www.w3.org/1999/xhtml", "html:script");
+    var element = doc.getElementById(id);
+    if (element)
+        return element;
+
+    element = doc.createElementNS("http://www.w3.org/1999/xhtml", "html:script");
     element.setAttribute("type", "text/javascript");
     element.setAttribute("id", id);
 
@@ -186,10 +213,13 @@ Dom.addScript = function(doc, id, src)
     {
         // See issue 1079, the svg test case gives this error
         if (FBTrace.DBG_ERRORS)
+        {
             FBTrace.sysout("lib.addScript doc has no documentElement (" +
                 doc.readyState + ") " + doc.location, doc);
+        }
         return;
     }
+
     return element;
 };
 
@@ -859,7 +889,7 @@ Dom.getDOMMembers = function(object)
 
     if (object instanceof Window)
         { return domMemberCache.Window; }
-    else if (object instanceof Document || object instanceof XMLDocument)
+    else if (object instanceof Document)
         { return domMemberCache.Document; }
     else if (object instanceof Location)
         { return domMemberCache.Location; }
@@ -901,6 +931,8 @@ Dom.getDOMMembers = function(object)
         { return domMemberCache.Node; }
     else if (object instanceof Event || object instanceof Dom.EventCopy)
         { return domMemberCache.Event; }
+    else if (Array.isArray(object))
+        { return domMemberCache.Array; }
 
     return null;
 };
@@ -1697,6 +1729,7 @@ domMemberMap.Window =
 
     "speechSynthesis",
     "requestAnimationFrame",
+    "cancelAnimationFrame",
 ];
 
 domMemberMap.Location =
@@ -2455,6 +2488,11 @@ domMemberMap.Event =
     "stopPropagation"
 ];
 
+domMemberMap.Array = Object.getOwnPropertyNames(Array.prototype).filter(function(name)
+{
+    return name !== "length";
+});
+
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 Dom.domConstantMap =
@@ -2753,6 +2791,16 @@ Dom.domInlineEventHandlersMap =
     "onmozpointerlockchange": 1,
     "onmozpointerlockerror": 1,
     "onuserproximity": 1,
+    "ongotpointercapture": 1,
+    "onlostpointercapture": 1,
+    "onpointercancel": 1,
+    "onpointerdown": 1,
+    "onpointerenter": 1,
+    "onpointerleave": 1,
+    "onpointermove": 1,
+    "onpointerout": 1,
+    "onpointerover": 1,
+    "onpointerup": 1,
     "onwheel": 1
 };
 

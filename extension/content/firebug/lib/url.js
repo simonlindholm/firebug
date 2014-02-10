@@ -3,8 +3,11 @@
 define([
     "firebug/lib/trace",
     "firebug/lib/string",
+    "firebug/lib/options",
 ],
-function (FBTrace, Str) {
+function (FBTrace, Str, Options) {
+
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
@@ -138,13 +141,7 @@ Url.isSystemURL = function(url)
         return true;
     else if (url.substr(0, 16) == "chrome://firebug")
         return true;
-    else if (url  == "XPCSafeJSObjectWrapper.cpp")
-        return true;
     else if (url.substr(0, 6) == "about:")
-        return true;
-    else if (url.indexOf("firebug-service.js") != -1)
-        return true;
-    else if (url.indexOf("/modules/debuggerHalter.js") != -1)
         return true;
     else
         return false;
@@ -502,7 +499,8 @@ Url.parseURLEncodedText = function(text, noLimit)
         }
     }
 
-    params.sort(function(a, b) { return a.name <= b.name ? -1 : 1; });
+    if (Options.get("netSortPostParameters"))
+        params.sort((a, b) => { return a.name <= b.name ? -1 : 1; });
 
     return params;
 };

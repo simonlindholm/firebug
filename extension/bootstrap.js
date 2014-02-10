@@ -10,10 +10,8 @@ const Cu = Components.utils;
 // List of firebug modules that must be loaded at startup and unloaded on shutdown.
 // !important every new module loaded with Cu.import must be added here
 var FIREBUG_MODULES = [
-    "resource://firebug/debuggerHalter.js",
     "resource://firebug/fbtrace.js",
     "resource://firebug/firebug-http-observer.js",
-    "resource://firebug/firebug-service.js",
     "resource://firebug/firebug-trace-service.js",
     "resource://firebug/gcli.js",
     "resource://firebug/loader.js",
@@ -63,6 +61,10 @@ function startup(params, reason)
     //register extensions
     FirebugLoader.startup();
 
+    // Load server side in case we are in the server mode.
+    if (loadServer())
+        return;
+
     // Load Firebug into all existing browser windows.
     var enumerator = Services.wm.getEnumerator("navigator:browser");
     while (enumerator.hasMoreElements())
@@ -82,6 +84,9 @@ function shutdown(params, reason)
     if (reason == APP_SHUTDOWN)
         return;
 
+    // Shutdown the server (in case we are in server mode).
+    unloadServer();
+
     // Remove "new window" listener.
     Services.obs.removeObserver(windowWatcher, "chrome-document-global-created");
 
@@ -97,12 +102,6 @@ function shutdown(params, reason)
 
     // Unregister all GCLI commands
     FirebugGCLICommands.shutdown();
-
-    // xxxHonza: I think this shouldn't be here (perhaps in firebug-service.js)
-    // Shutdown Firebug's JSD debugger service.
-    var fbs = Cu.import("resource://firebug/firebug-service.js", {}).fbs;
-    fbs.disableDebugger();
-    fbs.shutdown();
 
     // remove default preferences
     PrefLoader.clearDefaultPrefs();
@@ -136,5 +135,50 @@ var windowWatcher =
         }, false);
     }
 };
+
+// ********************************************************************************************* //
+// Server
+
+var serverScope = {};
+
+function loadServer()
+{
+    // If Firebug is running in server mode, load the server module
+    // and skip the UI overlays.
+    var prefDomain = "extensions.firebug";
+    var serverMode = PrefLoader.getPref(prefDomain, "serverMode");
+
+    try
+    {
+        if (serverMode)
+        {
+            var event =
+            {
+                notify: function(timer)
+                {
+                    Services.scriptloader.loadSubScript(
+                        "chrome://firebug/content/server/main.js",
+                        serverScope);
+                }
+            }
+
+            // xxxHonza: hack, must be removed.
+            var timer = Cc["@mozilla.org/timer;1"].createInstance(Ci.nsITimer);
+            timer.initWithCallback(event, 2000, Ci.nsITimer.TYPE_ONE_SHOT);
+        }
+    }
+    catch (e)
+    {
+        Cu.reportError(e);
+    }
+
+    return serverMode;
+}
+
+function unloadServer()
+{
+    if (serverScope.FirebugServer)
+        serverScope.FirebugServer.shutdown();
+}
 
 // ********************************************************************************************* //

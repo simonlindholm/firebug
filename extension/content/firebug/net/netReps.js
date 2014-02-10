@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/eventSource",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/chrome/firefox",
@@ -21,7 +22,8 @@ define([
     "firebug/net/netUtils",
     "firebug/net/netProgress",
     "firebug/lib/http",
-    "firebug/js/breakpoint",
+    "firebug/chrome/rep",
+    "firebug/debugger/breakpoints/breakpointModule",
     "firebug/net/xmlViewer",
     "firebug/net/svgViewer",
     "firebug/net/jsonViewer",
@@ -32,13 +34,13 @@ define([
     "firebug/console/errors",
     "firebug/net/netMonitor"
 ],
-function(Obj, Firebug, Firefox, Domplate, Locale, Events, Options, Url, Css, Dom, Win, Search, Str,
-    Json, Arr, ToggleBranch, DragDrop, NetUtils, NetProgress, Http) {
-
-with (Domplate) {
+function(EventSource, Obj, Firebug, Firefox, Domplate, Locale, Events, Options, Url, Css, Dom,
+    Win, Search, Str, Json, Arr, ToggleBranch, DragDrop, NetUtils, NetProgress, Http, Rep) {
 
 // ********************************************************************************************* //
 // Constants
+
+var {domplate, FOR, TAG, DIV, SPAN, TD, TR, TH, TABLE, THEAD, TBODY, P, CODE, PRE, A, IFRAME} = Domplate;
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -55,7 +57,7 @@ const reSplitIP = /^(\d+)\.(\d+)\.(\d+)\.(\d+):(\d+)$/;
 /**
  * @domplate Represents a template that is used to render basic content of the net panel.
  */
-Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetRequestTable = domplate(Rep, new EventSource(),
 {
     inspectable: false,
 
@@ -118,8 +120,8 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
                             Locale.$STR("net.header.Remote IP")
                         )
                     ),
-                    TD({id: "netTimeCol", width: "53%", "class": "netHeaderCell a11yFocus",
-                        "role": "columnheader"},
+                    TD({id: "netTimeCol", width: "53%", "class": "netHeaderCell netHeaderSorted a11yFocus sortedAscending",
+                        "role": "columnheader", "aria-sort": "ascending"},
                         DIV({"class": "netHeaderCellBox",
                             title: Locale.$STR("net.header.Timeline Tooltip")},
                             Locale.$STR("net.header.Timeline")
@@ -404,7 +406,7 @@ Firebug.NetMonitor.NetRequestTable = domplate(Firebug.Rep, new Firebug.Listener(
 /**
  * @domplate Represents a template that is used to render net panel entries.
  */
-Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetRequestEntry = domplate(Rep, new EventSource(),
 {
     fileTag:
         FOR("file", "$files",
@@ -733,7 +735,7 @@ Firebug.NetMonitor.NetRequestEntry = domplate(Firebug.Rep, new Firebug.Listener(
 
 // ********************************************************************************************* //
 
-Firebug.NetMonitor.NetPage = domplate(Firebug.Rep,
+Firebug.NetMonitor.NetPage = domplate(Rep,
 {
     separatorTag:
         TR({"class": "netRow netPageSeparatorRow"},
@@ -797,7 +799,7 @@ Firebug.NetMonitor.NetPage = domplate(Firebug.Rep,
  * @domplate Represents a template that is used to render detailed info about a request.
  * This template is rendered when a request is expanded.
  */
-Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoBody = domplate(Rep, new EventSource(),
 {
     tag:
         DIV({"class": "netInfoBody", _repObject: "$file"},
@@ -1284,7 +1286,7 @@ Firebug.NetMonitor.NetInfoBody = domplate(Firebug.Rep, new Firebug.Listener(),
  * @domplate Represents posted data within request info (the info, which is visible when
  * a request entry is expanded. This template renders content of the Post tab.
  */
-Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoPostData = domplate(Rep, new EventSource(),
 {
     // application/x-www-form-urlencoded
     paramsTable:
@@ -1297,6 +1299,9 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
                             Locale.$STR("net.label.Parameters"),
                             SPAN({"class": "netInfoPostContentType"},
                                 "application/x-www-form-urlencoded"
+                            ),
+                            A({"class": "netPostParameterSort", onclick: "$onChangeSort"},
+                                "$object|getLabel"
                             )
                         )
                     )
@@ -1415,6 +1420,13 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
             )
         ),
 
+    getLabel: function(object)
+    {
+        return Options.get("netSortPostParameters") ?
+            Locale.$STR("netParametersDoNotSort") :
+            Locale.$STR("netParametersSortAlphabetically");
+    },
+
     getParamValueIterator: function(param)
     {
         return Firebug.NetMonitor.NetInfoBody.getParamValueIterator(param);
@@ -1422,6 +1434,8 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
 
     render: function(context, parentNode, file)
     {
+        Dom.clearNode(parentNode);
+
         var text = NetUtils.getPostText(file, context, true);
         if (text == undefined)
             return;
@@ -1470,7 +1484,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
         if (!params || !params.length)
             return;
 
-        var paramTable = this.paramsTable.append(null, parentNode);
+        var paramTable = this.paramsTable.append({object: null}, parentNode);
         var row = paramTable.getElementsByClassName("netInfoPostParamsTitle").item(0);
 
         Firebug.NetMonitor.NetInfoBody.headerDataTag.insertRows({headers: params}, row);
@@ -1576,7 +1590,21 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
         }
 
         return postData;
-    }
+    },
+    
+    onChangeSort: function(event)
+    {
+        var target = event.target;
+        var netInfoBox = Dom.getAncestorByClass(target, "netInfoBody");
+        var panel = Firebug.getElementPanel(netInfoBox);
+        var file = Firebug.getRepObject(netInfoBox);
+        var postText = netInfoBox.getElementsByClassName("netInfoPostText").item(0);
+
+        Options.togglePref("netSortPostParameters");
+        Firebug.NetMonitor.NetInfoPostData.render(panel.context, postText, file);
+
+        Events.cancelEvent(event);
+    },
 });
 
 // ********************************************************************************************* //
@@ -1585,7 +1613,7 @@ Firebug.NetMonitor.NetInfoPostData = domplate(Firebug.Rep, new Firebug.Listener(
  * @domplate Used within the Net panel to display raw source of request and response headers
  * as well as pretty-formatted summary of these headers.
  */
-Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener(),
+Firebug.NetMonitor.NetInfoHeaders = domplate(Rep, new EventSource(),
 {
     tag:
         DIV({"class": "netInfoHeadersTable", "role": "tabpanel"},
@@ -1770,7 +1798,7 @@ Firebug.NetMonitor.NetInfoHeaders = domplate(Firebug.Rep, new Firebug.Listener()
 /**
  * @domplate Represents a template for a pupup tip with detailed size info.
  */
-Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
+Firebug.NetMonitor.SizeInfoTip = domplate(Rep,
 {
     tag:
         TABLE({"class": "sizeInfoTip", "id": "fbNetSizeInfoTip", role:"presentation"},
@@ -1849,7 +1877,7 @@ Firebug.NetMonitor.SizeInfoTip = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.NetMonitor.ResponseSizeLimit = domplate(Firebug.Rep,
+Firebug.NetMonitor.ResponseSizeLimit = domplate(Rep,
 {
     tag:
         DIV({"class": "netInfoResponseSizeLimit"},
@@ -1881,4 +1909,4 @@ Firebug.registerRep(Firebug.NetMonitor.NetRequestTable);
 return Firebug.NetMonitor.NetRequestTable;
 
 // ********************************************************************************************* //
-}});
+});

@@ -1,45 +1,34 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/object",
     "firebug/firebug",
+    "firebug/lib/trace",
+    "firebug/lib/object",
     "firebug/lib/events",
-    "firebug/chrome/menu",
     "firebug/lib/dom",
     "firebug/lib/locale",
     "firebug/lib/css",
     "firebug/lib/options",
+    "firebug/chrome/module",
+    "firebug/chrome/menu",
+    "firebug/console/autoCompleter",
+    "firebug/editor/sourceEditor",
 ],
-function(Obj, Firebug, Events, Menu, Dom, Locale, Css, Options) {
+function(Firebug, FBTrace, Obj, Events, Dom, Locale, Css, Options, Module, Menu, AutoCompleter,
+    SourceEditor) {
+
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-var Cu = Components.utils;
-
-var MODE_JAVASCRIPT = "js";
-var CONTEXT_MENU = "";
-var TEXT_CHANGED = "";
-
-try
-{
-    // Introduced in Firefox 8
-    Cu["import"]("resource:///modules/source-editor.jsm");
-
-    MODE_JAVASCRIPT = SourceEditor.MODES.JAVASCRIPT;
-    CONTEXT_MENU = SourceEditor.EVENTS.CONTEXT_MENU;
-    TEXT_CHANGED = SourceEditor.EVENTS.TEXT_CHANGED;
-}
-catch (err)
-{
-    if (FBTrace.DBG_ERRORS)
-        FBTrace.sysout("commandEditor: EXCEPTION source-editors is not available!");
-}
+var CONTEXT_MENU = SourceEditor.Events.contextMenu;
+var TEXT_CHANGED = SourceEditor.Events.textChange;
 
 // ********************************************************************************************* //
 // Command Editor
 
-Firebug.CommandEditor = Obj.extend(Firebug.Module,
+Firebug.CommandEditor = Obj.extend(Module,
 {
     dispatchName: "commandEditor",
 
@@ -47,45 +36,43 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
 
     initialize: function()
     {
-        Firebug.Module.initialize.apply(this, arguments);
+        Module.initialize.apply(this, arguments);
 
         if (this.editor)
             return;
 
-        // The current implementation of the SourceEditor (based on Orion) doesn't
-        // support zooming. So, the TextEditor (based on textarea) can be used
-        // by setting extensions.firebug.enableOrion pref to false.
-        // See issue 5678
-        if (typeof(SourceEditor) != "undefined" && Options.get("enableOrion"))
-            this.editor = new SourceEditor();
-        else
-            this.editor = new TextEditor();
+        this.editor = new SourceEditor();
 
         var config =
         {
-            mode: MODE_JAVASCRIPT,
-            showLineNumbers: false,
-            theme: "chrome://firebug/skin/orion-firebug.css"
+            mode: "javascript",
+            lineNumbers: true,
+            readOnly: false,
+            gutters: [],
         };
 
-        // Custom shortcuts for Orion editor
-        config.keys = [{
-            action: "firebug-cmdEditor-execute",
-            code: KeyEvent.DOM_VK_RETURN,
-            accel: true,
-            callback: this.onExecute.bind(this),
-        },{
-            action: "firebug-cmdEditor-escape",
-            code: KeyEvent.DOM_VK_ESCAPE,
-            callback: this.onEscape.bind(this),
-        }];
+        // Custom shortcuts for source editor
+        config.extraKeys = {
+            "Ctrl-Enter": this.onExecute.bind(this),
+            "Esc": this.onEscape.bind(this),
+            "Ctrl-Space": this.autoComplete.bind(this, true),
+            "Tab": this.onTab.bind(this)
+        };
 
-        // Initialize Orion editor.
-        this.parent = document.getElementById("fbCommandEditor");
-        this.editor.init(this.parent, config, this.onEditorLoad.bind(this));
+        function browserLoaded(event)
+        {
+            var doc = event.target;
+            this.parent = doc.querySelector(".panelNode");
 
-        if (FBTrace.DBG_COMMANDEDITOR)
-            FBTrace.sysout("commandEditor: SourceEditor initialized");
+            // Initialize source editor.
+            this.editor.init(this.parent, config, this.onEditorLoad.bind(this));
+
+            if (FBTrace.DBG_COMMANDEDITOR)
+                FBTrace.sysout("commandEditor: SourceEditor initialized");
+        }
+
+        var browser = document.getElementById("fbCommandEditorBrowser");
+        Events.addEventListener(browser, "load", browserLoaded.bind(this), true);
     },
 
     shutdown: function()
@@ -110,7 +97,8 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
         this.editor.addEventListener(CONTEXT_MENU, this.onContextMenu);
         this.editor.addEventListener(TEXT_CHANGED, this.onTextChanged);
 
-        this.editor.setCaretOffset(this.editor.getCharCount());
+        var lastLineNo = this.editor.lastLineNo();
+        this.editor.setCursor(lastLineNo, this.editor.getCharCount(lastLineNo));
 
         Firebug.chrome.applyTextSize(Firebug.textSize);
 
@@ -137,6 +125,23 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
         return true;
     },
 
+    autoComplete: function(allowGlobal)
+    {
+        var context = Firebug.currentContext;
+        var out = {};
+        var hintFunction = AutoCompleter.codeMirrorAutoComplete
+            .bind(null, context, allowGlobal, out);
+        this.editor.autoComplete(hintFunction);
+        return out.attemptedCompletion;
+    },
+
+    onTab: function()
+    {
+        if (!this.editor.hasSelection() && this.autoComplete(false))
+            return;
+        this.editor.tab();
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Other Events
 
@@ -155,28 +160,18 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
 
     onContextMenu: function(event)
     {
+        Events.cancelEvent(event);
+
         var popup = document.getElementById("fbCommandEditorPopup");
         Dom.eraseNode(popup);
 
-        var items = Firebug.CommandEditor.getContextMenuItems();
+        var items = Firebug.CommandEditor.editor.getContextMenuItems();
         Menu.createMenuItems(popup, items);
 
         if (!popup.childNodes.length)
             return;
 
         popup.openPopupAtScreen(event.screenX, event.screenY, true);
-    },
-
-    getContextMenuItems: function()
-    {
-        var items = [];
-        items.push({label: Locale.$STR("Cut"), commandID: "cmd_cut"});
-        items.push({label: Locale.$STR("Copy"), commandID: "cmd_copy"});
-        items.push({label: Locale.$STR("Paste"), commandID: "cmd_paste"});
-        items.push({label: Locale.$STR("Delete"), commandID: "cmd_delete"});
-        items.push("-");
-        items.push({label: Locale.$STR("SelectAll"), commandID: "cmd_selectAll"});
-        return items;
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -190,7 +185,7 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
             this.ignoreChanges = true;
 
             if (this.editor)
-                this.editor.setText(text);
+                this.editor.setText(text, "js");
         }
         catch (err)
         {
@@ -212,6 +207,12 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
     {
         if (this.editor)
             this.editor.setSelection(start, end);
+    },
+
+    getSelection: function()
+    {
+        if (this.editor)
+            return this.editor.getSelection();
     },
 
     select: function()
@@ -262,18 +263,29 @@ Firebug.CommandEditor = Obj.extend(Firebug.Module,
 
     fontSizeAdjust: function(adjust)
     {
-        if (!this.editor || !this.editor._view)
+        if (!this.editor)
             return;
 
-        if (typeof(SourceEditor) != "undefined")
+        if (this.editor instanceof SourceEditor)
         {
-            // See issue 5488
-            // var doc = this.editor._view._frame.contentDocument;
+            // The source editor doesn't have to be initialized at this point.
+            if (!this.editor.isInitialized())
+            {
+                if (FBTrace.DBG_ERRORS)
+                    FBTrace.sysout("commandEditor.fontSizeAdjust; ERROR Not initialized yet");
+                return;
+            }
 
-            //doc.body.style.fontSizeAdjust = adjust;
+            var editorViewElement = this.editor.getViewElement();
+            editorViewElement.style.fontSizeAdjust = adjust;
+
+            // line-height also needs to be changed along with font adjusting
+            // to avoid overlapping lines.
+            editorViewElement.style.lineHeight = adjust * 2;
         }
         else
         {
+            // support for TextEditor, not used at the moment
             this.editor.textBox.style.fontSizeAdjust = adjust;
         }
     }
@@ -296,8 +308,8 @@ Firebug.CommandEditor.__defineSetter__("value", function(val)
 // Text Editor
 
 /**
- * A simple <textbox> element is used in environments where the Orion SourceEditor is not
- * available (such as SeaMonkey)
+ * A text editor based on a simple <textbox> element. Not currently used.
+ * TODO get rid of this if CodeMirror works well enough.
  */
 function TextEditor() {}
 TextEditor.prototype =
@@ -358,7 +370,7 @@ TextEditor.prototype =
         return this.textBox.value;
     },
 
-    setSelection: function(start, end)
+    setSelectionRange: function(start, end)
     {
         this.textBox.setSelectionRange(start, end);
     },

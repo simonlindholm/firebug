@@ -17,6 +17,10 @@ var Cu = Components.utils;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://firebug/fbtrace.js");
 
+// xxxHonza: why FBTrace is undefined?
+if (typeof(FBTrace) == "undefined")
+    FBTrace = {sysout: function() {}}
+
 // ********************************************************************************************* //
 // Module Loader implementation
 
@@ -88,7 +92,7 @@ var Loader =
             Cu.reportError(err);
 
             if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("mini-require; lookup " + err, err);
+                FBTrace.sysout("mini-require; EXCEPTION lookup " + err, err);
         }
     },
 
@@ -155,10 +159,11 @@ var Loader =
         var moduleName = parts.pop();
 
         var self = this;
+        var paths = this.config.paths;
         var resolved = parts.map(function(part)
         {
-            var alias = self.config.paths[part];
-            return alias ? alias : part;
+            // Use alias from config.paths if it's available.
+            return paths.hasOwnProperty(part) ? paths[part] : part;
         });
 
         var moduleUrl = resolved.join("/");

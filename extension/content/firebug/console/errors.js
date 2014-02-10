@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/module",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/chrome/reps",
@@ -9,9 +10,14 @@ define([
     "firebug/lib/css",
     "firebug/chrome/window",
     "firebug/lib/array",
-    "firebug/lib/string"
+    "firebug/lib/string",
+    "firebug/debugger/breakpoints/breakpointStore",
+    "firebug/console/errorMessageObj",
+    "firebug/lib/events",
+    "firebug/console/errorStackTraceObserver",
 ],
-function(Obj, Firebug, FirebugReps, Xpcom, Console, Css, Win, Arr, Str) {
+function(Module, Obj, Firebug, FirebugReps, Xpcom, Console, Css, Win, Arr, Str, BreakpointStore,
+    ErrorMessageObj, Eventsm, ErrorStackTraceObserver) {
 
 // ********************************************************************************************* //
 // Constants
@@ -46,8 +52,6 @@ const pointlessErrors =
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-Components.utils["import"]("resource://firebug/firebug-service.js");
-
 const consoleService = Xpcom.CCSV("@mozilla.org/consoleservice;1", "nsIConsoleService");
 const domWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
     .getInterface(Ci.nsIDOMWindowUtils);
@@ -55,25 +59,59 @@ const domWindowUtils = window.QueryInterface(Ci.nsIInterfaceRequestor)
 const wm = Xpcom.CCSV("@mozilla.org/appshell/window-mediator;1", "nsIWindowMediator");
 
 // ********************************************************************************************* //
+// Tracing
 
-var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
+var Trace = FBTrace.to("DBG_ERRORLOG");
+var TraceError = FBTrace.toError();
+
+// ********************************************************************************************* //
+
+/**
+ * @module
+ */
+var Errors = Firebug.Errors = Obj.extend(Module,
+/** @lends Errors */
 {
     dispatchName: "errors",
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // extends Module
+    // Initialization
+
+    initialize: function()
+    {
+        Firebug.Module.initialize.apply(this, arguments);
+    },
 
     shutdown: function()
     {
         // Make sure the error observer is removed.
         this.stopObserving();
 
-        Firebug.Module.shutdown.apply(this, arguments);
+        Module.shutdown.apply(this, arguments);
     },
 
     initContext: function(context)
     {
+        var tool = context.getTool("debugger");
+        tool.addListener(this);
+
         this.clear(context);
+    },
+
+    destroyContext: function(context, persistedState)
+    {
+        var tool = context.getTool("debugger");
+        tool.removeListener(this);
+
+        this.showCount(0);
+
+        if (FBTrace.DBG_ERRORLOG && FBTrace.DBG_CSS && "initTime" in this)
+        {
+            var deltaT = new Date().getTime() - this.initTime.getTime();
+
+            FBTrace.sysout("errors.destroyContext sheets: " + Css.totalSheets + " rules: " +
+                Css.totalRules + " time: " + deltaT);
+        }
     },
 
     showContext: function(browser, context)
@@ -86,19 +124,6 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
     {
         // If we ever get errors by window from Firefox we can cache by window.
         this.clear(context);
-    },
-
-    destroyContext: function(context, persistedState)
-    {
-        this.showCount(0);
-
-        if (FBTrace.DBG_ERRORLOG && FBTrace.DBG_CSS && "initTime" in this)
-        {
-            var deltaT = new Date().getTime() - this.initTime.getTime();
-
-            FBTrace.sysout("errors.destroyContext sheets: " + Css.totalSheets + " rules: " +
-                Css.totalRules + " time: " + deltaT);
-        }
     },
 
     updateOption: function(name, value)
@@ -366,7 +391,7 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
         var isJSError = category == "js" && !isWarning;
 
         // the sourceLine will cause the source to be loaded.
-        var error = new FirebugReps.ErrorMessageObj(object.errorMessage, object.sourceName,
+        var error = new ErrorMessageObj(object.errorMessage, object.sourceName,
             object.lineNumber, object.sourceLine, category, context, null);
 
         // Display column info only if it isn't zero.
@@ -379,6 +404,7 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
             correctLineNumbersOnExceptions(object, error);
         }
 
+        // xxxHonza: ErrorStackTraceObserver should be used to access the error stack trace.
         if (Firebug.errorStackTrace)
         {
             error.correctWithStackTrace(Firebug.errorStackTrace);
@@ -405,7 +431,7 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
         if (FBTrace.DBG_ERRORLOG)
             FBTrace.sysout("errors.observe delayed log to " + context.getName());
 
-        // report later to avoid loading sourceS
+        // report later to avoid loading sources
         context.throttle(this.delayedLogging, this, [msgId, context, error, context, className,
             false, true], true);
     },
@@ -659,10 +685,52 @@ var Errors = Firebug.Errors = Obj.extend(Firebug.Module,
             }
         }
 
-        var error = new FirebugReps.ErrorMessageObj(msg, sourceFile,
-            sourceLineNo, sourceLine, "error", context, null);
-        return error;
-    }
+        return new ErrorMessageObj(msg, sourceFile, sourceLineNo, sourceLine,
+            "error", context, null);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // DebuggerTool Listener
+
+    shouldBreakDebugger: function(context, event, packet)
+    {
+        // The logic is only interested in 'breakpoint' interrupts.
+        var type = packet.why.type;
+        if (type != "breakpoint")
+            return false;
+
+        var frame = context.stoppedFrame;
+        var errorBp = BreakpointStore.findBreakpoint(frame.href, frame.line - 1,
+            BreakpointStore.BP_ERROR);
+
+        Trace.sysout("Errors.shouldBreakDebugger; " + frame.href + " (" +
+            frame.line + ") " + (errorBp ? "error bp exists" : "no error bp"), packet);
+
+        // Break only if there is an error breakpoint (break == return true).
+        return (errorBp != null);
+    },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Error Breakpoints
+
+    setErrorBreakpoint: function(context, url, line)
+    {
+        Trace.sysout("errors.setErrorBreakpoint; " + url + " (" + line + ")");
+
+        BreakpointStore.addBreakpoint(url, line, null, BreakpointStore.BP_ERROR);
+    },
+
+    clearErrorBreakpoint: function(url, line)
+    {
+        Trace.sysout("errors.clearErrorBreakpoint; " + url + " (" + line + ")");
+
+        BreakpointStore.removeBreakpoint(url, line, BreakpointStore.BP_ERROR);
+    },
+
+    hasErrorBreakpoint: function(url, line)
+    {
+        return BreakpointStore.findBreakpoint(url, line, BreakpointStore.BP_ERROR) != null;
+    },
 });
 
 // ********************************************************************************************* //

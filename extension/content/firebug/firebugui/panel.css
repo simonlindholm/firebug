@@ -3,7 +3,9 @@
 @import "chrome://firebug/skin/panelbase.css";
 @import "chrome://firebug/skin/breakpoint.css";
 @import "chrome://firebug/skin/console.css";
+@import "chrome://firebug-os/skin/console.css";
 @import "chrome://firebug/skin/net.css";
+@import "chrome://firebug-os/skin/net.css";
 @import "chrome://firebug/skin/jsonViewer.css";
 @import "chrome://firebug/skin/fontViewer.css";
 @import "chrome://firebug/skin/html.css";
@@ -15,6 +17,7 @@
 @import "chrome://firebug/skin/callstack.css";
 @import "chrome://firebug/skin/layout.css";
 @import "chrome://firebug/skin/dom.css";
+@import "chrome://firebug/skin/watch.css";
 @import "chrome://firebug/skin/selectors.css";
 @import "chrome://firebug/skin/performanceTiming.css";
 @import "chrome://firebug/skin/tableRep.css";
@@ -22,3 +25,7 @@
 @import "chrome://firebug-os/skin/panel.css";
 @import "chrome://firebug/skin/timeInfoTip.css";
 @import "chrome://firebug/skin/panelNotification.css";
+
+/* JSD2 additions*/
+@import "chrome://firebug/skin/scriptPanel.css";
+@import "chrome://firebug/skin/callstackPanel.css";

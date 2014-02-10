@@ -1,7 +1,5 @@
 /* See license.txt for terms of usage */
 
-var Firebug = Firebug || {};
-
 // ********************************************************************************************* //
 
 /**
@@ -39,29 +37,32 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/trace/traceModule",
         "firebug/chrome/navigationHistory",
         "firebug/chrome/knownIssues",
-        "firebug/js/sourceFile",
         "firebug/chrome/shortcuts",
         "firebug/firefox/start-button/startButtonOverlay",
         "firebug/firefox/external-editors/externalEditors",
         "firebug/chrome/panelActivation",
+        "firebug/chrome/panelSelector",
         "firebug/chrome/tableRep",
         "firebug/html/htmlPanel",
         "firebug/html/eventsPanel",
+        "firebug/dom/domPanel",
         "firebug/dom/domSidePanel",
         "firebug/console/commandLinePopup",
+        "firebug/console/commandEditor",
+        "firebug/console/performanceTiming",
         "firebug/chrome/toggleSidePanels",
+        "firebug/console/consolePanel",
 
         // Commands
         "firebug/console/commands/lastCommandLineResult",
         "firebug/console/commands/useInCommandLine",
         "firebug/console/commands/getEventListeners",
+        "firebug/console/commands/eventMonitor",
 
         "firebug/accessible/a11y",
-        "firebug/js/scriptPanel",
-        "firebug/js/callstack",
         "firebug/console/consoleInjector",
         "firebug/net/spy",
-        "firebug/js/tabCache",
+        "firebug/net/tabCache",
         "firebug/chrome/activation",
         "firebug/css/stylePanel",
         "firebug/css/computedPanel",
@@ -70,6 +71,13 @@ Firebug.getModuleLoaderConfig = function(baseConfig)
         "firebug/css/selectorPanel",
         "firebug/console/errorMessageRep",
         "firebug/console/exceptionRep",
+
+        // Remoting
+        "firebug/remoting/connectionMenu",
+        "firebug/remoting/tabListMenu",
+
+        // JSD2
+        "firebug/debugger/main",
     ];
 
     return config;
@@ -110,10 +118,12 @@ Firebug.registerExtension = function(extName, extConfig)
     //config.paths[extName] = extName + "/content";
     config.paths[extName] = "chrome://" + extName + "/content";
 
+    var main = extConfig.main ? extConfig.main : "main";
+
     // Load main.js module (the entry point of the extension) and support for tracing.
     // All other extension modules should be loaded within "main" module.
     Firebug.require(config, [
-        extName + "/main",
+        extName + "/" + main,
         "firebug/lib/trace"
     ],
     function(Extension, FBTrace)
@@ -122,7 +132,7 @@ Firebug.registerExtension = function(extName, extConfig)
         {
             extConfig.app = Extension;
 
-            // Extension intialization procedure should be within this method (in main.js).
+            // Extension initialization procedure should be within this method (in main.js).
             if (Extension.initialize)
                 Extension.initialize();
 

@@ -23,9 +23,11 @@ body {
 .objectBox-stackFrame.hasTwisty,
 .objectBox-functionCall.hasTwisty,
 .netPageRow > .netCol > .netPageTitle,
+.cssComputedHeader > .twisty,
+.breakpointHeader > .twisty,
 .computedStyle.hasSelectors > .stylePropName,
 .cookieRow > .cookieNameCol > .cookieNameLabel {
-    background-image: url(chrome://firebug/skin/mac/twistyClosed.png);
+    background-image: url(chrome://firebug/skin/mac/twistyClosed.svg);
     background-repeat: no-repeat;
     background-position: 2px calc(0.5em - 3px);
 }
@@ -48,7 +50,7 @@ body {
 .breakpointBlock.opened > .breakpointHeader > .twisty,
 .computedStyle.hasSelectors.opened > .stylePropName,
 .cookieRow.opened > .cookieNameCol > .cookieNameLabel {
-    background-image: url(chrome://firebug/skin/mac/twistyOpen.png);
+    background-image: url(chrome://firebug/skin/mac/twistyOpen.svg);
 }
 
 /************************************************************************************************/
@@ -56,7 +58,7 @@ body {
 
 .infoTip,
 .fullPanelEditor {
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }
 
 /************************************************************************************************/
@@ -83,7 +85,7 @@ body {
 .arrayLeftBracket,
 .arrayRightBracket,
 .arrayComma {
-      font-family: Monaco, monospace;
+      font-family: monospace;
 }
 
 /************************************************************************************************/
@@ -93,7 +95,7 @@ body {
 .docType,
 .breakpointCode .nodeBox.containerNodeBox,
 .breakpointCode .nodeLabel {
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }
 
 .nodeBox.selected > .nodeLabel > .nodeLabelBox,
@@ -128,7 +130,7 @@ body {
 /* CSS panel */
 
 .cssRule {
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }
 
 /************************************************************************************************/
@@ -136,26 +138,26 @@ body {
 
 .editor-watchNewRow,
 .editor-memberRow {
-    font-family: Monaco, monospace !important;
+    font-family: monospace !important;
 }
 
 .watchRow > .memberLabelCell {
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }
 
 .closeButton {
     display: inline-block;
     width: 13px;
     height: 13px;
-    background: url(chrome://firebug/skin/mac/close.png) no-repeat 0 0;
+    background: url(chrome://firebug/skin/mac/close.svg) no-repeat 0 0;
 }
 
 .closeButton:hover {
-    background-position: 0 -13px;
+    filter: url(resource://firebugui/filters.svg#darken);
 }
 
 .closeButton:hover:active {
-    background-position: 0 -26px;
+    filter: url(resource://firebugui/filters.svg#deepDarken);
 }
 
 /************************************************************************************************/
@@ -163,5 +165,5 @@ body {
 
 .useA11y .a11yShowFullLabel,
 .netInfoText {
-    font-family: Monaco, monospace;
+    font-family: monospace;
 }

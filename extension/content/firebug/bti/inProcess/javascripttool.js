@@ -4,18 +4,19 @@
 // Module
 
 define([
+    "firebug/chrome/module",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/tool",
-    "firebug/js/debugger",  // TODO firefox/jsdebugger
+    "firebug/debugger/debugger",  // TODO firefox/jsdebugger
     "arch/compilationunit"
 ],
-function initializeJavaScriptTool(Obj, Firebug, Tool, JSDebugger, CompilationUnit) {
+function initializeJavaScriptTool(Module, Obj, Firebug, Tool, JSDebugger, CompilationUnit) {
 
 // ********************************************************************************************* //
 // Implement JavaScript tool for Firefox inProcess
 
-var JavaScriptTool = Obj.extend(Firebug.Module,
+var JavaScriptTool = Obj.extend(Module,
 {
     dispatchName: "JavaScriptTool",
 });
@@ -160,7 +161,10 @@ JavaScriptTool.onActivateTool = function(toolname, active)
         {
             context.invalidatePanels('script');
         });
-        JavaScriptTool.asTool.setActive(active);
+
+        if (JavaScriptTool.asTool)
+            JavaScriptTool.asTool.setActive(active);
+
         Firebug.connection.dispatch("onDebuggerEnabled", [active]);
     }
 },

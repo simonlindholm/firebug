@@ -1,31 +1,29 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/object",
-    "firebug/lib/options",
     "firebug/firebug",
-    "firebug/lib/dom",
-    "firebug/chrome/firefox",
+    "firebug/lib/object",
+    "firebug/chrome/module",
 ],
-function(Obj, Options, Firebug, Dom, Firefox) {
+function(Firebug, Obj, Module) {
 
-// ********************************************************************************************* //
-// Constants
-
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+"use strict";
 
 // ********************************************************************************************* //
 
 /**
- * This module is responsible for various hacky solutions related to known issues.
+ * This module is responsible for various hacks and workarounds related
+ * to known platform issues.
  */
-Firebug.KnownIssues = Obj.extend(Firebug.Module,
-/** @lends Firebug.KnownIssues */
+var KnownIssues = Obj.extend(Module,
+/** @lends KnownIssues */
 {
     dispatchName: "knownIssues",
 
-    initialize: function()
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Initialization
+
+    initialize: function(prefDomain, prefNames)
     {
         // TODO: put any workarounds here
     },
@@ -34,9 +32,9 @@ Firebug.KnownIssues = Obj.extend(Firebug.Module,
 // ********************************************************************************************* //
 // Registration
 
-Firebug.registerModule(Firebug.KnownIssues);
+Firebug.registerModule(KnownIssues);
 
-return Firebug.KnownIssues;
+return KnownIssues;
 
 // ********************************************************************************************* //
 });

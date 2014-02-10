@@ -3,11 +3,10 @@
 define([
     "firebug/firebug",
     "firebug/lib/trace",
-    "firebug/js/sourceFile",
-    "firebug/js/sourceLink",
-    "firebug/chrome/reps",
+    "firebug/debugger/script/sourceFile",
+    "firebug/debugger/script/sourceLink",
 ],
-function(Firebug, FBTrace, SourceFile, SourceLink, FirebugReps) {
+function(Firebug, FBTrace, SourceFile, SourceLink) {
 
 "use strict"
 
@@ -16,6 +15,9 @@ function(Firebug, FBTrace, SourceFile, SourceLink, FirebugReps) {
 
 var Cc = Components.classes;
 var Ci = Components.interfaces;
+
+var TraceError = FBTrace.toError();
+var Trace = FBTrace.to("DBG_ERRORLOG");
 
 // ********************************************************************************************* //
 // ErrorMessageObj Implementation
@@ -36,30 +38,40 @@ function ErrorMessageObj(message, href, lineNo, source, category, context,
     this.trace = trace;
     this.msgId = msgId || this.getId();
     this.colNumber = colNumber;
-};
+}
 
 ErrorMessageObj.prototype =
-/** @lends ErrorMessageObj */
 {
-    getSourceLine: function()
+    getSourceLine: function(callback)
     {
-        if (this.href === null)
-            return "";
+        if (this.source)
+            return this.source;
 
-        if (!this.context.sourceCache)
+        var sourceFile = SourceFile.getSourceFileByUrl(this.context, this.href);
+        if (!sourceFile)
         {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("reps.ErrorMessageObj.getSourceLine; ERROR no source cache!");
-            return "";
+            TraceError.sysout("errorMessageObj.getSourceLine; ERROR no source file! " +
+                this.href);
+            return;
         }
 
-        return this.context.sourceCache.getLine(this.href, this.lineNo);
+        this.sourceLoading = true;
+
+        var self = this;
+        sourceFile.getLine(this.lineNo - 1, function(line)
+        {
+            self.sourceLoading = false;
+            self.source = line;
+
+            if (callback)
+                callback(line);
+        });
     },
 
     getSourceLink: function()
     {
         var ext = this.category == "css" ? "css" : "js";
-        return this.lineNo ? new SourceLink.SourceLink(this.href, this.lineNo, ext,
+        return this.lineNo ? new SourceLink(this.href, this.lineNo, ext,
             null, null, this.colNumber) : null;
     },
 
@@ -95,9 +107,6 @@ ErrorMessageObj.prototype =
 
 // ********************************************************************************************* //
 // Registration
-
-// xxxHonza: back compatibility
-FirebugReps.ErrorMessageObj = ErrorMessageObj;
 
 return ErrorMessageObj;
 

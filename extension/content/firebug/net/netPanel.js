@@ -10,7 +10,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/options",
     "firebug/lib/url",
-    "firebug/js/sourceLink",
+    "firebug/debugger/script/sourceLink",
     "firebug/lib/http",
     "firebug/lib/css",
     "firebug/lib/dom",
@@ -23,16 +23,17 @@ define([
     "firebug/net/netUtils",
     "firebug/net/netProgress",
     "firebug/css/cssReps",
+    "firebug/debugger/breakpoints/breakpointConditionEditor",
     "firebug/net/timeInfoTip",
     "firebug/chrome/panelNotification",
-    "firebug/js/breakpoint",
+    "firebug/chrome/activablePanel",
+    "firebug/chrome/searchBox",
     "firebug/net/xmlViewer",
     "firebug/net/svgViewer",
     "firebug/net/jsonViewer",
     "firebug/net/fontViewer",
     "firebug/chrome/infotip",
     "firebug/css/cssPanel",
-    "firebug/chrome/searchBox",
     "firebug/console/errors",
     "firebug/net/netMonitor",
     "firebug/net/netReps",
@@ -40,13 +41,13 @@ define([
 ],
 function(Obj, Firebug, Firefox, Domplate, Xpcom, Locale,
     Events, Options, Url, SourceLink, Http, Css, Dom, Win, Search, Str,
-    Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip, TimeInfoTip,
-    PanelNotification) {
-
-with (Domplate) {
+    Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip, ConditionEditor, TimeInfoTip,
+    PanelNotification, ActivablePanel, SearchBox) {
 
 // ********************************************************************************************* //
 // Constants
+
+var {domplate, DIV, TR, P, UL, A} = Domplate;
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -61,12 +62,12 @@ var NetRequestTable = Firebug.NetMonitor.NetRequestTable;
 
 /**
  * @panel Represents a Firebug panel that displays info about HTTP activity associated with
- * the current page. This class is derived from <code>Firebug.ActivablePanel</code> in order
+ * the current page. This class is derived from {@ActivablePanel} in order
  * to support activation (enable/disable). This allows to avoid (performance) expensive
  * features if the functionality is not necessary for the user.
  */
 function NetPanel() {}
-NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
+NetPanel.prototype = Obj.extend(ActivablePanel,
 /** @lends NetPanel */
 {
     name: panelName,
@@ -87,7 +88,7 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
         this.queue = [];
         this.onContextMenu = Obj.bind(this.onContextMenu, this);
 
-        Firebug.ActivablePanel.initialize.apply(this, arguments);
+        ActivablePanel.initialize.apply(this, arguments);
 
         // Listen for set filters, so the panel is properly updated when needed
         Firebug.NetMonitor.addListener(this);
@@ -96,7 +97,8 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
     destroy: function(state)
     {
         Firebug.NetMonitor.removeListener(this);
-        Firebug.ActivablePanel.destroy.apply(this, arguments);
+
+        ActivablePanel.destroy.apply(this, arguments);
     },
 
     initializeNode : function()
@@ -107,7 +109,7 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
         this.resizeEventTarget = Firebug.chrome.$('fbContentBox');
         Events.addEventListener(this.resizeEventTarget, "resize", this.onResizer, true);
 
-        Firebug.ActivablePanel.initializeNode.apply(this, arguments);
+        ActivablePanel.initializeNode.apply(this, arguments);
     },
 
     destroyNode : function()
@@ -115,7 +117,7 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
         Events.removeEventListener(this.panelNode, "contextmenu", this.onContextMenu, false);
         Events.removeEventListener(this.resizeEventTarget, "resize", this.onResizer, true);
 
-        Firebug.ActivablePanel.destroyNode.apply(this, arguments);
+        ActivablePanel.destroyNode.apply(this, arguments);
     },
 
     loadPersistedContent: function(state)
@@ -186,7 +188,7 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     savePersistedContent: function(state)
     {
-        Firebug.ActivablePanel.savePersistedContent.apply(this, arguments);
+        ActivablePanel.savePersistedContent.apply(this, arguments);
 
         state.pageTitle = NetUtils.getPageTitle(this.context);
     },
@@ -284,12 +286,12 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (header)
             return NetRequestTable;
 
-        return Firebug.ActivablePanel.getPopupObject.apply(this, arguments);
+        return ActivablePanel.getPopupObject.apply(this, arguments);
     },
 
     supportsObject: function(object, type)
     {
-        return ((object instanceof SourceLink.SourceLink && object.type == "net") ? 2 : 0);
+        return ((object instanceof SourceLink && object.type == "net") ? 2 : 0);
     },
 
     getOptionsMenuItems: function()
@@ -748,13 +750,13 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
     getSearchOptionsMenuItems: function()
     {
         return [
-            Firebug.Search.searchOptionMenu("search.Case_Sensitive", "searchCaseSensitive",
+            SearchBox.searchOptionMenu("search.Case_Sensitive", "searchCaseSensitive",
                 "search.tip.Case_Sensitive"),
-            //Firebug.Search.searchOptionMenu("search.net.Headers", "netSearchHeaders"),
-            //Firebug.Search.searchOptionMenu("search.net.Parameters", "netSearchParameters"),
-            Firebug.Search.searchOptionMenu("search.Use_Regular_Expression",
+            //SearchBox.searchOptionMenu("search.net.Headers", "netSearchHeaders"),
+            //SearchBox.searchOptionMenu("search.net.Parameters", "netSearchParameters"),
+            SearchBox.searchOptionMenu("search.Use_Regular_Expression",
                 "searchUseRegularExpression", "search.tip.Use_Regular_Expression"),
-            Firebug.Search.searchOptionMenu("search.net.Response_Bodies", "netSearchResponseBody",
+            SearchBox.searchOptionMenu("search.net.Response_Bodies", "netSearchResponseBody",
                 "search.net.tip.Response_Bodies")
         ];
     },
@@ -771,12 +773,12 @@ NetPanel.prototype = Obj.extend(Firebug.ActivablePanel,
         var row;
         if (this.currentSearch && text == this.currentSearch.text)
         {
-            row = this.currentSearch.findNext(true, false, reverse, Firebug.Search.isCaseSensitive(text));
+            row = this.currentSearch.findNext(true, false, reverse, SearchBox.isCaseSensitive(text));
         }
         else
         {
             this.currentSearch = new NetPanelSearch(this);
-            row = this.currentSearch.find(text, reverse, Firebug.Search.isCaseSensitive(text));
+            row = this.currentSearch.find(text, reverse, SearchBox.isCaseSensitive(text));
         }
 
         if (row)
@@ -1612,7 +1614,7 @@ var NetPanelSearch = function(panel, rowFinder)
         if (!file)
             return;
 
-        var scanRE = Firebug.Search.getTestingRegex(this.text);
+        var scanRE = SearchBox.getTestingRegex(this.text);
         if (scanRE.test(file.responseText))
         {
             if (!Css.hasClass(this.currentRow, "opened"))
@@ -1623,9 +1625,10 @@ var NetPanelSearch = function(panel, rowFinder)
             Firebug.NetMonitor.NetInfoBody.selectTabByName(netInfoBox, "Response");
 
             // Before the search is started, the new content must be properly
-            // layouted within the page. The layout is executed by reading
+            // re-layouted within the page. The layout is executed by reading
             // the following property.
-            // xxxHonza: This workaround can be removed as soon as #488427 is fixed.
+            // xxxHonza: Force layout to be executed (workaround)
+            // This workaround can be removed as soon as #488427 is fixed.
             doc.body.offsetWidth;
         }
     },
@@ -1670,10 +1673,10 @@ var NetPanelSearch = function(panel, rowFinder)
 
 Firebug.NetMonitor.ConditionEditor = function(doc)
 {
-    Firebug.Breakpoint.ConditionEditor.apply(this, arguments);
+    ConditionEditor.apply(this, arguments);
 };
 
-Firebug.NetMonitor.ConditionEditor.prototype = domplate(Firebug.Breakpoint.ConditionEditor.prototype,
+Firebug.NetMonitor.ConditionEditor.prototype = domplate(ConditionEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {
@@ -1720,4 +1723,4 @@ Firebug.registerPanel(NetPanel);
 return Firebug.NetMonitor;
 
 // ********************************************************************************************* //
-}});
+});

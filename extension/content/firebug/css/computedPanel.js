@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/panel",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/domplate",
@@ -11,7 +12,7 @@ define([
     "firebug/lib/xml",
     "firebug/lib/url",
     "firebug/lib/array",
-    "firebug/js/sourceLink",
+    "firebug/debugger/script/sourceLink",
     "firebug/chrome/menu",
     "firebug/lib/options",
     "firebug/lib/string",
@@ -20,52 +21,35 @@ define([
     "firebug/css/cssReps",
     "firebug/css/loadHandler",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Css, Dom, Xml, Url, Arr, SourceLink, Menu,
+function(Panel, Obj, Firebug, Domplate, Locale, Events, Css, Dom, Xml, Url, Arr, SourceLink, Menu,
     Options, Str, Persist, CSSModule, CSSInfoTip, LoadHandler) {
 
-with (Domplate) {
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-const Cu = Components.utils;
+var Cu = Components.utils;
 
-const statusClasses = ["cssUnmatched", "cssParentMatch", "cssOverridden", "cssBestMatch"];
+var statusClasses = ["cssUnmatched", "cssParentMatch", "cssOverridden", "cssBestMatch"];
 
-// xxxHonza: shell we move this mess to lib?
+var {domplate, FOR, TAG, DIV, H1, SPAN, TABLE, TBODY, TR, TD} = Domplate;
+
+//********************************************************************************************* //
+//Module Implementation
+
 try
 {
-    // Firefox <= 22
-    // xxxHonza: broken by: https://bugzilla.mozilla.org/show_bug.cgi?id=855914
-    var scope = {};
-    Cu.import("resource:///modules/devtools/CssLogic.jsm", scope);
-    var CssLogic = scope.CssLogic;
+    // Firefox 24
+    // waiting for: https://bugzilla.mozilla.org/show_bug.cgi?id=867595
+    var scope = {}
+    Cu.import("resource://gre/modules/devtools/Loader.jsm", scope);
+    var {CssLogic} = scope.devtools.require("devtools/styleinspector/css-logic");
 }
-catch (err)
+catch (e)
 {
-    try
-    {
-        // Firefox 23
-        var scope = {}
-        Cu.import("resource:///modules/devtools/gDevTools.jsm", scope);
-        var {CssLogic} = scope.devtools.require("devtools/styleinspector/css-logic");
-    }
-    catch (err)
-    {
-        try
-        {
-            // Firefox 24
-            // waiting for: https://bugzilla.mozilla.org/show_bug.cgi?id=867595
-            var scope = {}
-            Cu.import("resource://gre/modules/devtools/Loader.jsm", scope);
-            var {CssLogic} = scope.devtools.require("devtools/styleinspector/css-logic");
-        }
-        catch (e)
-        {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("cssComputedPanel: EXCEPTION CssLogic is not available! " + e, e);
-        }
-    }
+    if (FBTrace.DBG_ERRORS)
+        FBTrace.sysout("cssComputedPanel: EXCEPTION CssLogic is not available! " + e, e);
 }
 
 // ********************************************************************************************* //
@@ -73,13 +57,13 @@ catch (err)
 
 function CSSComputedPanel() {}
 
-CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
+CSSComputedPanel.prototype = Obj.extend(Panel,
 {
     template: domplate(
     {
         computedStylesTag:
             DIV({"class": "a11yCSSView", role: "list", "aria-label":
-                Locale.$STR("aria.labels.computed styles")}),
+                Locale.$STR("a11y.labels.computed styles")}),
 
         groupedStylesTag:
             FOR("group", "$groups",
@@ -125,7 +109,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                             TD({"class": "selectorName", role: "presentation"},
                                 "$selector.selector.text"),
                             TD({"class": "propValue", role: "presentation"},
-                                SPAN({"class": "stylePropValue"}, "$selector.value|formatValue")),
+                                SPAN({"class": "stylePropValue"}, "$selector|getAuthoredValue|formatValue")),
                             TD({"class": "styleSourceLink", role: "presentation"},
                                 TAG(FirebugReps.SourceLink.tag, {object: "$selector|getSourceLink"})
                             )
@@ -155,16 +139,26 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
             var line = selector.ruleLine;
             var selectorDef = selector.selector;
             // Dev tools API starting from FF 26.0 renamed the "_cssRule" property to "cssRule"
-            // (see issue 6609)  
-            // TODO: This check can be removed as soon as FF 26.0 is the minimum supported version 
+            // (see issue 6609)
+            // TODO: This check can be removed as soon as FF 26.0 is the minimum supported version
             var rule = selectorDef.cssRule ?
                 selectorDef.cssRule.domRule : selectorDef._cssRule._domRule;
 
             var instance = Css.getInstanceForStyleSheet(rule.parentStyleSheet);
-            var sourceLink = line != -1 ? new SourceLink.SourceLink(href, line, "css",
+            var sourceLink = line != -1 ? new SourceLink(href, line, "css",
                 rule, instance) : null;
 
             return sourceLink;
+        },
+
+        getAuthoredValue: function(selector)
+        {
+            if (Options.get("colorDisplay") !== "authored")
+                return selector.value;
+
+            var style = selector.selector.cssRule.domRule.style;
+            return style.getAuthoredPropertyValue ?
+                style.getAuthoredPropertyValue(selector.property) : selector.value;
         },
 
         formatValue: function(value)
@@ -424,7 +418,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
 
         this.onClick = Obj.bind(this.onClick, this);
 
-        Firebug.Panel.initialize.apply(this, arguments);
+        Panel.initialize.apply(this, arguments);
     },
 
     destroy: function(state)
@@ -437,21 +431,21 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
 
         Firebug.CSSModule.removeListener(this);
 
-        Firebug.Panel.destroyNode.apply(this, arguments);
+        Panel.destroyNode.apply(this, arguments);
     },
 
     initializeNode: function(oldPanelNode)
     {
         Events.addEventListener(this.panelNode, "click", this.onClick, false);
 
-        Firebug.Panel.initializeNode.apply(this, arguments);
+        Panel.initializeNode.apply(this, arguments);
     },
 
     destroyNode: function()
     {
         Events.removeEventListener(this.panelNode, "click", this.onClick, false);
 
-        Firebug.Panel.destroyNode.apply(this, arguments);
+        Panel.destroyNode.apply(this, arguments);
     },
 
     show: function(state)
@@ -639,7 +633,12 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
             var propInfo = Firebug.getRepObject(target);
 
             var prop = propInfo.property;
-            var value = formatColor(propInfo.value);
+
+            var style = propInfo.selector ? propInfo.selector.cssRule.domRule.style : null;
+            var value = (Options.get("colorDisplay") === "authored" && style &&
+                    style.getAuthoredPropertyValue) ?
+                style.getAuthoredPropertyValue(propInfo.property) : formatColor(propInfo.value);
+
             var cssValue;
 
             if (prop == "font" || prop == "font-family")
@@ -673,7 +672,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
                     return CSSInfoTip.populateColorInfoTip(infoTip, cssValue.value);
 
                 case "url":
-                    if (Css.isImageRule(Xml.getElementSimpleType(propInfo), prop))
+                    if (Css.isImageProperty(prop))
                     {
                         var baseURL = typeof propInfo.href == "object" ? propInfo.href.href : propInfo.href;
                         if (!baseURL)
@@ -707,7 +706,7 @@ CSSComputedPanel.prototype = Obj.extend(Firebug.Panel,
     onCSSInsertRule: function(styleSheet, cssText, ruleIndex)
     {
         // Force update, this causes updateSelection to be called.
-        // See {@link Firebug.Panel.select}
+        // See {@link Panel.select}
         this.selection = null;
     },
 
@@ -908,4 +907,4 @@ Firebug.registerPanel(CSSComputedPanel);
 return CSSComputedPanel;
 
 // ********************************************************************************************* //
-}});
+});

@@ -2,6 +2,7 @@
 <!-- See license.txt for terms of usage -->
 
 <?xml-stylesheet href="chrome://firebug/skin/cookies/cookies.css"?>
+<?xml-stylesheet href="chrome://firebug-os/skin/cookies.css"?>
 <?xml-stylesheet href="chrome://firebug/content/cookies/cookies.css"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
@@ -19,12 +20,12 @@
     </commandset>
 
     <keyset id="mainKeyset">
-        <key id="key_firebug_removeAllCookies" key="o" modifiers="control,shift" command="cmd_firebug_cookieRemoveAll" class="fbOnlyKey"/>
+        <key id="key_firebug_removeAllCookies" key="o" modifiers="accel,shift" command="cmd_firebug_cookieRemoveAll" class="fbOnlyKey"/>
     </keyset>
 
     <!-- Firebug toolbar -->
     <toolbar id="fbToolbar" align="center">
-        <hbox id="fbToolbarInner" insertbefore="fbDetachButton" flex="1" align="center">
+        <hbox id="fbToolbarInner" insertbefore="fbDetachButton">
 
             <!-- Console toolbar -->
             <hbox id="fbConsoleButtons">

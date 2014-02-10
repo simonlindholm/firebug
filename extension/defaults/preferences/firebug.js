@@ -15,7 +15,7 @@ pref("extensions.firebug.previousPlacement", 0);
 pref("extensions.firebug.showErrorCount", true);
 pref("extensions.firebug.viewPanelOrient", false);
 pref("extensions.firebug.allPagesActivation", "none");
-pref("extensions.firebug.hiddenPanels", "");
+pref("extensions.firebug.hiddenPanels2", "");
 pref("extensions.firebug.panelTabMinWidth", 50);
 pref("extensions.firebug.sourceLinkLabelWidth", 17);
 pref("extensions.firebug.currentVersion", "");
@@ -27,8 +27,12 @@ pref("extensions.firebug.showBreakNotification", true);
 pref("extensions.firebug.stringCropLength", 50);
 pref("extensions.firebug.hideDefaultInspector", false);
 pref("extensions.firebug.delayLoad", true);
-pref("extensions.firebug.enableOrion", true);
 pref("extensions.firebug.clearAnnotationsConfirmation", true);
+
+// Remoting
+pref("extensions.firebug.serverHost", "localhost");
+pref("extensions.firebug.serverPort", 5999);
+pref("extensions.firebug.serverMode", false);
 
 // Command line
 pref("extensions.firebug.commandEditor", false);
@@ -64,6 +68,7 @@ pref("extensions.firebug.consoleFilterTypes", "all");
 pref("extensions.firebug.preferJSDSourceLinks", false);
 pref("extensions.firebug.commandLineShowCompleterPopup", true);
 pref("extensions.firebug.console.groupLogMessages", true);
+pref("extensions.firebug.consoleCommandHistoryMax", 1000);
 
 // HTML
 pref("extensions.firebug.showCommentNodes", false);
@@ -84,7 +89,7 @@ pref("extensions.firebug.onlyShowAppliedStyles", false);
 pref("extensions.firebug.showUserAgentCSS", false);
 pref("extensions.firebug.expandShorthandProps", false);
 pref("extensions.firebug.cssEditMode", "Source");
-pref("extensions.firebug.colorDisplay", "hex");
+pref("extensions.firebug.colorDisplay", "authored");
 
 // Computed
 pref("extensions.firebug.computedStylesDisplay", "grouped");
@@ -98,6 +103,8 @@ pref("extensions.firebug.scriptsFilter", "all");
 pref("extensions.firebug.replaceTabs", 4);
 pref("extensions.firebug.filterSystemURLs", true);
 pref("extensions.firebug.maxScriptLineLength", 10000);
+pref("extensions.firebug.breakOnExceptions", false);
+pref("extensions.firebug.ignoreCaughtExceptions", false);
 
 // Stack
 pref("extensions.firebug.omitObjectPathStack", false);
@@ -136,6 +143,7 @@ pref("extensions.firebug.netResponseHeadersVisible", true);
 pref("extensions.firebug.netRequestHeadersVisible", true);
 pref("extensions.firebug.netCachedHeadersVisible", false);
 pref("extensions.firebug.netPostRequestHeadersVisible", false);
+pref("extensions.firebug.netSortPostParameters", true);
 
 // JSON Preview
 pref("extensions.firebug.sortJsonPreview", false);
@@ -148,22 +156,22 @@ pref("extensions.firebug.cache.responseLimit", 5242880);
 pref("extensions.firebug.externalEditors", "");
 
 // Keyboard
-pref("extensions.firebug.key.shortcut.reenterCommand", "control shift e");
+pref("extensions.firebug.key.shortcut.reenterCommand", "accel shift e");
 pref("extensions.firebug.key.shortcut.toggleInspecting", "accel shift c");
 pref("extensions.firebug.key.shortcut.toggleQuickInfoBox", "accel shift i");
 pref("extensions.firebug.key.shortcut.toggleProfiling", "accel shift p");
 pref("extensions.firebug.key.shortcut.focusCommandLine", "accel shift l");
 pref("extensions.firebug.key.shortcut.focusFirebugSearch", "accel f");
 pref("extensions.firebug.key.shortcut.focusWatchEditor", "accel shift n");
-pref("extensions.firebug.key.shortcut.focusLocation", "control shift VK_SPACE");
-pref("extensions.firebug.key.shortcut.nextObject", "control .");
-pref("extensions.firebug.key.shortcut.previousObject", "control ,");
+pref("extensions.firebug.key.shortcut.focusLocation", "accel shift VK_SPACE");
+pref("extensions.firebug.key.shortcut.nextObject", "accel .");
+pref("extensions.firebug.key.shortcut.previousObject", "accel ,");
 pref("extensions.firebug.key.shortcut.toggleFirebug", "VK_F12");
 pref("extensions.firebug.key.shortcut.closeFirebug", "shift VK_F12");
 pref("extensions.firebug.key.shortcut.detachFirebug", "accel VK_F12");
 pref("extensions.firebug.key.shortcut.leftFirebugTab", "accel shift VK_PAGE_UP");
 pref("extensions.firebug.key.shortcut.rightFirebugTab", "accel shift VK_PAGE_DOWN");
-pref("extensions.firebug.key.shortcut.previousFirebugTab", "control `");
+pref("extensions.firebug.key.shortcut.previousFirebugTab", "accel `");
 pref("extensions.firebug.key.shortcut.clearConsole", "accel shift r");
 pref("extensions.firebug.key.shortcut.navBack", "accel shift VK_LEFT");
 pref("extensions.firebug.key.shortcut.navForward", "accel shift VK_RIGHT");
@@ -175,3 +183,6 @@ pref("extensions.firebug.key.shortcut.toggleBreakOn", "accel alt b");
 
 // Accessibility
 pref("extensions.firebug.a11y.enable", false);
+
+// Known Issues
+pref("extensions.firebug.showSlowJSDMessage", true);

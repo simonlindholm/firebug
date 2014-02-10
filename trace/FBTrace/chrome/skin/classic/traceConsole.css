@@ -351,6 +351,27 @@
     color: rgb(170, 0, 241);
 }
 
+/* xxxHonza: hack should be part of Firebug */
+.DBG_DEBUGGERTOOL {
+    color: rgb(198, 78, 0);
+}
+
+.DBG_SCRIPTPANEL {
+    color: rgb(135, 0, 21);
+}
+
+.DBG_DEBUGGERCLIENT {
+    color: rgb(132, 0, 209);
+}
+
+.DBG_BREAKPOINTTOOL {
+    color: rgb(0, 163, 74);
+}
+
+.DBG_SOURCETOOL {
+    color: rgb(0, 95, 117);
+}
+
 /************************************************************************************************/
 
 #consoleToolbar toolbarbutton {

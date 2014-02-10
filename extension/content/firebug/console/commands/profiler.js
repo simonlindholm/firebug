@@ -1,94 +1,132 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/object",
     "firebug/firebug",
+    "firebug/lib/trace",
+    "firebug/lib/object",
     "firebug/lib/domplate",
-    "firebug/chrome/reps",
     "firebug/lib/locale",
-    "firebug/lib/wrapper",
     "firebug/lib/url",
-    "firebug/js/stackFrame",
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
     "firebug/lib/string",
-    "firebug/js/fbs",
+    "firebug/chrome/reps",
+    "firebug/chrome/module",
+    "firebug/chrome/rep",
+    "firebug/debugger/stack/stackFrame",
+    "firebug/debugger/script/sourceFile",
+    "firebug/console/profilerEngine",
+    "firebug/console/console",
+    "firebug/remoting/debuggerClient",
 ],
-function(Obj, Firebug, Domplate, FirebugReps, Locale, Wrapper, Url, StackFrame, Events,
-    Css, Dom, Str, FBS) {
+function(Firebug, FBTrace, Obj, Domplate, Locale, Url, Events, Css, Dom, Str,
+    FirebugReps, Module, Rep, StackFrame, SourceFile, ProfilerEngine, Console,
+    DebuggerClient) {
+
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-const Cc = Components.classes;
-const Ci = Components.interfaces;
+var {domplate, TAG, DIV, SPAN, TD, TR, TH, TABLE, THEAD, TBODY, P, UL, LI, A} = Domplate;
+
+var Trace = FBTrace.to("DBG_PROFILER");
+var TraceError = FBTrace.toError();
 
 // ********************************************************************************************* //
 // Profiler
 
-Firebug.Profiler = Obj.extend(Firebug.Module,
+/**
+ * @module The module implements profiling feature. Its implementation is based on
+ * {@link ProfilerEngine} that uses JSD2 Debugger API too hook function calls.
+ * The Script panel must be enabled in order to use the Profiler.
+ *
+ * xxxHonza: some logic related to profiling is in ConsolePanel and ConsoleExposed modules.
+ * It should be moved here, so the entire profiler implementation is embedded in one module.
+ */
+var Profiler = Obj.extend(Module,
+/** @lends Profiler */
 {
     dispatchName: "profiler",
 
     profilerEnabled: false,
 
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // Initialization
+
     initialize: function()
     {
+        Module.initialize.apply(this, arguments);
+
         Firebug.connection.addListener(this);
+        DebuggerClient.addListener(this);
     },
 
     shutdown: function()
     {
+        Module.shutdown.apply(this, arguments);
+
         Firebug.connection.removeListener(this);
+        DebuggerClient.removeListener(this);
     },
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     showContext: function(browser, context)
     {
         this.setEnabled(context);
     },
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-    // Activation
-
     showPanel: function(browser, panel)
     {
-        if (FBTrace.DBG_PROFILER)
-            FBTrace.sysout("Profiler.showPanel");
-        this.setEnabled();
-    },
+        Trace.sysout("Profiler.showPanel; panel: " + (panel ? panel.name : "null"));
 
-    setEnabled: function()
-    {
-        var context = Firebug.currentContext;
-        if (!context)
+        // The panel is null if disabled. But, if the Console panel is disabled we don't
+        // have to update the button.
+        if (!panel)
             return;
 
-        // The profiler is available only if the Script panel and Console are enabled
-        var enabled = context.isPanelEnabled("script") && context.isPanelEnabled("console");
+        this.setEnabled(panel.context);
+    },
 
-        if (enabled)
+    setEnabled: function(context)
+    {
+        if (context)
         {
-            // The profiler is available only if the Debugger is activated
-            var debuggerTool = Firebug.connection.getTool("script");
-            enabled = debuggerTool && debuggerTool.getActive();
+            // The profiler is available only if:
+            // 1) The Console panel is enabled
+            // 2) The Script panel is enabled
+            // 3) The thread actor is attached
+            var console = context.isPanelEnabled("console");
+            var script = context.isPanelEnabled("script");
+            var enabled = console && script && context.activeThread;
+
+            this.profilerEnabled = console && script && context.activeThread;
+        }
+        else
+        {
+            // If there is no current context, just disable the profiler.
+            this.profilerEnabled = false;
         }
 
-        this.profilerEnabled = enabled;
-
-        if (!enabled && this.isProfiling())
+        if (!this.profilerEnabled && this.isProfiling())
             this.stopProfiling(context);
 
         // Attributes must be modified on the <command> element. All toolbar buttons
         // and menuitems are hooked up to the command.
         Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling", "disabled",
-            enabled ? "false" : "true");
+            this.profilerEnabled ? "false" : "true");
 
         // Update the button's tooltip.
         var tooltipText = Locale.$STR("ProfileButton.Tooltip");
-        if (!enabled)
+
+        // If the Script panel needs to be enabled modify the tooltip to inform the user.
+        if (!this.profilerEnabled)
             tooltipText = Locale.$STRF("script.Script_panel_must_be_enabled", [tooltipText]);
-        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling", "tooltiptext", tooltipText);
+
+        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling",
+            "tooltiptext", tooltipText);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -99,16 +137,29 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
             this.stopProfiling(context, true);
     },
 
-    onDebuggerEnabled: function()
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+    // DebuggerClient Events
+
+    onThreadAttached: function(context, reload)
     {
-        this.setEnabled();
+        Trace.sysout("profiler.onThreadAttached; reload: " + reload);
+
+        this.setEnabled(context);
+    },
+
+    onThreadDetached: function(context)
+    {
+        Trace.sysout("profiler.onThreadDetached;");
+
+        if (this.isProfiling())
+            this.stopProfiling(context, true);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     toggleProfiling: function(context)
     {
-        if (FBS.profiling)
+        if (context.profiling)
             this.stopProfiling(context);
         else
             this.startProfiling(context);
@@ -116,12 +167,13 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 
     startProfiling: function(context, title)
     {
-        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling", "checked", "true");
-
-        if (FBS.profiling)
+        if (context.profiling)
             return;
 
-        FBS.startProfiling();
+        context.profiling = new ProfilerEngine(context);
+        context.profiling.startProfiling();
+
+        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleProfiling", "checked", "true");
 
         var originalTitle = title;
         var isCustomMessage = !!title;
@@ -133,12 +185,18 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         context.profileRow.originalTitle = originalTitle;
 
         Events.dispatch(this.fbListeners, "startProfiling", [context, originalTitle]);
-        Firebug.Console.addListener(this);
+        Console.addListener(this);
     },
 
     stopProfiling: function(context, cancelReport)
     {
-        var totalTime = FBS.stopProfiling();
+        if (!context.profiling)
+            return;
+
+        var totalTime = context.profiling.stopProfiling();
+
+        // If totalTime != -1 then it contains total time of the profiling session
+        // (from start to end of the first executed stack frame).
         if (totalTime == -1)
             return;
 
@@ -149,13 +207,15 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         else
             this.logProfileReport(context, cancelReport);
 
-        Firebug.Console.removeListener(this);
+        Console.removeListener(this);
 
         // stopProfiling event fired within logProfileReport
+        delete context.profiling;
     },
 
     isProfiling: function()
     {
+        // xxxHonza: the return value should be: context.profiling != null
         return (Firebug.chrome.getGlobalAttribute("cmd_firebug_toggleProfiling", "checked") === "true");
     },
 
@@ -167,11 +227,13 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         {
             title: title
         };
-        var row = Firebug.Console.openGroup(objects, context, "profile",
-            Firebug.Profiler.ProfileCaption, true, null, true);
+
+        var row = Console.openGroup(objects, context, "profile",
+            Profiler.ProfileCaption, true, null, true);
+
         Css.setClass(row, "profilerRunning");
 
-        Firebug.Console.closeGroup(context, true);
+        Console.closeGroup(context, true);
 
         return row;
     },
@@ -183,42 +245,37 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         var totalTime = 0;
 
         var sourceFileMap = context.sourceFileMap;
-        if (FBTrace.DBG_PROFILER)
-        {
-            for (var url in sourceFileMap)
-                FBTrace.sysout("logProfileReport: "+sourceFileMap[url]+"\n");
-        }
 
-        var jsd = Cc["@mozilla.org/js/jsd/debugger-service;1"].getService(Ci.jsdIDebuggerService);
-        jsd.enumerateScripts({enumerateScript: function(script)
+        context.profiling.enumerateScripts({enumerateScript: function(script)
         {
-            if (script.callCount)
+            if (!script.callCount)
+                return;
+
+            var fileName = Url.getFileName(script.url);
+            if (Firebug.filterSystemURLs && Url.isSystemURL(fileName))
+                return;
+
+            var sourceLink = SourceFile.getSourceLinkForScript(script, context);
+            if (sourceLink && sourceLink.href in sourceFileMap)
             {
-                if (!Firebug.filterSystemURLs || !Url.isSystemURL(script.fileName))
-                {
-                    var sourceLink = Firebug.SourceFile.getSourceLinkForScript(script, context);
-                    if (sourceLink && sourceLink.href in sourceFileMap)
-                    {
-                        var call = new ProfileCall(script, context, script.callCount,
-                            script.totalExecutionTime, script.totalOwnExecutionTime,
-                            script.minExecutionTime, script.maxExecutionTime, sourceLink);
+                var call = new ProfileCall(script, context, script.funcName,
+                    script.callCount, script.totalExecutionTime,
+                    script.totalOwnExecutionTime, script.minExecutionTime,
+                    script.maxExecutionTime, sourceLink);
 
-                        calls.push(call);
+                calls.push(call);
 
-                        totalCalls += script.callCount;
-                        totalTime += script.totalOwnExecutionTime;
-                    }
-                }
-                script.clearProfileData();
+                totalCalls += script.callCount;
+                totalTime += script.totalOwnExecutionTime;
             }
         }});
 
-        for (var i = 0; i < calls.length; ++i)
+        for (var i = 0; i < calls.length; i++)
             calls[i].percent = Math.round((calls[i].totalOwnTime/totalTime) * 100 * 100) / 100;
 
         calls.sort(function(a, b)
         {
-           return a.totalOwnTime < b.totalOwnTime ? 1 : -1;
+            return a.totalOwnTime < b.totalOwnTime ? 1 : -1;
         });
 
         totalTime = Math.round(totalTime * 1000) / 1000;
@@ -226,6 +283,7 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         var groupRow = context.profileRow && context.profileRow.ownerDocument
             ? context.profileRow
             : this.logProfileRow(context, "");
+
         delete context.profileRow;
 
         Css.removeClass(groupRow, "profilerRunning");
@@ -240,14 +298,14 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
             timeBox.textContent = Locale.$STRP("plural.Profile_Time2", [totalTime, totalCalls], 1);
 
             var groupBody = groupRow.getElementsByClassName("logGroupBody")[0];
-            var sizer = Firebug.Profiler.ProfileTable.tag.replace({}, groupBody);
+            var sizer = Profiler.ProfileTable.tag.replace({}, groupBody);
             var table = sizer.firstChild;
             var tHeader = table.lastChild;  // no rows inserted.
 
-            var tag = Firebug.Profiler.ProfileCall.tag;
+            var tag = Profiler.ProfileCall.tag;
             var insert = tag.insertRows;
 
-            for (var i = 0; i < calls.length; ++i)
+            for (var i = 0; i < calls.length; i++)
             {
                 calls[i].index = i;
                 context.throttle(insert, tag, [{object: calls[i]}, tHeader]);
@@ -272,10 +330,11 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
         if (!this.profilerEnabled)
         {
             var msg = Locale.$STR("ProfilerRequiresTheScriptPanel");
-            Firebug.Console.logFormatted([msg], context, "warn");
+            Console.logFormatted([msg], context, "warn");
             return;
         }
-        Firebug.Profiler.startProfiling(context, title);
+
+        Profiler.startProfiling(context, title);
     },
 
     commandLineProfileEnd: function(context)
@@ -286,9 +345,9 @@ Firebug.Profiler = Obj.extend(Firebug.Module,
 });
 
 // ********************************************************************************************* //
+// Domplate Templates
 
-with (Domplate) {
-Firebug.Profiler.ProfileTable = domplate(
+Profiler.ProfileTable = domplate(
 {
     tag:
         DIV({"class": "profileSizer", "tabindex": "-1" },
@@ -360,14 +419,14 @@ Firebug.Profiler.ProfileTable = domplate(
 
         var colIndex = 0;
         for (header = header.previousSibling; header; header = header.previousSibling)
-            ++colIndex;
+            colIndex++;
 
         this.sort(table, colIndex, numerical);
     },
 
     sort: function(table, colIndex, numerical)
     {
-        sortAscending = function()
+        var sortAscending = function()
         {
             Css.removeClass(header, "sortedDescending");
             Css.setClass(header, "sortedAscending");
@@ -375,11 +434,11 @@ Firebug.Profiler.ProfileTable = domplate(
 
             header.sorted = -1;
 
-            for (var i = 0; i < values.length; ++i)
+            for (var i = 0; i < values.length; i++)
                 tbody.appendChild(values[i].row);
-        },
+        };
 
-        sortDescending = function()
+        var sortDescending = function()
         {
           Css.removeClass(header, "sortedAscending");
           Css.setClass(header, "sortedDescending");
@@ -387,7 +446,7 @@ Firebug.Profiler.ProfileTable = domplate(
 
           header.sorted = 1;
 
-          for (var i = values.length-1; i >= 0; --i)
+          for (var i = values.length-1; i >= 0; i--)
               tbody.appendChild(values[i].row);
         };
 
@@ -416,31 +475,23 @@ Firebug.Profiler.ProfileTable = domplate(
         if (numerical)
         {
             if (!header.sorted || header.sorted == -1)
-            {
                 sortDescending();
-            }
             else
-            {
                 sortAscending();
-            }
         }
         else
         {
             if (!header.sorted || header.sorted == -1)
-            {
                 sortAscending();
-            }
             else
-            {
                 sortDescending();
-            }
         }
     }
 });
 
 // ********************************************************************************************* //
 
-Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
+Profiler.ProfileCaption = domplate(Rep,
 {
     tag:
         SPAN({"class": "profileTitle", "role": "status"},
@@ -456,12 +507,17 @@ Firebug.Profiler.ProfileCaption = domplate(Firebug.Rep,
 
 // ********************************************************************************************* //
 
-Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
+Profiler.ProfileCall = domplate(Rep,
 {
+    className: "profile",
+    inspectable: false,
+
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
     tag:
         TR({"class": "focusRow profileRow subFocusRow", "role": "row"},
             TD({"class": "profileCell", "role": "presentation"},
-                FirebugReps.OBJECTLINK("$object|getCallName")
+                Rep.tags.OBJECTLINK("$object|getCallName")
             ),
             TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.callCount"),
             TD({"class": "a11yFocus profileCell", "role": "gridcell"}, "$object.percent%"),
@@ -479,7 +535,7 @@ Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
 
     getCallName: function(call)
     {
-        return Str.cropString(StackFrame.getFunctionName(call.script, call.context), 60);
+        return Str.cropString(call.funcName, 60);
     },
 
     avgTime: function(call)
@@ -498,8 +554,6 @@ Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
-
-    className: "profile",
 
     supportsObject: function(object, type)
     {
@@ -521,26 +575,24 @@ Firebug.Profiler.ProfileCall = domplate(Firebug.Rep,
         }
         catch (exc)
         {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("profiler.getTooltip FAILS ", exc);
+            TraceError.sysout("profiler.getTooltip; EXCEPTION " + exc, exc);
         }
     },
 
     getContextMenuItems: function(call, target, context)
     {
-        var fn = Wrapper.unwrapIValue(call.script.functionObject);
-        return FirebugReps.Func.getContextMenuItems(fn, call.script, context);
+        return FirebugReps.Func.getScriptContextMenuItems(context, call.script, call.funcName);
     }
 });
 
-} // END Domplate
-
 // ********************************************************************************************* //
 
-function ProfileCall(script, context, callCount, totalTime, totalOwnTime, minTime, maxTime, sourceLink)
+function ProfileCall(script, context, funcName, callCount, totalTime, totalOwnTime, minTime,
+    maxTime, sourceLink)
 {
     this.script = script;
     this.context = context;
+    this.funcName = funcName;
     this.callCount = callCount;
     this.totalTime = totalTime;
     this.totalOwnTime = totalOwnTime;
@@ -555,21 +607,21 @@ function ProfileCall(script, context, callCount, totalTime, totalOwnTime, minTim
 function profile(context, args)
 {
     var title = args[0];
-    Firebug.Profiler.commandLineProfileStart(context, title);
-    return Firebug.Console.getDefaultReturnValue();
+    Profiler.commandLineProfileStart(context, title);
+    return Console.getDefaultReturnValue();
 };
 
 function profileEnd(context)
 {
-    Firebug.Profiler.commandLineProfileEnd(context);
-    return Firebug.Console.getDefaultReturnValue();
+    Profiler.commandLineProfileEnd(context);
+    return Console.getDefaultReturnValue();
 };
 
 // ********************************************************************************************* //
 // Registration
 
-Firebug.registerModule(Firebug.Profiler);
-Firebug.registerRep(Firebug.Profiler.ProfileCall);
+Firebug.registerModule(Profiler);
+Firebug.registerRep(Profiler.ProfileCall);
 
 Firebug.registerCommand("profile", {
     handler: profile.bind(this),
@@ -583,7 +635,10 @@ Firebug.registerCommand("profileEnd", {
     description: Locale.$STR("console.cmd.help.profileEnd")
 });
 
-return Firebug.Profiler;
+// Expose for XUL
+Firebug.Profiler = Profiler;
+
+return Profiler;
 
 // ********************************************************************************************* //
 });

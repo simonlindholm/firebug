@@ -1,8 +1,10 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/xpcom",
+    "firebug/firebug",
+    "firebug/lib/trace",
     "firebug/lib/object",
+    "firebug/lib/xpcom",
     "firebug/lib/locale",
     "firebug/lib/domplate",
     "firebug/lib/dom",
@@ -14,6 +16,9 @@ define([
     "firebug/lib/events",
     "firebug/lib/array",
     "firebug/lib/search",
+    "firebug/chrome/activableModule",
+    "firebug/chrome/activablePanel",
+    "firebug/chrome/searchBox",
     "firebug/cookies/menuUtils",
     "firebug/cookies/cookieReps",
     "firebug/cookies/headerResizer",
@@ -24,14 +29,15 @@ define([
     "firebug/cookies/cookiePermissions",
     "firebug/cookies/cookieClipboard",
 ],
-function(Xpcom, Obj, Locale, Domplate, Dom, Options, Persist, Str, Http, Css, Events, Arr, Search,
-    MenuUtils, CookieReps, HeaderResizer, CookieObserver, CookieUtils, Cookie, Breakpoints,
-    CookiePermissions, CookieClipboard) {
-
-with (Domplate) {
+function(Firbug, FBTrace, Obj, Xpcom, Locale, Domplate, Dom, Options, Persist, Str, Http, Css,
+    Events, Arr, Search, ActivableModule, ActivablePanel, SearchBox, MenuUtils, CookieReps,
+    HeaderResizer, CookieObserver, CookieUtils, Cookie, Breakpoints, CookiePermissions,
+    CookieClipboard) {
 
 // ********************************************************************************************* //
 // Constants
+
+var {domplate, DIV, TR, P, A} = Domplate;
 
 const Ci = Components.interfaces;
 
@@ -55,7 +61,7 @@ const panelName = "cookies";
  */
 function CookiePanel() {}
 
-CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
+CookiePanel.prototype = Obj.extend(ActivablePanel,
 /** @lends CookiePanel */
 {
     name: panelName,
@@ -84,7 +90,7 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
         this.onContextMenu = Obj.bind(this.onContextMenu, this);
 
-        Firebug.ActivablePanel.initialize.apply(this, arguments);
+        ActivablePanel.initialize.apply(this, arguments);
 
         Firebug.ConsolePanel.prototype.addListener(this);
 
@@ -243,12 +249,12 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
     detach: function(oldChrome, newChrome)
     {
-        Firebug.ActivablePanel.detach.apply(this, arguments);
+        ActivablePanel.detach.apply(this, arguments);
     },
 
     reattach: function(doc)
     {
-        Firebug.ActivablePanel.reattach.apply(this, arguments);
+        ActivablePanel.reattach.apply(this, arguments);
     },
 
     clear: function()
@@ -268,7 +274,7 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         //
         // Firebug 1.6 removes Firebug.DisabledPanelPage, simplifies the activation
         // and the following code is not necessary any more.
-        if (Firebug.ActivableModule && Firebug.DisabledPanelPage)
+        if (ActivableModule && Firebug.DisabledPanelPage)
         {
             var shouldShow = Firebug.CookieModule.isEnabled(this.context);
             this.showToolbarButtons("fbCookieButtons", shouldShow);
@@ -358,7 +364,7 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
         var search = new Search.TextSearch(this.panelNode, findRow);
 
-        var caseSensitive = Firebug.Search.isCaseSensitive(text);
+        var caseSensitive = SearchBox.isCaseSensitive(text);
         var cookieRow = search.find(text, false, caseSensitive);
         if (!cookieRow)
             return false;
@@ -378,7 +384,7 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
         if (header)
             return CookieReps.CookieTable;
 
-        return Firebug.ActivablePanel.getPopupObject.apply(this, arguments);
+        return ActivablePanel.getPopupObject.apply(this, arguments);
     },
 
     findRepObject: function(cookie)
@@ -449,8 +455,8 @@ CookiePanel.prototype = Obj.extend(Firebug.ActivablePanel,
 
         if (FBTrace.DBG_COOKIES)
         {
-            FBTrace.sysout("cookies.breakOnNext; " + context.breakOnCookie + ", " +
-                context.getName());
+            FBTrace.sysout("cookies.breakOnNext; " + this.context.breakOnCookie + ", " +
+                this.context.getName());
         }
     },
 
@@ -588,4 +594,4 @@ Firebug.registerPanel(CookiePanel);
 return CookiePanel;
 
 // ********************************************************************************************* //
-}});
+});

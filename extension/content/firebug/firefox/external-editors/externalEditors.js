@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/module",
     "firebug/lib/lib",
     "firebug/lib/object",
     "firebug/firebug",
@@ -8,7 +9,7 @@ define([
     "firebug/lib/xpcom",
     "firebug/lib/url",
     "firebug/lib/string",
-    "firebug/js/sourceLink",
+    "firebug/debugger/script/sourceLink",
     "firebug/lib/css",
     "firebug/lib/system",
     "firebug/lib/array",
@@ -19,7 +20,7 @@ define([
     "firebug/firefox/external-editors/editors",
     "firebug/lib/options",
 ],
-function(FBL, Obj, Firebug, Locale, Xpcom, Url, Str, SourceLink, Css, System, Arr, Dom,
+function(Module, FBL, Obj, Firebug, Locale, Xpcom, Url, Str, SourceLink, Css, System, Arr, Dom,
     Menu, Debug, Firefox, Editors, Options) {
 
 // ********************************************************************************************* //
@@ -45,13 +46,13 @@ var temporaryDirectory = null;
 // ********************************************************************************************* //
 // Module Implementation
 
-Firebug.ExternalEditors = Obj.extend(Firebug.Module,
+Firebug.ExternalEditors = Obj.extend(Module,
 {
     dispatchName: "externalEditors",
 
     initializeUI: function()
     {
-        Firebug.Module.initializeUI.apply(this, arguments);
+        Module.initializeUI.apply(this, arguments);
 
         Firebug.registerUIListener(this);
         this.loadExternalEditors();
@@ -205,7 +206,7 @@ Firebug.ExternalEditors = Obj.extend(Firebug.Module,
         if (!this.count())
             return
 
-        if (object instanceof SourceLink.SourceLink)
+        if (object instanceof SourceLink)
         {
             this.appendContextMenuItem(popup, object.href, object.line);
         }

@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/rep",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/domplate",
@@ -11,11 +12,15 @@ define([
     "firebug/lib/dom",
     "firebug/lib/array",
     "firebug/net/netUtils",
+    "firebug/debugger/breakpoints/breakpointGroup",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Url, Css, Dom, Arr, NetUtils) {
+function(Rep, Obj, Firebug, Domplate, Locale, Events, Url, Css, Dom, Arr, NetUtils,
+    BreakpointGroup) {
 
 // ********************************************************************************************* //
 // Constants
+
+var {domplate, DIV, SPAN, TR, P, A, INPUT} = Domplate;
 
 const Cc = Components.classes;
 const Ci = Components.interfaces;
@@ -31,7 +36,7 @@ function NetBreakpointGroup()
     this.breakpoints = [];
 }
 
-NetBreakpointGroup.prototype = Obj.extend(new Firebug.Breakpoint.BreakpointGroup(),
+NetBreakpointGroup.prototype = Obj.extend(new BreakpointGroup(),
 {
     name: "netBreakpoints",
     title: Locale.$STR("net.label.XHR Breakpoints"),
@@ -137,8 +142,7 @@ Breakpoint.prototype =
 // ********************************************************************************************* //
 // Breakpoint UI
 
-with (Domplate) {
-var BreakpointRep = domplate(Firebug.Rep,
+var BreakpointRep = domplate(Rep,
 {
     inspectable: false,
 
@@ -240,7 +244,6 @@ var BreakpointRep = domplate(Firebug.Rep,
         return object instanceof Breakpoint;
     }
 });
-};
 
 // ********************************************************************************************* //
 // Registration

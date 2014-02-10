@@ -1,22 +1,26 @@
 /* See license.txt for terms of usage */
-/*global define:1, Components:1, MouseEvent:1, Window: 1, Firebug:1*/
+/*global define:1, Components:1, MouseEvent:1, Firebug:1, window:1*/
 
 define([
     "firebug/lib/trace",
-    "firebug/lib/xpcom"
+    "firebug/lib/wrapper",
 ],
-function(FBTrace, Xpcom) {
+function(FBTrace, Wrapper) {
+
 "use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-const Cu = Components.utils;
-var elService = Xpcom.CCSV("@mozilla.org/eventlistenerservice;1", "nsIEventListenerService");
+var Cc = Components.classes;
+var Ci = Components.interfaces;
+var elService = Cc["@mozilla.org/eventlistenerservice;1"].getService(Ci.nsIEventListenerService);
 
 // ********************************************************************************************* //
+// Implementation
 
 var Events = {};
+
 Events.dispatch = function(listeners, name, args)
 {
     if (!listeners)
@@ -229,7 +233,7 @@ Events.isShift = function(event)
 // ********************************************************************************************* //
 // DOM Events
 
-const eventTypes =
+var eventTypes =
 {
     composition: [
         "composition",
@@ -460,7 +464,7 @@ var nonBubbling = {
     waiting: 1,
 };
 
-// Return true iff a type of DOM event bubbles.
+// Return true if a type of DOM event bubbles.
 Events.eventTypeBubbles = function(type)
 {
     // N.B.: Technically "scroll" is a special case here, since it only bubbles
@@ -523,7 +527,7 @@ Events.addEventListener = function(parent, eventId, listener, capturing)
 
         frames.shift();
 
-        var pid = (parent.location ? parent.location + "" : typeof parent);
+        var pid = (parent && parent.location ? String(parent.location) : typeof parent);
 
         listeners.push({
             parentId: pid,
@@ -585,27 +589,27 @@ Events.getEventListenersForTarget = function(target)
 {
     var listeners = elService.getListenerInfoFor(target, {});
     var ret = [];
-    for (var i = 0; i < listeners.length; ++i)
+    for (var i = 0; i < listeners.length; i++)
     {
         var rawListener = listeners[i];
         var listener = {
             type: rawListener.type,
             func: rawListener.listenerObject,
             capturing: rawListener.capturing,
-            allowsUntrusted: rawListener.allowsUntrusted
+            allowsUntrusted: rawListener.allowsUntrusted,
+            target: target,
         };
 
         // Skip chrome event listeners.
         if (!listener.func || rawListener.inSystemEventGroup)
             continue;
-        var funcGlobal = Cu.getGlobalForObject(listener.func);
-        if (!(funcGlobal instanceof Window))
-            continue;
-        if (funcGlobal.document.nodePrincipal.subsumes(document.nodePrincipal))
+
+        if (Wrapper.isChromeObject(listener.func, window))
             continue;
 
         ret.push(listener);
     }
+
     return ret;
 };
 

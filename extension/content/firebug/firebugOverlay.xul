@@ -3,6 +3,7 @@
 
 <?xul-overlay href="firefox/firebugMenuOverlay.xul"?>
 <?xul-overlay href="chrome://firebug/content/cookies/cookiePanel.xul"?>
+<?xul-overlay href="chrome://firebug/content/remoting/connectionMenu.xul"?>
 
 <overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
          xmlns:html="http://www.w3.org/1999/xhtml">
@@ -41,12 +42,17 @@
 
         <!-- Context menu for the Command Editor -->
         <menupopup id="fbCommandEditorPopup" />
+
+        <!-- Context menu for the Script View -->
+        <menupopup id="fbScriptViewPopup" />
     </popupset>
 
     <!-- Main UI -->
     <vbox id="fbContentBox">
         <box id="fbPanelBox" flex="1">
             <panelBar id="fbPanelBar1" class="panelBar" flex="3" persist="width,height">
+              <stack>
+                <hbox id="fbPanelBar1-tabBoxBackground" flex="1"></hbox>
                 <hbox id="fbPanelBar1-tabBox" class="panelTabBox">
                     <hbox id="fbPanelBar1-innerToolbar" class="innerToolbar fbInternational"
                             role="toolbar" aria-label="a11y.labels.firebug_tools">
@@ -59,7 +65,7 @@
                                 class="fbInternational">
 
                                 <!-- Button image-->
-                                <image src="chrome://firebug/skin/firebug.png"/>
+                                <image src="chrome://firebug/skin/firebugSmall.svg"/>
 
                                 <menupopup id="menu_firebug_iconMenu" class="fbFirebugMenuPopup"
                                     onpopupshowing="return Firebug.browserOverlay.onMenuShowing(this, event);"
@@ -74,7 +80,7 @@
                                 class="fbInternational">
                             </toolbarbutton>
 
-                            <toolbarseparator id="fbInspectSeparator"/>
+                            <toolbarseparator id="fbInspectSeparator" collapsed="true"/>
 
                             <!-- History of Navigation -->
                             <toolbaritem contextmenu="fbNavigationHistoryMenu" class="noTabStop">
@@ -86,17 +92,13 @@
                                     command="cmd_firebug_navForward" class="fbInternational"/>
                             </toolbaritem>
 
-                            <toolbarseparator id="fbNavigationSeparator"/>
+                            <toolbarseparator id="fbNavigationSeparator" collapsed="true"/>
 
                             <toolbarbutton id="fbCommandPopupButton"
                                 tooltiptext="panel.tooltip.Show_Command_Line_Popup"
                                 command="cmd_firebug_toggleCommandPopup" class="fbInternational">
                             </toolbarbutton>
                         </hbox>
-
-                        <!-- Panel selector (list of all panels) -->
-                        <panelBarTabList id="panelBarTabList" tooltiptext="firebug.panel selector"
-                            class="fbInternational"/>
                     </hbox>
 
                     <!-- xxxHonza: ltr should come from &locale.dir; -->
@@ -130,6 +132,7 @@
                             tooltiptext="firebug.tip.Deactivate_Firebug" command="cmd_firebug_closeFirebug"/>
                     </hbox>
                 </hbox>
+              </stack>
 
                 <!-- Firebug Panels Content -->
                 <box id="fbPanelPane" flex="1" persist="orient">
@@ -139,7 +142,7 @@
                             <toolbar id="fbToolbar" align="center" role="toolbar">
 
                                 <hbox id="fbToolbarInner" class="innerToolbar"
-                                    insertbefore="fbDetachButton" flex="1" align="center">
+                                    insertbefore="fbDetachButton">
 
                                     <!-- Break On Next -->
                                     <hbox id="fbBonButtons" collapsed="true" class="noTabStop">
@@ -213,7 +216,7 @@
                                         </hbox>
                                     </hbox>
 
-                                    <hbox id="fbHTMLButtons" collapsed="true" class="noTabStop" >
+                                    <hbox id="fbHTMLButtons" collapsed="true" class="noTabStop">
                                         <toolbarseparator class="fbPanelSpecificButtonsSeparator"/>
                                         <toolbarbutton id="fbToggleHTMLEditing" label="firebug.Edit"
                                             class="toolbar-text-button fbInternational"
@@ -375,21 +378,15 @@
 
                                     <hbox id="fbDebuggerButtons" collapsed="true" class="noTabStop">
                                         <toolbarbutton id="fbRerunButton" command="cmd_firebug_rerun"
-                                            tooltiptext="firebug.Rerun"
-                                            class="toolbar-image-button fbInternational" />
-                                        <toolbarbutton id="fbContinueButton"
-                                            command="cmd_firebug_resumeExecution"
-                                            tooltiptext="firebug.Continue"
-                                            class="toolbar-image-button fbInternational" />
+                                            class="toolbar-image-button" />
+                                        <toolbarbutton id="fbContinueButton" command="cmd_firebug_resumeExecution"
+                                            class="toolbar-image-button" />
                                         <toolbarbutton id="fbStepIntoButton" command="cmd_firebug_stepInto"
-                                            tooltiptext="firebug.StepInto"
-                                            class="toolbar-image-button fbInternational" />
+                                            class="toolbar-image-button" />
                                         <toolbarbutton id="fbStepOverButton" command="cmd_firebug_stepOver"
-                                            tooltiptext="firebug.StepOver"
-                                            class="toolbar-image-button fbInternational" />
+                                            class="toolbar-image-button" />
                                         <toolbarbutton id="fbStepOutButton" command="cmd_firebug_stepOut"
-                                            tooltiptext="firebug.StepOut"
-                                            class="toolbar-image-button fbInternational"/>
+                                            class="toolbar-image-button"/>
                                     </hbox>
 
                                     <!-- Toolbar buttons provided by extensions through Firebug API -->
@@ -397,17 +394,17 @@
                                     </hbox>
 
                                     <!-- Toggle visibility of the side panels area -->
-                                    <vbox id="fbToggleSidePanelsBox" collapsed="false" align="end" flex="1">
+                                    <hbox id="fbToggleSidePanelsBox" collapsed="false">
                                         <toolbarbutton id="fbToggleSidePanels"
-                                            class="toolbar-image-button fbInternational"
+                                            class="fbToggleSidePanels toolbar-image-button fbInternational"
                                             tooltiptext="firebug.tip.Toggle_Side_Panels"/>
-                                    </vbox>
+                                    </hbox>
                                 </hbox>
                             </toolbar>
                         </toolbox>
 
                         <deck anonid="deck" id="fbPanelBar1-deck" flex="1">
-                            <!-- src attribute should be set here otherwise about:empty
+                            <!-- src attribute should be set here otherwise about:blank
                                 is used by default, which could launch FirebugChrome.initializeUI
                                 yet before the right content (i.e. panel.html) is loaded.
                                 The same for the fbPanelBar1-browser. -->
@@ -420,22 +417,34 @@
                         </deck>
                     </vbox>
 
-                    <splitter id="fbPanelSplitter"/>
+                    <splitter id="fbPanelSplitter" valign="top">
+                        <box id="fbPanelSplitterBox" />
+                    </splitter>
 
                     <deck id="fbSidePanelDeck" persist="width,height">
                         <panelBar id="fbPanelBar2" class="panelBar">
-                            <hbox id="fbPanelBar2-tabBox" class="panelTabBox" collapsed="true">
-                                <panelBarArrowscrollbox id="fbPanelBar2-Arrowscrollbox"
-                                    orient="horizontal" flex="1"
-                                    style="min-width: 1px;" chromedir="ltr"
-                                    clicktoscroll="true"
-                                    class="panelbar-arrowscrollbox">
-                                    <!-- Tab Side Bar -->
-                                    <hbox id="fbPanelBar2-panelTabs"
-                                        class="panelTabs fbInternational" role="tablist"
-                                        aria-label="a11y.labels.firebug_side_panels" />
-                                </panelBarArrowscrollbox>
-                            </hbox>
+                            <stack id="fbPanelBar2-stack">
+                                <hbox id="fbPanelBar2-tabBoxBackground" flex="1"></hbox>
+                                <hbox id="fbPanelBar2-tabBox" class="panelTabBox" collapsed="true">
+                                    <panelBarArrowscrollbox id="fbPanelBar2-Arrowscrollbox"
+                                        orient="horizontal" flex="1"
+                                        style="min-width: 1px;" chromedir="ltr"
+                                        clicktoscroll="true"
+                                        class="panelbar-arrowscrollbox">
+                                        <!-- Tab Side Bar -->
+                                        <hbox id="fbPanelBar2-panelTabs"
+                                            class="panelTabs fbInternational" role="tablist"
+                                            aria-label="a11y.labels.firebug_side_panels" />
+                                    </panelBarArrowscrollbox>
+
+                                    <!-- Toggle visibility of the side panels area -->
+                                    <hbox id="fbToggleSidePanelsBox2" collapsed="false">
+                                        <toolbarbutton id="fbToggleSidePanels2"
+                                            class="fbToggleSidePanels toolbar-image-button fbInternational"
+                                            tooltiptext="firebug.tip.Toggle_Side_Panels"/>
+                                    </hbox>
+                                </hbox>
+                            </stack>
                             <deck id="fbPanelBar2-deck" flex="1">
                                 <browser id="fbPanelBar2-browser"
                                     tooltip="fbTooltip" contextmenu="fbContextMenu"
@@ -448,8 +457,7 @@
 
                         <!-- Command Editor -->
                         <vbox id="fbCommandEditorBox">
-                            <hbox id="fbCommandEditor" flex="1" />
-                            <hbox id="fbCommandToolbar">
+                            <hbox id="fbCommandToolbar" align="center">
                                 <toolbarbutton id="fbCmdLineRunButton" label="firebug.Run"
                                     class="toolbar-text-button fbInternational"
                                     tooltiptext="firebug.Run_the_entered_command"
@@ -470,10 +478,21 @@
                                     onmousedown="Firebug.CommandLine.commandHistory.show(this);"
                                     disabled="true"/>
                                 <toolbarspacer flex="1"/>
+                            </hbox>
+                            <hbox id="fbCommandEditor" flex="1">
+                                <browser id="fbCommandEditorBrowser" flex="1"
+                                     tooltip="fbTooltip" contextmenu="fbContextMenu"
+                                     disablehistory="true"
+                                     type="content"
+                                     src="resource://firebugui/commandEditor.html"/>
+                            </hbox>
+                            <hbox id="fbToggleCommandEditorBox">
+                                <box class="column"></box>
+                                <toolbarspacer flex="1"/>
                                 <toolbarbutton id="fbToggleCommandEditor"
                                     tooltiptext="console.option.Show_Command_Line"
                                     class="toolbarbutton-iconic fbInternational"
-                                    oncommand="Firebug.toggleCommandLine(false)"/>
+                                    oncommand="Firebug.CommandLine.toggleCommandEditor(false)"/>
                             </hbox>
                         </vbox>
                     </deck>
@@ -498,15 +517,23 @@
             </deck>
         </vbox>
 
-        <!-- Command Line (small) -->
+        <!-- Command Line -->
         <hbox id="fbCommandBox">
-            <toolbarbutton id="fbCommandLineHistoryButton" tooltiptext="Command_History"
-                class="toolbarbutton-iconic fbInternational"
-                onmousedown="Firebug.CommandLine.commandHistory.show(this);"
-                disabled="true" type="checkbox" checked="false"/>
-            <vbox pack="center">
-                <label id="fbCommandArrow" value="&gt;&gt;&gt;"/>
+
+            <!-- Command Line History Button -->
+            <vbox pack="end">
+                <toolbarbutton id="fbCommandLineHistoryButton" tooltiptext="Command_History"
+                    class="toolbarbutton-iconic fbInternational"
+                    onmousedown="Firebug.CommandLine.commandHistory.show(this);"
+                    disabled="true" type="checkbox" checked="false"/>
             </vbox>
+
+            <!-- Command Line (static) Arrow -->
+            <vbox pack="center">
+                <html:div id="fbCommandArrow">&gt;&gt;&gt;</html:div>
+            </vbox>
+
+            <!-- Command Line Input -->
             <hbox flex="1">
                 <vbox class="fbCommandHtmlBox" pack="center" flex="100%">
                     <!-- transparent background, silver text over user inputs -->
@@ -526,13 +553,17 @@
             </hbox>
 
             <!-- Toggle into multi-line command line -->
-            <toolbarbutton id="fbToggleCommandLine" tooltiptext="console.option.Show_Command_Editor"
-                class="toolbarbutton-iconic fbInternational"
-                oncommand="Firebug.toggleCommandLine(true)"/>
+            <vbox pack="end">
+                <toolbarbutton id="fbToggleCommandLine"
+                    tooltiptext="console.option.Show_Command_Editor"
+                    class="toolbarbutton-iconic fbInternational"
+                    oncommand="Firebug.CommandLine.toggleCommandEditor(true)"/>
+            </vbox>
         </hbox>
 
     </vbox>
 <script>
 
 </script>
+
 </overlay>

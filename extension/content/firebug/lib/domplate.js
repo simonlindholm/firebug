@@ -240,10 +240,7 @@ DomplateTag.prototype =
             return ' ' + name + '="' + __escape__(value) + '"';
         }
 
-        function isArray(it)
-        {
-            return Object.prototype.toString.call(it) === "[object Array]";
-        }
+        var isArray = Array.isArray;
 
         function __loop__(iter, outputs, fn)
         {
@@ -569,7 +566,13 @@ DomplateTag.prototype =
             {
                 var val = this.props[name];
                 var arg = generateArg(val, path, args);
-                blocks.push('node.', name, ' = ', arg, ';\n');
+
+                // Permission denied for <resource://firebugui> to create wrapper
+                // There is an exception when creating reference to chrome object
+                // within content scope. Typically |repObject| in content scope can't
+                // point to an object from chrome scope (see issue 7138).
+                // xxxHonza: It would be nice to avoid such reference in the first place.
+                blocks.push("try {node.", name, " = ", arg, ";} catch(e) {}\n");
             }
         }
 
@@ -1070,8 +1073,8 @@ var Renderer =
         catch (e)
         {
             if (FBTrace.DBG_DOMPLATE || FBTrace.DBG_ERRORS)
-                FBTrace.sysout("domplate.renderHTML; EXCEPTION " + e,
-                    {exc: e, render: this.tag.renderMarkup.toSource()});
+                FBTrace.sysout("domplate.renderHTML; EXCEPTION " + e, e);
+                    //{exc: e, render: this.tag.renderMarkup.toSource()});
         }
     },
 

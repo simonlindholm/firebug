@@ -6,6 +6,8 @@ define([
 ],
 function(FBTrace, Options) {
 
+"use strict";
+
 // ********************************************************************************************* //
 // Constants
 
@@ -137,63 +139,7 @@ Search.TextSearch = function(rootNode, rowFinder)
     this.reset();
 };
 
-Search.SourceBoxTextSearch = function(sourceBox)
-{
-    this.tryToContinueSearch = function(sBox, text)
-    {
-        if (sBox != sourceBox)
-            return false;
-
-        var isSubstring = text.indexOf(this.text) !=-1 || this.text.indexOf(text) !=-1;
-
-        if (isSubstring && this.mark && Math.abs(sourceBox.centralLine - this.mark) < 10)
-            this.mark--;
-        else
-            this.reset();
-
-        return true;
-    };
-    this.find = function(text, reverse, caseSensitive)
-    {
-        this.text = text;
-
-        this.re = new Search.ReversibleRegExp(text);
-
-        return this.findNext(false, reverse, caseSensitive);
-    };
-
-    this.findNext = function(wrapAround, reverse, caseSensitive)
-    {
-        this.wrapped = false;
-        var lines = sourceBox.lines;
-        var match = null;
-        for (var iter = new Search.ReversibleIterator(lines.length, this.mark, reverse); iter.next();)
-        {
-            match = this.re.exec(lines[iter.index], false, caseSensitive);
-            if (match)
-            {
-                this.mark = iter.index;
-                return iter.index;
-            }
-        }
-
-        if (!match && wrapAround)
-        {
-            this.reset();
-            this.wrapped = true;
-            return this.findNext(false, reverse, caseSensitive);
-        }
-
-        return match;
-    };
-
-    this.reset = function()
-    {
-        delete this.mark;
-    };
-
-    this.reset();
-};
+// ********************************************************************************************* //
 
 Search.ReversibleIterator = function(length, start, reverse)
 {
@@ -218,6 +164,7 @@ Search.ReversibleIterator = function(length, start, reverse)
     };
 };
 
+// ********************************************************************************************* //
 
 /**
  * @class Implements a RegExp-like object that will search for the literal value
@@ -228,7 +175,8 @@ Search.ReversibleIterator = function(length, start, reverse)
  * @constructor
  * @param {String} literal Text to search for
  * @param {Boolean} reverse Truthy to preform a reverse search, falsy to perform a forward seach
- * @param {Boolean} caseSensitive Truthy to perform a case sensitive search, falsy to perform a case insensitive search.
+ * @param {Boolean} caseSensitive Truthy to perform a case sensitive search, falsy to perform
+ * a case insensitive search.
  */
 Search.LiteralRegExp = function(literal, reverse, caseSensitive)
 {
@@ -278,6 +226,8 @@ Search.LiteralRegExp = function(literal, reverse, caseSensitive)
     };
 };
 
+// ********************************************************************************************* //
+
 Search.ReversibleRegExp = function(regex, flags)
 {
     var re = {};
@@ -296,7 +246,8 @@ Search.ReversibleRegExp = function(regex, flags)
     {
         // Ensure we have a regex
         var key = (reverse ? "r" : "n") + (caseSensitive ? "n" : "i") 
-                                + (Firebug.searchUseRegularExpression ? "r" : "n");
+            + (Firebug.searchUseRegularExpression ? "r" : "n");
+
         if (!re[key])
         {
             try
@@ -342,7 +293,20 @@ Search.ReversibleRegExp = function(regex, flags)
         }
         return ret;
     };
+
+    this.fakeMatch = function(text, reverse, caseSensitive)
+    {
+        var ret = [text];
+        ret.index = 0;
+        ret.input = text;
+        ret.reverse = reverse;
+        ret.caseSensitive = caseSensitive;
+        return ret;
+    };
 };
+
+// ********************************************************************************************* //
+// Registration
 
 return Search;
 

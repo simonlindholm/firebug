@@ -2,6 +2,8 @@
 
 define([
     "firebug/firebug",
+    "firebug/chrome/module",
+    "firebug/chrome/rep",
     "firebug/lib/trace",
     "firebug/lib/domplate",
     "firebug/lib/object",
@@ -12,11 +14,12 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/css",
 ],
-function(Firebug, FBTrace, Domplate, Obj, Locale, Dom, Events, Str, Wrapper, Css) {
-with (Domplate) {
+function(Firebug, Module, Rep, FBTrace, Domplate, Obj, Locale, Dom, Events, Str, Wrapper, Css) {
+
+"use strict";
 
 // ********************************************************************************************* //
-// Docs
+// Documentation
 
 // See http://www.w3.org/TR/navigation-timing/
 
@@ -51,20 +54,22 @@ var timingProps = [
     "unloadEventStart",
 ];
 
+var {domplate, TABLE, THEAD, TH, TBODY, TR, TD, DIV, SPAN, FOR} = Domplate;
+
 // ********************************************************************************************* //
 // Module
 
-var PerformanceTimingModule = Obj.extend(Firebug.Module,
+var PerformanceTimingModule = Obj.extend(Module,
 {
     initialize: function(prefDomain, prefNames)
     {
-        Firebug.Module.initialize.apply(this, arguments);
+        Module.initialize.apply(this, arguments);
         Firebug.Console.addListener(ConsoleListener);
     },
 
     shutdown: function()
     {
-        Firebug.Module.shutdown.apply(this, arguments);
+        Module.shutdown.apply(this, arguments);
         Firebug.Console.removeListener(ConsoleListener);
     },
 });
@@ -75,7 +80,7 @@ var PerformanceTimingModule = Obj.extend(Firebug.Module,
 /**
  * This template is used to render the timing waterfall graph.
  */
-var PerformanceTimingRep = domplate(Firebug.Rep,
+var PerformanceTimingRep = domplate(Rep,
 /** @lends PerformanceTimingRep */
 {
     className: "perfTiming",
@@ -151,7 +156,7 @@ var PerformanceTimingRep = domplate(Firebug.Rep,
  * Hovering mouse over the waterfall graph shows an infotip. This template is responsible
  * for rendering its content.
  */
-var PerfInfoTip = domplate(Firebug.Rep,
+var PerfInfoTip = domplate(Rep,
 /** @lends PerfInfoTip */
 {
     tableTag:
@@ -363,12 +368,14 @@ function performanceTiming(context, timing)
     var input = new PerfTimingObj(result, t);
     Firebug.Console.log(input, context, "perfTiming", rep, true);
 
-    // Details
+    // Create a log group first (collapsed by default). All the timing details will be rendered
+    // inside the group (within 'logGroupBody' element).
     var row = Firebug.Console.openCollapsedGroup("perfTimingDetails", context, "perfTimingDetails",
         DetailsCaption, true, null, true);
     Firebug.Console.closeGroup(context, true);
 
-    var logGroupBody = row.lastChild;
+    // Get 'logGroupBody' element and render the timing details.
+    var logGroupBody = row.getElementsByClassName("logGroupBody")[0];
     var table = DetailsTable.tag.replace({object: t}, logGroupBody);
     var tBody = table.lastChild;
 
@@ -401,7 +408,7 @@ function performanceTiming(context, timing)
 // Detailed Log
 
 /**
- * A capation for detailed performance timing info.
+ * A caption for detailed performance timing info.
  */
 var DetailsCaption = domplate(
 /** @lends DetailsCaption */
@@ -627,4 +634,4 @@ Firebug.registerModule(PerformanceTimingModule);
 return PerformanceTimingModule;
 
 // ********************************************************************************************* //
-}});
+});

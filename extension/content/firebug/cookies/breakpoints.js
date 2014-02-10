@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/rep",
     "firebug/lib/object",
     "firebug/lib/locale",
     "firebug/lib/string",
@@ -8,16 +9,19 @@ define([
     "firebug/lib/dom",
     "firebug/lib/css",
     "firebug/lib/events",
-    "firebug/cookies/cookieUtils"
+    "firebug/cookies/cookieUtils",
+    "firebug/debugger/breakpoints/breakpointConditionEditor",
 ],
-function(Obj, Locale, Str, Domplate, Dom, Css, Events, CookieUtils) {
+function(Rep, Obj, Locale, Str, Domplate, Dom, Css, Events, CookieUtils, ConditionEditor) {
 
-with (Domplate) {
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
 
-const panelName = "cookies";
+var panelName = "cookies";
+
+var {domplate, DIV, INPUT, SPAN} = Domplate;
 
 // ********************************************************************************************* //
 // Implementation
@@ -184,7 +188,7 @@ var Breakpoints =
 // ********************************************************************************************* //
 // Cookie Breakpoints
 
-Breakpoints.BreakpointTemplate = Domplate.domplate(Firebug.Rep,
+Breakpoints.BreakpointTemplate = Domplate.domplate(Rep,
 {
     inspectable: false,
 
@@ -292,10 +296,10 @@ Breakpoints.BreakpointTemplate = Domplate.domplate(Firebug.Rep,
 
 Breakpoints.ConditionEditor = function(doc)
 {
-    Firebug.Breakpoint.ConditionEditor.apply(this, arguments);
+    ConditionEditor.apply(this, arguments);
 };
 
-Breakpoints.ConditionEditor.prototype = Domplate.domplate(Firebug.Breakpoint.ConditionEditor.prototype,
+Breakpoints.ConditionEditor.prototype = Domplate.domplate(ConditionEditor.prototype,
 {
     endEditing: function(target, value, cancel)
     {
@@ -404,4 +408,4 @@ Firebug.registerRep(Breakpoints.BreakpointTemplate);
 return Breakpoints;
 
 // ********************************************************************************************* //
-}});
+});

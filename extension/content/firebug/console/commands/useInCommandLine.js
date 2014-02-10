@@ -2,15 +2,16 @@
 
 define([
     "firebug/firebug",
+    "firebug/chrome/module",
     "firebug/lib/trace",
     "firebug/console/commandLine",
     "firebug/lib/locale",
     "firebug/lib/object",
     "firebug/chrome/menu",
-    "firebug/js/sourceLink",
+    "firebug/debugger/script/sourceLink",
     "firebug/lib/string",
 ],
-function(Firebug, FBTrace, CommandLine, Locale, Obj, Menu, SourceLink, Str) {
+function(Firebug, Module, FBTrace, CommandLine, Locale, Obj, Menu, SourceLink, Str) {
 
 "use strict";
 
@@ -21,7 +22,7 @@ function(Firebug, FBTrace, CommandLine, Locale, Obj, Menu, SourceLink, Str) {
  * @module Responsible for implementing 'Use in Command Line' feature.
  * See also: https://getfirebug.com/wiki/index.php/$p
  */
-var UseInCommandLine = Obj.extend(Firebug.Module,
+var UseInCommandLine = Obj.extend(Module,
 /** @lends UseInCommandLine */
 {
     dispatchName: "UseInCommandLine",
@@ -31,14 +32,14 @@ var UseInCommandLine = Obj.extend(Firebug.Module,
 
     initialize: function()
     {
-        Firebug.Module.initialize.apply(this, arguments);
+        Module.initialize.apply(this, arguments);
 
         Firebug.registerUIListener(this);
     },
 
     shutdown: function()
     {
-        Firebug.Module.shutdown.apply(this, arguments);
+        Module.shutdown.apply(this, arguments);
 
         Firebug.unregisterUIListener(this);
     },
@@ -58,7 +59,7 @@ var UseInCommandLine = Obj.extend(Firebug.Module,
         // Get the object that should be associated with '$p' variable.
         // The same way is used by e.g. 'Inspect In DOM panel' command.
         object = rep.getRealObject(object, context);
-        if (object instanceof SourceLink.SourceLink)
+        if (object instanceof SourceLink)
             return;
 
         var item = {

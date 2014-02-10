@@ -18,6 +18,11 @@
     <script type="application/x-javascript" src="chrome://global/content/globalOverlay.js"/>
     <script type="application/x-javascript" src="chrome://global/content/findBar.js"/>
 
+    <!-- Initialize Firebug for moduleConfig.js -->
+    <script type="application/x-javascript">
+        this.Firebug = {};
+    </script>
+
     <!-- Firebug -->
     <script type="application/x-javascript" src="chrome://firebug/content/trace.js"/>
     <script type="application/x-javascript" src="chrome://firebug/content/legacy.js"/>
@@ -167,6 +172,7 @@
     <!-- Status bar info -->
     <statusbar id="statusBar" context="statusBarContextMenu">
         <label id="testCount" tooltiptext="fbtest.tooltip.TestCount" class="fbInternational"/>
+        <label id="disabledTestCount" tooltiptext="fbtest.tooltip.DisabledTestCount" class="fbInternational"/>
         <label id="passingTests" tooltiptext="fbtest.tooltip.Passing" class="fbInternational"/>
         <label id="failingTests" tooltiptext="fbtest.tooltip.Failing" class="fbInternational"/>
         <label id="todoTests" tooltip="todoTestsTooltip"/>

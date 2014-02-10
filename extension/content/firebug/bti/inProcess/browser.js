@@ -238,15 +238,21 @@ Browser.prototype.closeContext = function(context, userCommands)
 
         delete browser.showFirebug;
 
+        var result = false;
         var shouldDispatch = TabWatcher.unwatchTopWindow(browser.contentWindow);
-
         if (shouldDispatch)
         {
             // TODO remove
             Events.dispatch(TabWatcher.fbListeners, "unwatchBrowser", [browser, null]);
-            return true;
+            result = true;
         }
-        return false;
+
+        // Firebug is closing, clean up the persisted content. The persisted state should
+        // not be used after re-activating Firebug (see also issue issue 6901, breakpoint
+        // client objects need to be recreated).
+        delete browser.persistedState;
+
+        return result;
     }
 };
 
@@ -429,6 +435,17 @@ Browser.prototype.addListener = function(listener)
     else
         FBTrace.sysout("BTI.Browser.addListener; ERROR The listener is already appended " +
             (listener.dispatchName ? listener.dispatchName : ""));
+
+    // If a listener is appended after connect, let's send fake onConnect
+    // to ensure initialization.
+    if (this.isConnected())
+        Events.dispatch2([listener], "onConnect", [this]);
+
+    if (FBTrace.DBG_BTI)
+    {
+        FBTrace.sysout("BTI.Browser.addListener; listener added: " +
+            listener.dispatchName, listener);
+    }
 };
 
 Browser.prototype.removeListener = function(listener)
@@ -440,6 +457,10 @@ Browser.prototype.removeListener = function(listener)
     else
         FBTrace.sysout("BTI.Browser.removeListener; ERROR Unknown listener " +
             (listener.dispatchName ? listener.dispatchName : ""));
+
+    // xxxHonza: should it be alwasy called or only if isConnected() == true?
+    //if (this.isConnected())
+        Events.dispatch2([listener], "onDisconnect", [this]);
 };
 
 /**
@@ -516,28 +537,6 @@ Browser.prototype._setFocusContext = function(context)
     this.activeContext = context;
     if (prev !== context)
         this.dispatch("onContextChanged", [prev, this.activeContext]);
-};
-
-/**
- * Sets whether this proxy is connected to its underlying browser.
- * Sends 'onDisconnect' notification when the browser becomes disconnected.
- *
- * @function
- * @param connected whether this proxy is connected to its underlying browser
- */
-Browser.prototype._setConnected = function(connected)
-{
-    if (FBTrace.DBG_ACTIVATION)
-        FBTrace.sysout("BTI.Browser._setConnected " + connected + " this.connected " +
-            this.connected);
-
-    var wasConnected = this.connected;
-    this.connected = connected;
-
-    if (wasConnected && !connected)
-        this.dispatch("onDisconnect", [this]);
-    else if (!wasConnected && connected)
-        this.dispatch("onConnect", [this]);
 };
 
 // ********************************************************************************************* //
@@ -882,6 +881,46 @@ Browser.prototype.connect = function ()
     TabWatcher.addListener(TabWatchListener);
 
     this._setConnected(true);
+};
+
+/**
+ * Disconnects this client from the browser it is associated with.
+ *
+ * @function
+ */
+Browser.prototype.disconnect = function()
+{
+    this.removeListener(Firebug);
+    TabWatcher.destroy();
+
+    // Remove the listener after the Firebug.TabWatcher.destroy() method is called, so
+    // that the destroyContext event is properly dispatched to the Firebug object and
+    // consequently to all registered modules.
+    TabWatcher.removeListener(this);
+
+    this._setConnected(false);
+}
+
+/**
+ * Sets whether this proxy is connected to its underlying browser.
+ * Sends 'onDisconnect' notification when the browser becomes disconnected.
+ *
+ * @function
+ * @param connected whether this proxy is connected to its underlying browser
+ */
+Browser.prototype._setConnected = function(connected)
+{
+    if (FBTrace.DBG_ACTIVATION)
+        FBTrace.sysout("BTI.Browser._setConnected " + connected + " this.connected " +
+            this.connected);
+
+    var wasConnected = this.connected;
+    this.connected = connected;
+
+    if (wasConnected && !connected)
+        this.dispatch("onDisconnect", [this]);
+    else if (!wasConnected && connected)
+        this.dispatch("onConnect", [this]);
 };
 
 // ********************************************************************************************* //

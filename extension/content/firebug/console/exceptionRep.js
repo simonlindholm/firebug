@@ -2,6 +2,7 @@
 
 define([
     "firebug/firebug",
+    "firebug/chrome/rep",
     "firebug/lib/trace",
     "firebug/lib/object",
     "firebug/lib/domplate",
@@ -9,15 +10,19 @@ define([
     "firebug/console/errorMessageRep",
     "firebug/console/errorCopy",
     "firebug/chrome/reps",
-    "firebug/js/stackFrame",
+    "firebug/debugger/stack/stackFrame",
+    "firebug/debugger/stack/stackTrace",
 ],
-function(Firebug, FBTrace, Obj, Domplate, ErrorMessageObj, ErrorMessage, ErrorCopy,
-    FirebugReps, StackFrame) {
+function(Firebug, Rep, FBTrace, Obj, Domplate, ErrorMessageObj, ErrorMessage, ErrorCopy,
+    FirebugReps, StackFrame, StackTrace) {
 
 "use strict"
 
 // ********************************************************************************************* //
 // Constants
+
+const Cc = Components.classes;
+const Ci = Components.interfaces;
 
 var {domplate, TAG} = Domplate;
 
@@ -28,7 +33,7 @@ var {domplate, TAG} = Domplate;
  * @domplate This template represents exceptions that happen in the content and appear
  * within Firebug UI. It's registered as Firebug rep.
  */
-var Exception = domplate(Firebug.Rep,
+var Exception = domplate(Rep,
 /** @lends Exception */
 {
     tag:
@@ -61,7 +66,7 @@ var Exception = domplate(Firebug.Rep,
         var trace;
         if (object.stack)
         {
-            trace = StackFrame.parseToStackTrace(object.stack, context);
+            trace = StackTrace.parseToStackTrace(object.stack, context);
             trace = StackFrame.cleanStackTraceOfFirebug(trace);
 
             if (!trace)
@@ -87,7 +92,8 @@ var Exception = domplate(Firebug.Rep,
 // ********************************************************************************************* //
 // Registration
 
-// xxxHonza: back compatibility
+// xxxHonza: which one is needed for back compatibility
+FirebugReps.ExceptionRep = Exception;
 FirebugReps.Except = Exception;
 
 Firebug.registerRep(Exception);

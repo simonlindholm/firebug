@@ -4,10 +4,12 @@ define([
     "firebug/lib/xpcom",
     "firebug/lib/trace",
     "firebug/lib/deprecated",
-    "firebug/js/stackFrame",
+    "firebug/debugger/stack/stackFrame",
     "firebug/lib/string"
 ],
 function(Xpcom, FBTrace, Deprecated, StackFrame, Str) {
+
+"use strict";
 
 // ********************************************************************************************* //
 // Constants
@@ -90,7 +92,7 @@ Http.readPostTextFromPage = function(url, context)
      }
 };
 
-Http.getResource = function(aURL)
+Http.getResource = function(aURL, ignoreMissing)
 {
     try
     {
@@ -101,7 +103,7 @@ Http.getResource = function(aURL)
     }
     catch (e)
     {
-        if (FBTrace.DBG_ERRORS)
+        if (!ignoreMissing && FBTrace.DBG_ERRORS)
             FBTrace.sysout("lib.getResource FAILS for \'"+aURL+"\'", e);
     }
 };
@@ -290,7 +292,7 @@ Http.getRequestLoadContext = function(request)
     return null;
 };
 
-Http.getRequestWebProgress = Deprecated.deprecated("Use getRequestLoadContext function",
+Http.getRequestWebProgress = Deprecated.method("Use getRequestLoadContext function",
     Http.getRequestLoadContext);
 
 // ********************************************************************************************* //
@@ -429,10 +431,10 @@ Http.isXHR = function(request)
 // ********************************************************************************************* //
 // Conversions
 
-Http.convertToUnicode = Deprecated.deprecated("Function moved to 'firebug/lib/string' module",
+Http.convertToUnicode = Deprecated.method("Function moved to 'firebug/lib/string' module",
     Str.convertToUnicode);
 
-Http.convertFromUnicode = Deprecated.deprecated("Function moved to 'firebug/lib/string' module",
+Http.convertFromUnicode = Deprecated.method("Function moved to 'firebug/lib/string' module",
     Str.convertFromUnicode);
 
 // ********************************************************************************************* //

@@ -1,6 +1,7 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/chrome/module",
     "firebug/lib/object",
     "firebug/firebug",
     "firebug/lib/trace",
@@ -8,17 +9,18 @@ define([
     "firebug/lib/locale",
     "firebug/lib/dom",
     "firebug/lib/domplate",
+    "firebug/chrome/rep",
     "firebug/chrome/reps",
     "firebug/chrome/menu",
 ],
-function(Obj, Firebug, FBTrace, Events, Locale, Dom, Domplate, FirebugReps, Menu) {
+function(Module, Obj, Firebug, FBTrace, Events, Locale, Dom, Domplate, Rep, FirebugReps, Menu) {
 
 "use strict";
 
 // ********************************************************************************************* //
 // EventMonitor Module
 
-var EventMonitor = Obj.extend(Firebug.Module,
+var EventMonitor = Obj.extend(Module,
 {
     dispatchName: "eventMonitor",
 
@@ -27,14 +29,14 @@ var EventMonitor = Obj.extend(Firebug.Module,
 
     initialize: function()
     {
-        Firebug.Module.initialize.apply(this, arguments);
+        Module.initialize.apply(this, arguments);
         Firebug.registerUIListener(this);
     },
 
     shutdown: function()
     {
         Firebug.unregisterUIListener(this);
-        Firebug.Module.shutdown.apply(this, arguments);
+        Module.shutdown.apply(this, arguments);
     },
 
     destroyContext: function(context, persistedState)
@@ -196,7 +198,7 @@ var EventMonitor = Obj.extend(Firebug.Module,
 
     onContextMenu: function(items, object, target, context, panel, popup)
     {
-        if (panel.name != "html")
+        if (!panel || panel.name != "html")
             return items;
 
         var before = popup.querySelector("#fbScrollIntoView");
@@ -369,10 +371,10 @@ var EventLogRep = domplate(FirebugReps.Event,
 
     copyEventTag:
         SPAN(
-            FirebugReps.OBJECTLINK("$object|summarizeEvent"),
-            SPAN("&nbsp"),
+            Rep.tags.OBJECTLINK("$object|summarizeEvent"),
+            SPAN("&nbsp;"),
             SPAN("&#187;"),
-            SPAN("&nbsp"),
+            SPAN("&nbsp;"),
             TAG("$object|getTargetTag", {object: "$object|getTarget"})
         ),
 
