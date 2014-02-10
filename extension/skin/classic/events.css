@@ -70,6 +70,10 @@
     top: 0;
 }
 
+.listenerLine.doesNotApply {
+    text-decoration: line-through;
+}
+
 /* remember: source links are position: absolute. use padding-right 150px + width */
 
 .listenerLine.disabled * {
