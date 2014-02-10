@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 /*jshint esnext:true, curly:false, loopfunc:true*/
-/*global FBTrace:1, Components:1, define:1 */
+/*global FBTrace:1, Components:1, define:1, Element:1*/
 
 // TODO:
 // UI:
@@ -37,17 +37,20 @@
 // - capture, source links
 
 define([
-    "firebug/lib/object",
     "firebug/firebug",
-    "firebug/lib/domplate",
     "firebug/lib/dom",
-    "firebug/lib/wrapper",
-    "firebug/lib/locale",
+    "firebug/lib/domplate",
     "firebug/lib/events",
+    "firebug/lib/locale",
+    "firebug/lib/object",
+    "firebug/lib/wrapper",
     "firebug/chrome/reps",
     "firebug/debugger/debuggerLib",
+    "firebug/debugger/script/sourceFile",
 ],
-function(Obj, Firebug, Domplate, Dom, Wrapper, Locale, Events, FirebugReps, DebuggerLib) {
+function(Firebug, Dom, Domplate, Events, Locale, Obj, Wrapper, FirebugReps, DebuggerLib,
+    SourceFile) {
+
 "use strict";
 
 // ********************************************************************************************* //
@@ -205,9 +208,11 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var funcName = mIndirection[1];
 
         var global = Cu.getGlobalForObject(func);
-        var dglobal = DebuggerLib.getDebuggeeGlobal(this.context, global);
-        var dfunc = dglobal.makeDebuggeeValue(func);
-        var env = dfunc && dfunc.environment;
+        var dbgGlobal = DebuggerLib.getThreadDebuggeeGlobalForContext(this.context, global);
+        var dbgFunc = dbgGlobal && dbgGlobal.makeDebuggeeValue(func);
+        var env = dbgFunc && dbgFunc.environment;
+        if (!env)
+            return null;
 
         if (src.charAt(mIndirection.index - 1) === ".")
         {
@@ -218,11 +223,11 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             return this.getDerivedJqueryListeners(target, type, env, funcName, src);
         }
 
-        env = env && env.find(funcName);
+        env = env.find(funcName);
         if (!env || !env.parent)
             return null;
-        var dderivedF = env.getVariable(funcName);
-        var derivedF = DebuggerLib.unwrapDebuggeeValue(dderivedF);
+        var dbgDerivedF = env.getVariable(funcName);
+        var derivedF = DebuggerLib.unwrapDebuggeeValue(dbgDerivedF);
         if (typeof derivedF !== "function")
             return null;
         return [{func: derivedF}];
@@ -230,19 +235,19 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getDerivedJqueryListeners: function(target, type, env, funcName, src)
     {
-        if (!(funcName === "handle" || funcName === "dispatch") || !env)
+        if (funcName !== "handle" && funcName !== "dispatch")
             return null;
         try
         {
-            // Pattern match on the occurance of '<minified name>.event.<handle or dispatch>.apply'.
+            // Pattern match on the occurance of '<minified name>.event.<funcName>.apply'.
             var matches = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.event\.(dispatch|handle)\.apply/.exec(src);
             var jqName = (matches && matches[1]) || "";
             var env2 = env.find(jqName);
-            var djq = env2 && env2.getVariable(jqName);
-            if (!djq)
+            var dbgJq = env2 && env2.getVariable(jqName);
+            if (!dbgJq)
                 return null;
 
-            var jq = DebuggerLib.unwrapDebuggeeValue(djq);
+            var jq = DebuggerLib.unwrapDebuggeeValue(dbgJq);
             var fnName = ("_data" in jq ? "_data" : "data");
             var eventData = jq[fnName](target, "events");
             var listeners = eventData && eventData[type];
@@ -323,7 +328,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             li.disabled = false;
             li.target = target;
-            li.sourceLink = Firebug.SourceFile.findSourceForFunction(li.func, context);
+            li.sourceLink = SourceFile.findSourceForFunction(li.func, context);
 
             var derived = self.getDerivedListeners(li.func, li.type, target) || [];
             li.derivedListeners = derived.map(function(listener)
@@ -331,7 +336,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 return {
                     func: listener.func,
                     appliesToElement: listener.appliesToElement,
-                    sourceLink: Firebug.SourceFile.findSourceForFunction(listener.func, context)
+                    sourceLink: SourceFile.findSourceForFunction(listener.func, context)
                 };
             });
 
@@ -512,8 +517,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
-    // XXX(simon): This is almost identical to code in css/computedPanel,
-    // css/selectorPanel and js/breakpoints - we should share it somehow.
+    // XXX(simon): This is almost identical to code in css/computedPanel, css/selectorPanel,
+    // and debugger/breakpoints/breakpointReps - we should share it somehow.
     toggleGroup: function(node)
     {
         node.classList.toggle("opened");
