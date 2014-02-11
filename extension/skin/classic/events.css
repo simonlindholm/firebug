@@ -56,6 +56,7 @@
 
 .listenerLine {
     position: relative;
+    overflow: hidden; /* contain the floats */
 }
 
 .listenerLineGroup.disabled > .originalListener > .listenerIndent {
@@ -67,11 +68,13 @@
 }
 
 .listenerLine > .objectLink-sourceLink {
-    top: 0;
+    position: static;
+    float: right;
 }
 
 .listenerLine.doesNotApply {
-    text-decoration: line-through;
+    filter: url(resource://firebugui/filters.svg#grayscale);
+    opacity: 0.4;
 }
 
 /* remember: source links are position: absolute. use padding-right 150px + width */

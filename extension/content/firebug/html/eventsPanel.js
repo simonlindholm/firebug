@@ -13,15 +13,14 @@
 // - derived listeners
 //  - replace right arrow symbol by image, for cross-platform stability
 // - capture
-// - a11y
+// - a11y, RTL...
 // Functionality:
 // - detect eventbug (maybe)
-// - mutation observers
+// - option for guessing from closure
 
 // Other:
 // - see if there are more extra event targets?
 // - new issue about having source code as title
-// - seeing closures of event listeners??
 // - dynamic updates for jQuery listeners will be awful. watch('length') technically works, but timeouts are probably a better idea.
 // - source links should work even without script panel
 // - derived listeners on Google Code:
@@ -67,7 +66,6 @@ function EventsPanel() {}
 EventsPanel.prototype = Obj.extend(Firebug.Panel,
 {
     name: "html-events",
-    title: Locale.$STR("events.Events"),
     parentPanel: "html",
     order: 4,
 
@@ -114,12 +112,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 DIV({"class": "listenerLine originalListener"},
                     SPAN({"class": "listenerIndent", "role": "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
-                    SPAN({"class": "listenerCapturing", "hidden": "$listener|notCapturing"}, "C"), // XXX
+                    SPAN({"class": "listenerCapturing", "hidden": "$listener|capturingHidden"}, "C"), // XXX
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
                 FOR("derivedListener", "$listener.derivedListeners",
-                    DIV({"class": "listenerLine derivedListener", $doesNotApply: "$listener.doesNotApply"},
+                    DIV({"class": "listenerLine derivedListener", $doesNotApply: "$derivedListener.doesNotApply"},
                         SPAN({"class": "listenerIndent", "role": "presentation"}),
                         TAG(FirebugReps.Func.tag, {object: "$derivedListener.func"}),
+                        SPAN({"class": "selector"}, "$derivedListener|getSelectorText"),
                         TAG(FirebugReps.SourceLink.tag, {object: "$derivedListener.sourceLink"}))
                 )
             ),
@@ -129,10 +128,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         emptyTag: SPAN(),
 
-        notCapturing: function(listener)
+        capturingHidden: function(listener)
         {
-            return !listener.capturing;
-        }
+            return listener.capturing ? undefined : "";
+        },
+
+        getSelectorText: function(listener)
+        {
+            if (!listener.selector)
+                return "";
+            // TODO Localize
+            return " (" + listener.selector + ")";
+        },
     }),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -157,6 +164,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+    shouldShowDerivedListeners: function()
+    {
+        // XXX return whether debugger is enabled (for this.context)
+        return true;
+    },
 
     updateSelection: function(selection)
     {
@@ -257,13 +270,15 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             var ret = [];
             for (var i = 0; i < listeners.length; i++)
             {
-                var e = listeners[i];
-                var listener = {
+                let e = listeners[i];
+                let listener = {
                     func: e.handler
                 };
+                let selector = e.selector;
 
-                if (e.selector)
+                if (selector)
                 {
+                    listener.selector = selector;
                     // XXX test if this works with older jQuery versions and "live" / "delegate"
                     listener.appliesToElement = function(element)
                     {
@@ -285,18 +300,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                             if (needsContext === undefined)
                             {
                                 var reNeedsContext = (jq.expr && jq.expr.match && jq.expr.match.needsContext);
-                                needsContext = (reNeedsContext && reNeedsContext.test(e.selector));
+                                needsContext = (reNeedsContext && reNeedsContext.test(selector));
                             }
                             if (needsContext)
                             {
                                 // Handle selectors like "> a".
-                                return (jq(e.selector, target).filter(function()
+                                return (jq(selector, target).filter(function()
                                 {
                                     return elementSet.has(this);
                                 }).length > 0);
                             }
 
-                            return (jq.find(e.selector, target, null, elements).length > 0);
+                            return (jq.find(selector, target, null, elements).length > 0);
                         }
                         catch (exc)
                         {
@@ -304,7 +319,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                                 FBTrace.sysout("events.getDerivedJqueryListeners.appliesToElement threw an error", exc);
                             return true;
                         }
-                    }.bind(this, e);
+                    };
                 }
                 ret.push(listener);
             }
@@ -330,15 +345,19 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             li.target = target;
             li.sourceLink = SourceFile.findSourceForFunction(li.func, context);
 
-            var derived = self.getDerivedListeners(li.func, li.type, target) || [];
-            li.derivedListeners = derived.map(function(listener)
+            if (self.shouldShowDerivedListeners())
             {
-                return {
-                    func: listener.func,
-                    appliesToElement: listener.appliesToElement,
-                    sourceLink: SourceFile.findSourceForFunction(listener.func, context)
-                };
-            });
+                var derived = self.getDerivedListeners(li.func, li.type, target) || [];
+                li.derivedListeners = derived.map(function(listener)
+                {
+                    return {
+                        func: listener.func,
+                        appliesToElement: listener.appliesToElement,
+                        selector: listener.selector,
+                        sourceLink: SourceFile.findSourceForFunction(listener.func, context)
+                    };
+                });
+            }
 
             var handlerName = "on" + li.type;
             if (handlerName in Object.getPrototypeOf(target) &&
@@ -417,7 +436,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 {
                     // For non-inherited listeners, filtering by the current node doesn't make sense.
                     if (inherits && li.appliesToElement)
-                        li.doesNotApply = li.appliesToElement(baseElement);
+                        li.doesNotApply = !li.appliesToElement(baseElement);
                     else
                         li.doesNotApply = false;
                 }
