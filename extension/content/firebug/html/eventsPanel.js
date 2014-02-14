@@ -9,14 +9,11 @@
 // - clicking event handlers doesn't do anything (are they even in the script panel?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
-// - source links overlap function names
-// - derived listeners
-//  - replace right arrow symbol by image, for cross-platform stability
+// - replace derived listener right arrow symbol by image, for cross-platform stability
 // - capture
 // - a11y, RTL...
 // Functionality:
 // - detect eventbug (maybe)
-// - option for guessing from closure
 
 // Other:
 // - see if there are more extra event targets?
@@ -41,14 +38,16 @@ define([
     "firebug/lib/domplate",
     "firebug/lib/events",
     "firebug/lib/locale",
+    "firebug/chrome/menu",
     "firebug/lib/object",
+    "firebug/lib/options",
     "firebug/lib/wrapper",
     "firebug/chrome/reps",
     "firebug/debugger/debuggerLib",
     "firebug/debugger/script/sourceFile",
 ],
-function(Firebug, Dom, Domplate, Events, Locale, Obj, Wrapper, FirebugReps, DebuggerLib,
-    SourceFile) {
+function(Firebug, Dom, Domplate, Events, Locale, Menu, Obj, Options, Wrapper, FirebugReps,
+    DebuggerLib, SourceFile) {
 
 "use strict";
 
@@ -165,10 +164,20 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
+    isDebuggerEnabled: function()
+    {
+        return this.context.isPanelEnabled("script") && this.context.activeThread;
+    },
+
     shouldShowDerivedListeners: function()
     {
-        // XXX return whether debugger is enabled (for this.context)
-        return true;
+        return Options.get("showDerivedListeners") && this.isDebuggerEnabled();
+    },
+
+    updateOption: function(name)
+    {
+        if (name === "showDerivedListeners")
+            this.refresh();
     },
 
     updateSelection: function(selection)
@@ -432,6 +441,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
             for (let listener of list)
             {
+                if (!listener.derivedListeners)
+                    continue;
                 for (let li of listener.derivedListeners)
                 {
                     // For non-inherited listeners, filtering by the current node doesn't make sense.
@@ -577,8 +588,30 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
     },
 
-    getContextMenuItems: function()
+    getOptionsMenuItems: function()
     {
+        var label = Locale.$STR("events.option.Show_Derived_Listeners");
+        var tooltip = Locale.$STR("events.option.tip.Show_Derived_Listeners");
+        tooltip = Locale.$STRF("script.Script_panel_must_be_enabled", [tooltip]);
+        var menuItem = Menu.optionMenu(label, "showDerivedListeners", tooltip);
+        menuItem.nol10n = true;
+        menuItem.disabled = !this.isDebuggerEnabled();
+
+        return [
+            menuItem,
+            "-",
+            {
+                label: "Refresh",
+                tooltiptext: "panel.tip.Refresh",
+                command: this.refresh.bind(this)
+            }
+        ];
+    },
+
+    getContextMenuItems: function(object)
+    {
+        if (object)
+            return;
         return [
             {
                 label: "Refresh",
