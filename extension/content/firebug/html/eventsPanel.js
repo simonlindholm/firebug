@@ -1,6 +1,6 @@
 /* See license.txt for terms of usage */
 /*jshint esnext:true, curly:false, loopfunc:true*/
-/*global FBTrace:1, Components:1, define:1, Element:1*/
+/*global Components:1, define:1, Element:1*/
 
 // TODO:
 // UI:
@@ -34,6 +34,7 @@
 
 define([
     "firebug/firebug",
+    "firebug/lib/trace",
     "firebug/lib/dom",
     "firebug/lib/domplate",
     "firebug/lib/events",
@@ -46,7 +47,7 @@ define([
     "firebug/debugger/debuggerLib",
     "firebug/debugger/script/sourceFile",
 ],
-function(Firebug, Dom, Domplate, Events, Locale, Menu, Obj, Options, Wrapper, FirebugReps,
+function(Firebug, FBTrace, Dom, Domplate, Events, Locale, Menu, Obj, Options, Wrapper, FirebugReps,
     DebuggerLib, SourceFile) {
 
 "use strict";
@@ -136,7 +137,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             if (!listener.selector)
                 return "";
-            // TODO Localize
+            // XXX Localize
             return " (" + listener.selector + ")";
         },
     }),
