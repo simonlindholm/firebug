@@ -60,11 +60,12 @@
 }
 
 .listenerLineGroup.disabled > .originalListener > .listenerIndent {
-    background: transparent url(chrome://firebug/skin/disableInactive.png) no-repeat 2px 1px;
+    background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
+    filter: url(resource://firebugui/filters.svg#grayscale);
 }
 
 .listenerLineGroup > .originalListener:hover > .listenerIndent {
-    background: transparent url(chrome://firebug/skin/disable.png) no-repeat 2px 1px;
+    background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
 }
 
 .listenerLine > .objectLink-sourceLink {
