@@ -80,7 +80,7 @@
 
 /* remember: source links are position: absolute. use padding-right 150px + width */
 
-.listenerLine.disabled * {
+.listenerLineGroup.disabled * {
     color: #CCCCCC;
 }
 
