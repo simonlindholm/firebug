@@ -46,9 +46,10 @@ define([
     "firebug/chrome/reps",
     "firebug/debugger/debuggerLib",
     "firebug/debugger/script/sourceFile",
+    "firebug/remoting/debuggerClient",
 ],
 function(Firebug, FBTrace, Dom, Domplate, Events, Locale, Menu, Obj, Options, Wrapper, FirebugReps,
-    DebuggerLib, SourceFile) {
+    DebuggerLib, SourceFile, DebuggerClient) {
 
 "use strict";
 
@@ -158,10 +159,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     {
         Firebug.Panel.initializeNode.apply(this, arguments);
         Events.addEventListener(this.panelNode, "click", this.onClick, false);
+        DebuggerClient.addListener(this);
     },
 
     destroyNode: function()
     {
+        DebuggerClient.removeListener(this);
         Events.removeEventListener(this.panelNode, "click", this.onClick, false);
         Firebug.Panel.destroyNode.apply(this, arguments);
     },
@@ -208,6 +211,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             TraceError.sysout("events.updateSelection FAILS", exc);
         }
+    },
+
+    onThreadAttached: function()
+    {
+        // Refresh the panel if the debugger becomes enabled, so we get source links.
+        if (this.context.sidePanelName === this.name)
+            this.refresh();
     },
 
     getDisabledMap: function(context)
