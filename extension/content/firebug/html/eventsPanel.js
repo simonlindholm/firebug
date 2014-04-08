@@ -282,11 +282,13 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             {
                 let e = listeners[i];
                 let listener = {
-                    func: e.handler
+                    func: e.origHandler || e.handler
                 };
+                if (typeof listener.func !== "function")
+                    continue;
                 let selector = e.selector;
 
-                if (selector)
+                if (typeof selector === "string")
                 {
                     listener.selector = selector;
                     // XXX test if this works with older jQuery versions and "live" / "delegate"
