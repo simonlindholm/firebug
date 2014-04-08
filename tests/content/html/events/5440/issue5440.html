@@ -4,10 +4,8 @@
         <title>Issue 5440: Integrate EventBug into Firebug</title>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
         <link href="../../../_common/testcase.css" type="text/css" rel="stylesheet"/>
-        <script src="jquery-1.4.js"></script>
-        <script>jq14 = jQuery.noConflict(true);</script>
-        <script src="jquery-1.7.js"></script>
-        <script>jq17 = jQuery.noConflict(true);</script>
+        <script src="jquery-1.5.js"></script>
+        <script>jq15 = jQuery.noConflict(true);</script>
         <script src="jquery-1.9.js"></script>
         <script>jq19 = jQuery.noConflict(true);</script>
     </head>
@@ -17,6 +15,10 @@
                     Integrate EventBug into Firebug</h1>
         </header>
         <div>
+            <div id="test">
+                <div>div</div> <span>span</span>
+            </div>
+
             <section id="description">
                 <h3>Steps to reproduce</h3>
                 <ol>
@@ -28,5 +30,13 @@
             </section>
             <footer>Simon Lindholm, simon.lindholm10@gmail.com</footer>
         </div>
+<script>
+function funA() { alert("a"); }
+var funB = alert.bind(window, "b");
+jq19("#test").on("click", "> div", funA);
+jq19("#test").on("click", funB);
+jq15("#test").live("click", funA);
+jq15("#test").bind("click", funB);
+</script>
     </body>
 </html>
