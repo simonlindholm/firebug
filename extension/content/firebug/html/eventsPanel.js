@@ -271,8 +271,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 return null;
 
             var jq = DebuggerLib.unwrapDebuggeeValue(dbgJq);
-            var fnName = ("_data" in jq ? "_data" : "data");
-            var eventData = jq[fnName](target, "events");
+            var eventData = jq._data(target, "events");
             var listeners = eventData && eventData[type];
             if (!listeners)
                 return null;
@@ -291,7 +290,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 if (typeof selector === "string")
                 {
                     listener.selector = selector;
-                    // XXX test if this works with older jQuery versions and "live" / "delegate"
                     listener.appliesToElement = function(element)
                     {
                         try
@@ -308,22 +306,21 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                                 cur = cur.parentNode;
                             }
 
-                            var needsContext = e.needsContext;
-                            if (needsContext === undefined)
+                            var matches;
+                            if (e.needsContext)
                             {
-                                var reNeedsContext = (jq.expr && jq.expr.match && jq.expr.match.needsContext);
-                                needsContext = (reNeedsContext && reNeedsContext.test(selector));
-                            }
-                            if (needsContext)
-                            {
-                                // Handle selectors like "> a".
-                                return (jq(selector, target).filter(function()
+                                // Handle selectors like "> a" (for versions >= 1.9).
+                                matches = jq(selector, target).filter(function()
                                 {
                                     return elementSet.has(this);
-                                }).length > 0);
+                                });
+                            }
+                            else
+                            {
+                                matches = jq.find(selector, target, null, elements);
                             }
 
-                            return (jq.find(selector, target, null, elements).length > 0);
+                            return (matches.length > 0);
                         }
                         catch (exc)
                         {
