@@ -21,12 +21,15 @@
 /*************************************************************************************************/
 /* Command Line */
 
+#fbCommandArrow,
+.fbCommandLine {
+    font-family: monospace;
+    font-size: 10px;
+}
+
 #fbCommandArrow {
     margin-left: 7px;
-    font-family: monospace;
     color: #0000FF;
-    line-height: 0;
-    padding: 2px 0;
 }
 
 .fbCommandLine {
@@ -34,8 +37,6 @@
     margin: 0 0 0 4px !important;
     padding: 2px 0 !important;
     border: none;
-    font-family: monospace;
-    font-size: 12px;
     direction: ltr;
     width: 100%;
     background: none repeat scroll 0% 0% transparent;
@@ -67,15 +68,8 @@
 }
 
 #fbToggleCommandEditorBox {
-    background-color: white;
     padding: 0;
     margin: 0;
-}
-
-#fbToggleCommandEditorBox .column {
-    width: 31px;
-    background-color: rgb(238, 238, 238);
-    border-right: 1px solid rgb(221, 221, 221);
 }
 
 #fbToggleCommandEditor {
@@ -102,7 +96,6 @@
 .fbCommandHtmlBox .background {
     position: relative;
     background: none repeat scroll 0% 0% transparent;
-    line-height: 0;
     vertical-align: middle;
 }
 
@@ -614,7 +607,8 @@ toolbarbutton:-moz-any([checked="true"],
 toolbarbutton:-moz-any([checked="true"],
                        [selected="true"],
                        [open="true"]):not(.panelStatusLabel):not([disabled="true"]):not([type=menu-button]) {
-    background: transparent linear-gradient(rgba(0, 0, 0, 0.1), transparent) no-repeat;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.1), transparent);
+    background-repeat: no-repeat;
 }
 
 toolbarbutton:hover:active:not([disabled="true"]) {
@@ -623,7 +617,8 @@ toolbarbutton:hover:active:not([disabled="true"]) {
 }
 
 toolbarbutton:hover:active:not([disabled="true"]):not([type=menu-button]) {
-    background: transparent linear-gradient(rgba(0, 0, 0, 0.2), transparent) no-repeat;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.2), transparent);
+    background-repeat: no-repeat;
 }
 
 toolbarbutton[type="menu-button"] {
@@ -820,6 +815,40 @@ panelTab[selected="true"]:hover:active > panelTabMenu .menuTarget {
 }
 
 #fbToggleSidePanelsBox2 {
+    -moz-box-align: center;
+    padding-bottom: 1px;
+}
+
+/*************************************************************************************************/
+/* Toggle Command Editor */
+
+.fbToggleCommandEditor {
+    list-style-image: url(chrome://firebug/skin/collapseSidePanels.svg);
+}
+
+.fbToggleCommandEditor.closed {
+    list-style-image: url(chrome://firebug/skin/expandSidePanels.svg);
+}
+
+#fbPanelPane:not([orient="vertical"]) .fbToggleCommandEditor {
+    margin-right: 2px;
+}
+
+.fbToggleCommandEditor:hover {
+    filter: url(resource://firebugui/filters.svg#darken);
+}
+
+.fbToggleCommandEditor:active {
+    filter: url(resource://firebugui/filters.svg#deepDarken);
+    padding: 3px;
+}
+
+#fbToggleCommandEditorBox {
+    -moz-box-flex: 1;
+    -moz-box-pack: end;
+}
+
+.fbToggleCommandEditor {
     -moz-box-align: center;
     padding-bottom: 1px;
 }

@@ -35,14 +35,13 @@ define([
     "firebug/debugger/script/scriptPanelLineUpdater",
     "firebug/debugger/debuggerLib",
     "firebug/console/commandLine",
-    "firebug/net/netUtils",
     "arch/compilationunit",
 ],
 function (Firebug, FBTrace, Obj, Locale, Events, Dom, Arr, Css, Url, Domplate, Persist, Keywords,
     System, Options, Promise, ActivablePanel, Menu, Rep, StatusPath, SearchBox, Editor, ScriptView,
     StackFrame, SourceLink, SourceFile, Breakpoint, BreakpointStore, BreakpointConditionEditor,
     BreakOnNext, ScriptPanelWarning, BreakNotification, ScriptPanelLineUpdater,
-    DebuggerLib, CommandLine, NetUtils, CompilationUnit) {
+    DebuggerLib, CommandLine, CompilationUnit) {
 
 "use strict";
 
@@ -110,6 +109,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         this.context.getTool("breakpoint").addListener(this);
         this.context.getTool("source").addListener(this);
+
+        BreakOnNext.addListener(this);
 
         // Register as a listener for 'updateSidePanels' event.
         Firebug.registerUIListener(this);
@@ -317,7 +318,9 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
     showSourceLink: function(sourceLink)
     {
-        this.navigate(sourceLink);
+        // Show the source only if the target source file actually exists.
+        if (SourceFile.getSourceFileByUrl(this.context, sourceLink.href))
+            this.navigate(sourceLink);
     },
 
     showFunction: function(fn)
@@ -400,9 +403,55 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Location List
 
+    showThisCompilationUnit: function(compilationUnit)
+    {
+        if (compilationUnit.getURL().lastIndexOf("chrome://", 0) === 0)
+            return false;
+
+        if (compilationUnit.getKind() === CompilationUnit.EVAL && !this.showEvals)
+            return false;
+
+        if (compilationUnit.getKind() === CompilationUnit.BROWSER_GENERATED && !this.showEvents)
+            return false;
+
+        return true;
+    },
+
     getLocationList: function()
     {
-        return this.context.getAllCompilationUnits();
+        var allSources = this.context.getAllCompilationUnits();
+
+        if (!allSources.length)
+            return [];
+
+        var filter = Options.get("scriptsFilter");
+        this.showEvents = (filter == "all" || filter == "events");
+        this.showEvals = (filter == "all" || filter == "evals");
+
+        var list = [];
+        for (var i = 0; i < allSources.length; i++)
+        {
+            if (this.showThisCompilationUnit(allSources[i]))
+            {
+                list.push(allSources[i]);
+            }
+            else
+            {
+                Trace.sysout("scriptPanel.getLocationList; filtered " + allSources[i].getURL(),
+                    allSources[i]);
+            }
+        }
+
+        if (!list.length && allSources.length)
+            this.context.allScriptsWereFiltered = true;
+        else
+            delete this.context.allScriptsWereFiltered;
+
+        Trace.sysout("scriptPanel.getLocationList; enabledOnLoad: " +
+            this.context.onLoadWindowContent + " all:" + allSources.length + " filtered:" +
+            list.length + " allFiltered: " + this.context.allScriptsWereFiltered, list);
+
+        return list;
     },
 
     getDefaultCompilationUnit: function()
@@ -454,6 +503,21 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         Events.dispatch(this.fbListeners, "onUpdateScriptLocation", [this, sourceLink]);
     },
 
+    /**
+     * Always return {@link CompilationUnit} instance. The method should always return
+     * an object that is also used within the location list (built in getLocationList method).
+     */
+    normalizeLocation: function(object)
+    {
+        if (object instanceof CompilationUnit)
+            return object;
+
+        if (object instanceof SourceLink)
+            return this.context.getCompilationUnit(object.href);
+
+        TraceError.sysout("scriptPanel.normalizeLocation; Unknown location! ", object);
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     getCurrentURL: function()
@@ -467,11 +531,12 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
     getCompilationUnit: function()
     {
-        if (this.location instanceof CompilationUnit)
-            return this.location;
+        return this.normalizeLocation(this.location);
+    },
 
-        if (this.location instanceof SourceLink)
-            return this.context.getCompilationUnit(this.location.href);
+    getSourceFile: function()
+    {
+        return this.context.getSourceFile(this.location.href);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -512,6 +577,18 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         // is visible to the user. It's wrong in the case where the user just
         // executed an expression on the command line, which also causes 'framesadded'
         // to be received (through clearScopes). See also issue 7028.
+
+        // If frames are added make sure to update the selection (issue 7320)
+        this.selection = this.context.currentFrame;
+
+        // xxxHonza: Script panel side-panels derive the current selection object from
+        // the Script panel (see onSelectedSidePanel in chrome.js) and those selection
+        // should be also updated. How to do it properly?
+        // There doesn't seem to be a public problem with this, but the internal state
+        // should be correct.
+        // Note that the way how selection of side panels is derived from the main
+        // panel has been rather confusing over time, but extension might depend
+        // on it, so it's rather hard to change it.
     },
 
     framescleared: function()
@@ -580,8 +657,7 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
             //     it's guessed according to the file extension.
             // 3) Get the type/category from the content type.
             var sourceFile = SourceFile.getSourceFileByUrl(this.context, sourceLink.href);
-            var mimeType = NetUtils.getMimeType(sourceFile.contentType, sourceFile.href);
-            var category = NetUtils.getCategory(mimeType);
+            var category = sourceFile.getCategory();
 
             // Display the source.
             this.scriptView.showSource(lines.join(""), category);
@@ -606,6 +682,18 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         compilationUnit.getSourceLines(-1, -1, callback.bind(this));
     },
 
+    onSourceLoaded: function(sourceFile, lines)
+    {
+        Trace.sysout("debugger.SourceLoaded; " + sourceFile.href);
+
+        if (this.location.href != sourceFile.href)
+            return;
+
+        this.scriptView.showSource(sourceFile.lines.join(""), "js");
+
+        this.context.invalidatePanels("breakpoints");
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Search
 
@@ -616,6 +704,10 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     search: function(text, reverse)
     {
         Trace.sysout("scriptPanel.search; " + text + ", reverse: " + reverse);
+
+        // Ignore empty searches, but keep the current selection.
+        if (!text)
+            return;
 
         // Check if the search is for a line number.
         var m = /^[^\\]?#(\d*)$/.exec(text);
@@ -848,7 +940,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         // Get only standard breakpoints. Breakpoints for errors or monitors, etc.
         // Are not displayed in the breakpoint column.
-        BreakpointStore.enumerateBreakpoints(url, function(bp)
+        // Do not get dynamic breakpoints either (second argument false).
+        BreakpointStore.enumerateBreakpoints(url, false, function(bp)
         {
             // xxxHonza: perhaps we should pass only line numbers to the ScriptView?
             breakpoints.push(bp);
@@ -865,17 +958,6 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         this.initializeEditBreakpointCondition(lineIndex);
 
         Events.cancelEvent(event);
-    },
-
-    onEditorMouseUp: function(event)
-    {
-        Trace.sysout("scriptPanel.onEditorMouseUp;", event);
-
-        // Click anywhere in the script panel closes breakpoint-condition-editor
-        // if it's currently opened. It's valid to close the editor this way
-        // and that's why the 'cancel' argument is set to false.
-        if (this.editing)
-            Editor.stopEditing(false);
     },
 
     onEditorKeyDown: function(event)
@@ -986,7 +1068,7 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         // initialized, but it should never happen at this moment.
         this.scrollTop = this.scriptView.getScrollInfo().top;
 
-        Firebug.Editor.startEditing(target, condition, null, null, this);
+        Editor.startEditing(target, condition, null, null, this);
     },
 
     onSetBreakpointCondition: function(bp, value, cancel)
@@ -1014,7 +1096,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     {
         if (!this.conditionEditor)
         {
-            this.conditionEditor = new BreakpointConditionEditor(this.document);
+            var sourceEditor = this.scriptView.getInternalEditor();
+            this.conditionEditor = new BreakpointConditionEditor(this.document, sourceEditor);
             this.conditionEditor.callback = this.onSetBreakpointCondition.bind(this);
         }
 
@@ -1071,7 +1154,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         // Remove breakpoint from the UI.
         this.scriptView.removeBreakpoint(bp);
-        if (this.scriptView.editor && this.scriptView.editor.debugLocation == bp.lineNo)
+        var editor = this.scriptView.getInternalEditor();
+        if (editor && editor.debugLocation == bp.lineNo)
             this.scriptView.setDebugLocation(bp.lineNo, true);
     },
 
@@ -1146,6 +1230,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         // See issue 4378
         var isCodeTarget = (target.tagName === "TEXTAREA" &&
             Dom.getAncestorByClass(target, "CodeMirror"));
+
+        Trace.sysout("scriptPanel.getContextMenuItems; isCodeTarget: " + isCodeTarget, target);
 
         if (!isCodeTarget)
             return;
@@ -1249,6 +1335,20 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
             )
         }
 
+        var sourceFile = this.getSourceFile();
+        var category = sourceFile.getCategory();
+        if (category == "js")
+        {
+            items.push("-",
+            {
+                label: "script.PrettyPrint",
+                tooltiptext: "script.tip.PrettyPrint",
+                type: "checkbox",
+                checked: sourceFile.isPrettyPrinted,
+                command: Obj.bindFixed(this.togglePrettyPrint, this)
+            });
+        }
+
         return items;
     },
 
@@ -1304,6 +1404,18 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
             BreakpointStore.disableBreakpoint(currentUrl, line);
     },
 
+    togglePrettyPrint: function()
+    {
+        Trace.sysout("scriptPanel.togglePrettyPrint;");
+
+        var sourceFile = this.getSourceFile();
+        sourceFile.togglePrettyPrint(() =>
+        {
+            //var lines = DebuggerLib.getExecutableLines(this.context, sourceFile);
+            //Trace.sysout("lines " + lines.join(", "), lines);
+        });
+    },
+
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // BON
 
@@ -1312,9 +1424,9 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         return this.breakable;
     },
 
-    breakOnNext: function(enabled)
+    breakOnNext: function(enabled, callback)
     {
-        BreakOnNext.breakOnNext(this.context, enabled);
+        BreakOnNext.breakOnNext(this.context, enabled, callback);
     },
 
     getBreakOnNextTooltip: function(armed)
@@ -1540,6 +1652,8 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         if (!this.location)
         {
             this.location = this.getDefaultLocation();
+            Trace.sysout("scriptPanel.newSource; this.location.getURL() = " +
+                this.location.getURL());
             this.updateLocation(this.location);
             Firebug.chrome.syncLocationList();
         }
@@ -1674,7 +1788,7 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     {
         var self = this;
         var currentLine = from;
-        var editor = this.scriptView.editor.editorObject;
+        var editor = this.scriptView.getInternalEditor().editorObject;
 
         Trace.sysout("scriptPanel.markExecutableLines; from: " + from + ", to: " + to);
 

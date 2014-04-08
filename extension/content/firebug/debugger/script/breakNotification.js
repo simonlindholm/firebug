@@ -33,8 +33,8 @@ var Trace = FBTrace.to("DBG_BREAKNOTIFICATION");
  *
  * @param doc the document to contain the notification
  * @param cause info object for the popup, with these optional fields:
- *   strings: title, message, attrName
- *   elements: target, relatedTarget: element
+ *   strings: message, attrName
+ *   elements: target
  *   objects: prevValue, newValue
  */
 function BreakNotification(cause)
@@ -272,6 +272,9 @@ BreakNotification.prototype = domplate(Rep,
         // Render the entire notification box.
         this.box = this.tag.append(this.cause, parentNode, this);
         this.box.repObject = this;
+
+        // Make sure the notification box is at the top.
+        parentNode.insertBefore(this.box, this.box.previousSibling);
 
         // Appends the HTML targets dynamically. In case they are null, it breaks
         // click events.

@@ -41,7 +41,7 @@ define([
 ],
 function(Obj, Firebug, Firefox, Domplate, Xpcom, Locale,
     Events, Options, Url, SourceLink, Http, Css, Dom, Win, Search, Str,
-    Arr, System, Menu, NetUtils, NetProgress, CSSInfoTip, ConditionEditor, TimeInfoTip,
+    Arr, System, Menu, NetUtils, NetProgress, CSSReps, ConditionEditor, TimeInfoTip,
     PanelNotification, ActivablePanel, SearchBox) {
 
 // ********************************************************************************************* //
@@ -244,7 +244,7 @@ NetPanel.prototype = Obj.extend(ActivablePanel,
     {
         if (this.table)
         {
-            if (Firebug.netShowBFCacheResponses)
+            if (Options.get("netShowBFCacheResponses"))
                 Css.setClass(this.table, "showBFCacheResponses");
             else
                 Css.removeClass(this.table, "showBFCacheResponses");
@@ -661,9 +661,11 @@ NetPanel.prototype = Obj.extend(ActivablePanel,
         }
     },
 
-    breakOnNext: function(breaking)
+    breakOnNext: function(breaking, callback)
     {
         this.context.breakOnXHR = breaking;
+        if (callback)
+            callback(this.context, breaking);
     },
 
     shouldBreakOnNext: function()
@@ -719,7 +721,7 @@ NetPanel.prototype = Obj.extend(ActivablePanel,
                     return true;
 
                 this.infoTipURL = infoTipURL;
-                return CSSInfoTip.populateImageInfoTip(infoTip, row.repObject.href);
+                return CSSReps.CSSInfoTip.populateImageInfoTip(infoTip, row.repObject.href);
             }
         }
 
@@ -1257,7 +1259,7 @@ NetPanel.prototype = Obj.extend(ActivablePanel,
             var file = phase.files[i];
 
             // Do not count BFCache responses if the user says so.
-            if (!Firebug.netShowBFCacheResponses && file.fromBFCache)
+            if (!Options.get("netShowBFCacheResponses") && file.fromBFCache)
                 continue;
 
             if (!categories || categories.indexOf(file.category) != -1)

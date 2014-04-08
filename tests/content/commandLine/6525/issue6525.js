@@ -1,21 +1,19 @@
 function runTest()
 {
-    FBTest.sysout("issue6525.START");
     FBTest.openNewTab(basePath + "commandLine/6525/issue6525.php", function(win)
     {
-        FBTest.openFirebug();
-
-        FBTestFireCookie.enableCookiePanel();
-        FBTest.enableConsolePanel();
-        FBTest.enableNetPanel(function(win)
+        FBTest.openFirebug(function()
         {
-            var taskList = new FBTest.TaskList();
-            taskList.push(checkNetPanel);
-            taskList.push(checkCookiesPanel);
-
-            taskList.run(function()
+            FBTest.enablePanels(["net", "cookies", "console"], function()
             {
-                FBTest.testDone("issue6525.DONE");
+                var taskList = new FBTest.TaskList();
+                taskList.push(checkNetPanel);
+                taskList.push(checkCookiesPanel);
+
+                taskList.run(function()
+                {
+                    FBTest.testDone();
+                });
             });
         });
     });
@@ -44,7 +42,7 @@ function checkCookiesPanel(callback)
 {
     var panel = FBTest.selectPanel("cookies");
 
-    var row = FBTestFireCookie.getCookieRowByName(panel.panelNode, "TestCookieIssue6525");
+    var row = FBTest.getCookieRowByName(panel.panelNode, "TestCookieIssue6525");
     FBTest.executeContextMenuCommand(row, "fbUseInCommandLine", function()
     {
         FBTest.executeCommandAndVerify(callback, "$p.name", "\"TestCookieIssue6525\"",

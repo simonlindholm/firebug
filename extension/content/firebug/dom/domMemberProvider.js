@@ -10,13 +10,14 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/dom",
     "firebug/lib/locale",
+    "firebug/lib/options",
     "firebug/console/closureInspector",
     "firebug/chrome/panelActivation",
     "firebug/chrome/reps",
     "firebug/debugger/debuggerLib",
 ],
-function(Firebug, FBTrace, Obj, Arr, Wrapper, Dom, Locale, ClosureInspector, PanelActivation,
-    FirebugReps, DebuggerLib) {
+function(Firebug, FBTrace, Obj, Arr, Wrapper, Dom, Locale, Options, ClosureInspector,
+    PanelActivation, FirebugReps, DebuggerLib) {
 
 // ********************************************************************************************* //
 // Constants
@@ -66,17 +67,15 @@ DOMMemberProvider.prototype =
             try
             {
                 // Make sure not to touch the prototype chain of the magic scope objects.
-                var ownOnly = Firebug.showOwnProperties || isScope;
-                var enumerableOnly = Firebug.showEnumerableProperties;
+                var ownOnly = Options.get("showOwnProperties") || isScope;
+                var enumerableOnly = Options.get("showEnumerableProperties");
 
                 properties = this.getObjectProperties(object, enumerableOnly, ownOnly);
                 properties = Arr.sortUnique(properties);
 
                 var addOwn = function(prop)
                 {
-                    // Apparently, Object.prototype.hasOwnProperty.call(object, p) lies
-                    // when 'object' is content and 'Object' is chrome... Bug 658909?
-                    if (Object.getOwnPropertyDescriptor(object, prop) &&
+                    if (Obj.contentObjectHasOwnProperty(object, prop) &&
                         properties.indexOf(prop) === -1)
                     {
                         properties.push(prop);
@@ -106,6 +105,7 @@ DOMMemberProvider.prototype =
                 this.addMember(object, type, where, name, val, level, isScope);
             }.bind(this);
 
+            var tester = new Dom.DOMMemberTester(object);
             for (var i=0; i<properties.length; i++)
             {
                 name = properties[i];
@@ -123,28 +123,29 @@ DOMMemberProvider.prototype =
                     val = undefined;
                 }
 
+                var isInlineEventHandler = Dom.isInlineEventHandler(name);
+                var isDOMMember = !isInlineEventHandler && tester.isDOMMember(name);
                 if (!isNaN(parseInt(name, 10)))
                 {
                     add("ordinal", ordinals);
                 }
                 else if (typeof val === "function")
                 {
-                    var classFunc = isClassFunction(val);
-                    var domMember = Dom.isDOMMember(object, name);
-                    if (domMember && classFunc)
+                    var isClassFunc = isClassFunction(val);
+                    if (isDOMMember && isClassFunc)
                     {
                         add("domClass", domClasses);
                     }
-                    else if (domMember)
+                    else if (isDOMMember)
                     {
                         add("domFunction", domFuncs);
                     }
-                    else if (classFunc)
+                    else if (isClassFunc)
                     {
                         add("userClass", userClasses);
                     }
-                    else if (!Firebug.showUserFuncs && Firebug.showInlineEventHandlers &&
-                        Dom.isInlineEventHandler(name))
+                    else if (!Options.get("showUserFuncs") && Options.get("showInlineEventHandlers") &&
+                        isInlineEventHandler)
                     {
                         add("userFunction", domHandlers);
                     }
@@ -159,18 +160,17 @@ DOMMemberProvider.prototype =
                     {
                         add("proto", proto);
                     }
-                    else if (Dom.isDOMMember(object, name))
-                    {
-                        add("dom", domProps);
-                    }
-                    else if (Dom.isDOMConstant(object, name))
+                    else if (tester.isDOMConstant(name))
                     {
                         add("dom", domConstants);
                     }
-                    else if (val === null && object instanceof EventTarget &&
-                        Dom.isInlineEventHandler(name))
+                    else if (isDOMMember)
                     {
-                        add("user", domHandlers);
+                        add("dom", domProps);
+                    }
+                    else if (val === null && object instanceof EventTarget && isInlineEventHandler)
+                    {
+                        add("dom", domHandlers);
                     }
                     else
                     {
@@ -201,13 +201,13 @@ DOMMemberProvider.prototype =
         ordinals.sort(sortOrdinal);
         members.push.apply(members, ordinals);
 
-        if (Firebug.showUserProps)
+        if (Options.get("showUserProps"))
         {
             userProps.sort(sortName);
             members.push.apply(members, userProps);
         }
 
-        if (Firebug.showUserFuncs)
+        if (Options.get("showUserFuncs"))
         {
             userClasses.sort(sortName);
             members.push.apply(members, userClasses);
@@ -216,13 +216,13 @@ DOMMemberProvider.prototype =
             members.push.apply(members, userFuncs);
         }
 
-        if (Firebug.showDOMProps)
+        if (Options.get("showDOMProps"))
         {
             domProps.sort(sortName);
             members.push.apply(members, domProps);
         }
 
-        if (Firebug.showDOMFuncs)
+        if (Options.get("showDOMFuncs"))
         {
             domClasses.sort(sortName);
             members.push.apply(members, domClasses);
@@ -231,12 +231,12 @@ DOMMemberProvider.prototype =
             members.push.apply(members, domFuncs);
         }
 
-        if (Firebug.showDOMConstants)
+        if (Options.get("showDOMConstants"))
             members.push.apply(members, domConstants);
 
         members.push.apply(members, proto);
 
-        if (Firebug.showInlineEventHandlers)
+        if (Options.get("showInlineEventHandlers"))
         {
             domHandlers.sort(sortName);
             members.push.apply(members, domHandlers);
@@ -244,8 +244,8 @@ DOMMemberProvider.prototype =
 
         if (FBTrace.DBG_DOM)
         {
-            var showEnum = Firebug.showEnumerableProperties;
-            var showOwn = Firebug.showOwnProperties;
+            var showEnum = Options.get("showEnumerableProperties");
+            var showOwn = Options.get("showOwnProperties");
             FBTrace.sysout("dom.getMembers; Report: enum-only: " + showEnum +
                 ", own-only: " + showOwn + ", total members: " + members.length,
             {
@@ -281,7 +281,7 @@ DOMMemberProvider.prototype =
 
     shouldShowClosures: function()
     {
-        if (!Firebug.showClosures)
+        if (!Options.get("showClosures"))
             return false;
         var requireScriptPanel = DebuggerLib._closureInspectionRequiresDebugger();
         if (requireScriptPanel && !PanelActivation.isPanelEnabled(Firebug.getPanelType("script")))
@@ -297,8 +297,8 @@ DOMMemberProvider.prototype =
         if (value instanceof FirebugReps.ErrorCopy)
             return false;
 
-        var enumerableOnly = Firebug.showEnumerableProperties;
-        var ownOnly = Firebug.showOwnProperties;
+        var enumerableOnly = Options.get("showEnumerableProperties");
+        var ownOnly = Options.get("showOwnProperties");
         if (Obj.hasProperties(value, !enumerableOnly, ownOnly))
             return true;
 
@@ -399,6 +399,7 @@ DOMMemberProvider.prototype =
         // among simple properties and those defined using getter and/or (only a) setter.
         // XXX This should be rewritten to use 'descriptor', and the unwrapping test is
         // always false! See issue 5377.
+        /*
         if (object && !Dom.isDOMMember(object, name) && (XPCNativeWrapper.unwrap(object) !== object))
         {
             var getter = (object.__lookupGetter__) ? object.__lookupGetter__(name) : null;
@@ -421,6 +422,7 @@ DOMMemberProvider.prototype =
                 member.prefix = "set";
             }
         }
+        */
 
         props.push(member);
         return member;

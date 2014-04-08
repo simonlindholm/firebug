@@ -1,28 +1,34 @@
 /* See license.txt for terms of usage */
+/*global define:1, KeyEvent:1*/
 
 define([
-    "firebug/lib/object",
     "firebug/firebug",
-    "firebug/lib/domplate",
-    "firebug/lib/locale",
-    "firebug/lib/events",
-    "firebug/lib/wrapper",
-    "firebug/lib/dom",
-    "firebug/lib/string",
+    "firebug/lib/trace",
     "firebug/lib/array",
+    "firebug/lib/dom",
+    "firebug/lib/domplate",
+    "firebug/lib/events",
+    "firebug/lib/locale",
+    "firebug/lib/object",
+    "firebug/lib/string",
+    "firebug/lib/wrapper",
+    "firebug/lib/options",
     "firebug/console/closureInspector",
     "firebug/console/commandLineExposed",
 ],
-function(Obj, Firebug, Domplate, Locale, Events, Wrapper, Dom, Str, Arr, ClosureInspector,
-    CommandLineExposed) {
+function(Firebug, FBTrace, Arr, Dom, Domplate, Events, Locale, Obj, Str, Wrapper, Options,
+    ClosureInspector, CommandLineExposed) {
 
 "use strict";
 
 // ********************************************************************************************* //
 // Constants
 
+var TraceError = FBTrace.toError();
+var Trace = FBTrace.to("DBG_COMMANDLINE");
+
 var kwActions = ["throw", "return", "in", "instanceof", "delete", "new",
-                   "typeof", "void", "yield"];
+                 "typeof", "void", "yield"];
 var kwAll = ["break", "case", "catch", "const", "continue", "debugger",
   "default", "delete", "do", "else", "false", "finally", "for", "function",
   "get", "if", "in", "instanceof", "let", "new", "null", "return", "set",
@@ -73,7 +79,6 @@ function JSAutoCompleter(textBox, completionBox, options)
             return false;
 
         this.textBox.value = this.revertValue;
-        var len = this.textBox.value.length;
         setCursorToEOL(this.textBox);
 
         this.complete(context);
@@ -187,10 +192,10 @@ function JSAutoCompleter(textBox, completionBox, options)
         var spreParsed = svalue.substr(0, parseStart);
         var preParsed = value.substr(0, parseStart);
 
-        if (FBTrace.DBG_COMMANDLINE)
+        if (Trace.active)
         {
             var sep = (parsed.indexOf("|") > -1) ? "^" : "|";
-            FBTrace.sysout("Completing: " + preParsed + sep + preExpr + sep + prop);
+            Trace.sysout("Completing: " + preParsed + sep + preExpr + sep + prop);
         }
 
         var prevCompletions = this.completions;
@@ -452,7 +457,8 @@ function JSAutoCompleter(textBox, completionBox, options)
             return "";
         var userTyped = this.textBox.value;
         var value = this.completionBase.pre + this.completionBase.expr + completion;
-        return userTyped + value.substr(userTyped.length);
+        var whitespace = " ".repeat(userTyped.length);
+        return whitespace + value.substr(userTyped.length);
     };
 
     /**
@@ -634,7 +640,8 @@ function JSAutoCompleter(textBox, completionBox, options)
 
     this.setTabWarning = function()
     {
-        this.completionBox.value = this.textBox.value + "    " +
+        var whitespace = " ".repeat(this.textBox.value.length);
+        this.completionBox.value = whitespace + "    " +
             Locale.$STR("firebug.completion.empty");
 
         this.tabWarning = true;
@@ -742,15 +749,13 @@ function JSAutoCompleter(textBox, completionBox, options)
 
     this.popupCandidates = function(cycling)
     {
-        Dom.eraseNode(this.completionPopup);
+        var doc = this.completionPopup.ownerDocument;
         this.selectedPopupElement = null;
 
-        var vbox = this.completionPopup.ownerDocument.createElement("vbox");
+        var vbox = doc.createElement("vbox");
         vbox.classList.add("fbCommandLineCompletions");
-        this.completionPopup.appendChild(vbox);
 
-        var title = this.completionPopup.ownerDocument.
-            createElementNS("http://www.w3.org/1999/xhtml", "div");
+        var title = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
         title.textContent = Locale.$STR("console.Use Arrow keys, Tab or Enter");
         title.classList.add("fbPopupTitle");
         vbox.appendChild(title);
@@ -807,20 +812,17 @@ function JSAutoCompleter(textBox, completionBox, options)
             var prefixLen = this.completions.prefix.length;
             var completion = list[i], name = completion.name;
 
-            var hbox = this.completionPopup.ownerDocument.
-                createElementNS("http://www.w3.org/1999/xhtml", "div");
+            var hbox = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
             hbox.completionIndex = i;
             hbox.classList.add("completionLine");
             hbox.classList.add("fbPopupEntry");
 
-            var pre = this.completionPopup.ownerDocument.
-                createElementNS("http://www.w3.org/1999/xhtml", "span");
+            var pre = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
             var preText = this.completionBase.expr + name.substr(0, prefixLen);
             pre.textContent = preText;
             pre.classList.add("userTypedText");
 
-            var post = this.completionPopup.ownerDocument.
-                createElementNS("http://www.w3.org/1999/xhtml", "span");
+            var post = doc.createElementNS("http://www.w3.org/1999/xhtml", "span");
             var postText = name.substr(prefixLen);
             post.textContent = postText;
             post.classList.add("completionText");
@@ -834,8 +836,7 @@ function JSAutoCompleter(textBox, completionBox, options)
 
                 if (!separatorInserted)
                 {
-                    var separator = this.completionPopup.ownerDocument.
-                        createElementNS("http://www.w3.org/1999/xhtml", "div");
+                    var separator = doc.createElementNS("http://www.w3.org/1999/xhtml", "div");
                     separator.textContent = Locale.$STR("console.Firebug_Command_Line_API");
                     separator.classList.add("fbPopupSeparator");
                     vbox.appendChild(separator);
@@ -860,18 +861,32 @@ function JSAutoCompleter(textBox, completionBox, options)
         // Open the popup at the pixel position of the start of the completed
         // expression. The text length times the width of a single character,
         // plus apparent padding, is a good enough approximation of this.
-        var chWidth = this.getCharWidth(this.completionBase.pre);
+        var chWidth = this.getCharWidth();
         var offsetX = Math.round(this.completionBase.pre.length * chWidth) + 2;
 
         // xxxHonza: needs to be properly calculated
         offsetX -= 5;
 
-        this.completionPopup.openPopup(this.textBox, "before_start", offsetX, 0, false, false);
+        var popup = this.completionPopup;
+        Dom.eraseNode(popup);
+        if (popup.state === "closed")
+        {
+            // Hack: Open the popup and force a reflow while it is empty, to avoid
+            // being hit by bug 842380 (see issue 6197).
+            popup.openPopup(this.textBox, "before_start", offsetX, 0, false, false);
+            popup.clientHeight;
+            popup.appendChild(vbox);
+        }
+        else
+        {
+            popup.appendChild(vbox);
+            popup.openPopup(this.textBox, "before_start", offsetX, 0, false, false);
+        }
     };
 
-    this.getCharWidth = function(text)
+    this.getCharWidth = function()
     {
-        var size = Firebug.textSize;
+        var size = Options.get("textSize");
         if (!measureCache[size])
         {
             var measurer = this.options.popupMeasurer;
@@ -898,8 +913,7 @@ function JSAutoCompleter(textBox, completionBox, options)
         }
         catch (err)
         {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("JSAutoCompleter.closePopup; EXCEPTION " + err, err);
+            TraceError.sysout("JSAutoCompleter.closePopup; EXCEPTION " + err, err);
         }
     };
 
@@ -971,7 +985,7 @@ function JSAutoCompleter(textBox, completionBox, options)
         Events.addEventListener(this.completionPopup, "DOMMouseScroll", this.popupScroll, true);
         Events.addEventListener(this.completionPopup, "click", this.popupClick, true);
     }
-};
+}
 
 /**
  * Transform expressions that use .% into more JavaScript-friendly function calls.
@@ -1024,7 +1038,7 @@ JSAutoCompleter.transformScopeOperator = function(expr, fname)
 // ********************************************************************************************* //
 // CodeMirror auto-completer
 
-function codeMirrorAutoComplete(context, allowGlobal, attemptedCompletionOut, editor)
+function codeMirrorAutoComplete(context, allowGlobal, attemptedCompletionOut, sourceEditor, editor)
 {
     var cur = editor.getCursor(), line = cur.line;
     var token = editor.getTokenAt(cur);
@@ -1041,17 +1055,7 @@ function codeMirrorAutoComplete(context, allowGlobal, attemptedCompletionOut, ed
         multiLine: true,
         get additionalGlobalCompletions()
         {
-            var completions = [];
-            var addVars = function(vars)
-            {
-                for (var v = vars; v; v = v.next)
-                    completions.push(v.name);
-            };
-            addVars(token.state.localVars);
-            addVars(token.state.globalVars);
-            for (var c = token.state.context; c && c.vars; c = c.prev)
-                addVars(c.vars);
-            return completions;
+            return sourceEditor.getSurroundingVariablesFromCodeMirrorState(token.state);
         }
     };
     var completer = new JSAutoCompleter(null, null, options);
@@ -1690,18 +1694,6 @@ function getKnownTypeInfo(r)
     return {"val": r};
 }
 
-function getFakeCompleteKeys(name)
-{
-    var ret = [], type = getKnownType(name);
-    if (!type)
-        return ret;
-    for (var prop in type) {
-        if (prop.substr(0, 4) !== "_fb_")
-            ret.push(prop);
-    }
-    return ret;
-}
-
 function eatProp(expr, start)
 {
     for (var i = start; i < expr.length; ++i)
@@ -1770,7 +1762,7 @@ function reorderPropertyNames(ar)
         var s = ar[i];
         if (s.charAt(0) === "_")
         {
-            var count = 0, j = 0;
+            var count = 0;
             while (count < s.length && s.charAt(count) === "_")
                 ++count;
             --count;
@@ -1912,8 +1904,7 @@ function setCompletionsFromObject(out, object, context)
     }
     catch (exc)
     {
-        if (FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("autoCompleter.setCompletionsFromObject failed", exc);
+        Trace.sysout("autoCompleter.setCompletionsFromObject failed", exc);
     }
 }
 
@@ -1976,7 +1967,7 @@ function propChainBuildComplete(out, context, tempExpr, result)
                 result = "";
 
             // Convert the primitive into its scope's matching object type.
-            result = Wrapper.getContentView(out.window).Object(result);
+            result = out.window.Object(result);
         }
         setCompletionsFromObject(out, result, context);
     };
@@ -1986,13 +1977,8 @@ function propChainBuildComplete(out, context, tempExpr, result)
         var name = tempExpr.value.val;
         if (getKnownType(name)._fb_ignorePrototype)
             return;
-        var command = name + ".prototype";
         Firebug.CommandLine.evaluate(name + ".prototype", context, context.thisValue, null,
-            function found(result, context)
-            {
-                done(result);
-            },
-            function failed(result, context) {},
+            done, function failed() {},
             {noStateChange: true}
         );
     }
@@ -2190,7 +2176,7 @@ function evalPropChainStep(step, tempExpr, evalChain, out, context)
                     propChainBuildComplete(out, context, tempExpr, result);
                 }
             },
-            function failed(result, context) {},
+            function failed() {},
             {noStateChange: true}
         );
     }
@@ -2352,9 +2338,11 @@ function autoCompleteEval(context, preExpr, spreExpr, preParsed, spreParsed, opt
             spreExpr = spreExpr.substr(0, len);
             preExpr = preExpr.substr(0, len);
 
-            if (FBTrace.DBG_COMMANDLINE)
-                FBTrace.sysout("commandLine.autoCompleteEval pre:'" + preExpr +
+            if (Trace.active)
+            {
+                Trace.sysout("commandLine.autoCompleteEval pre:'" + preExpr +
                     "' spre:'" + spreExpr + "'.");
+            }
 
             // Don't auto-complete '.'.
             if (spreExpr === "")
@@ -2386,7 +2374,7 @@ function autoCompleteEval(context, preExpr, spreExpr, preParsed, spreParsed, opt
             {
                 x = (out.indexQuoteType === '"') ? Str.escapeJS(x): Str.escapeSingleQuoteJS(x);
                 return x + out.indexQuoteType + "]";
-            }
+            };
 
             out.completions = out.completions.map(convertQuotes);
             out.hiddenCompletions = out.hiddenCompletions.map(convertQuotes);
@@ -2435,8 +2423,7 @@ function autoCompleteEval(context, preExpr, spreExpr, preParsed, spreParsed, opt
     }
     catch (exc)
     {
-        if (FBTrace.DBG_ERRORS && FBTrace.DBG_COMMANDLINE)
-            FBTrace.sysout("commandLine.autoCompleteEval FAILED", exc);
+        TraceError.sysout("commandLine.autoCompleteEval FAILS", exc);
     }
     return out;
 }

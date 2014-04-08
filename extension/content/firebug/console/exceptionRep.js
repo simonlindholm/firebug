@@ -62,18 +62,19 @@ var Exception = domplate(Rep,
         var url = object.fileName ? object.fileName : (win ? win.location.href : "");
         var lineNo = object.lineNumber ? object.lineNumber : 0;
         var message = this.getTitle(object);
+        var source = object.source || "";
 
         var trace;
         if (object.stack)
         {
             trace = StackTrace.parseToStackTrace(object.stack, context);
-            trace = StackFrame.cleanStackTraceOfFirebug(trace);
+            trace = StackFrame.removeChromeFrames(trace);
 
             if (!trace)
                 lineNo = 0;
         }
 
-        var errorObject = new ErrorMessageObj(message, url, lineNo, "", "js",
+        var errorObject = new ErrorMessageObj(message, url, lineNo, source, "js",
             context, trace);
 
         if (trace && trace.frames && trace.frames[0])

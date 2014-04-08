@@ -54,7 +54,7 @@ var ToggleSidePanels = Obj.extend(Module,
     {
         Module.initialize.apply(this, arguments);
 
-        // Register as a listener for 'updateSidePanels' event. 
+        // Register as a listener for 'updateSidePanels' event.
         Firebug.registerUIListener(this);
 
         // Register a command handlers for XUL buttons dynamically, so we don't have to
@@ -198,20 +198,21 @@ var ToggleSidePanels = Obj.extend(Module,
             sideBoxVisible + ", has side panels: " + hasSidePanels + ", orient: " + orient);
 
         // The panel-toolbar button is visible only if there are some side panels and
-        // and the side panel box is hidden.
+        // the side panel box is hidden.
         var box = Firebug.chrome.$("fbToggleSidePanelsBox");
         Dom.collapse(box, !hasSidePanels || sideBoxVisible);
 
         // The side-panel-toolbar button is visible only if there are some side panels and
-        // and the side panel box is visible.
+        // the side panel box is visible.
         var box2 = Firebug.chrome.$("fbToggleSidePanelsBox2");
         Dom.collapse(box2, !hasSidePanels || !sideBoxVisible);
 
         // If the panel orientation is set to 'vertical' (i.e. the side panel box is displayed
-        // at the bottom of the Firebug UI) the panel-toolbar button is always visible.
+        // at the bottom of the Firebug UI) the panel-toolbar button is visible all the time
+        // (only if there are any side panels).
         if (orient)
         {
-            Dom.collapse(box, false);
+            Dom.collapse(box, !hasSidePanels);
             Dom.collapse(box2, true);
         }
     },

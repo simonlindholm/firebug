@@ -466,10 +466,19 @@ var NetHttpObserver =
         var origName = request.originalURI.asciiSpec;
         var isRedirect = (name != origName);
 
+        // If the current context is associated with about:blank, just use it.
+        // It's because every opened tab is about:blank first and than changed
+        // to the target URL. So, the initContext goes for about:blank and not
+        // second time for the real URL. We don't want to crate temporary context
+        // and then never use it because initContext isn't fired.
+        // This is related to firebug/4040 test and also issue 5916
+        // See also {@link TabWatcher.doLocationChange}
+        var currContextName = context ? context.getName() : "";
+
         // We only need to create a new context if this is a top document uri (not frames).
         if ((request.loadFlags & Ci.nsIChannel.LOAD_DOCUMENT_URI) &&
             request.loadGroup && request.loadGroup.groupObserver &&
-            win == win.parent && !isRedirect)
+            win == win.parent && !isRedirect && currContextName != "about:blank")
         {
             var browser = Firefox.getBrowserForWindow(win);
 
@@ -493,7 +502,7 @@ var NetHttpObserver =
 
                 if (FBTrace.DBG_NET)
                     FBTrace.sysout("net.onModifyRequest; Temp Context created (" +
-                        getTempContextCount() + "), " + tabId);
+                        getTempContextCount() + "), " + tabId + ", " + context.getName());
             }
         }
 
@@ -508,8 +517,7 @@ var NetHttpObserver =
             // We need to track the request now since the activity observer is not used in case
             // the response comes from BF cache. If it's a regular HTTP request the timing
             // is properly overridden by the activity observer (ACTIVITY_SUBTYPE_REQUEST_HEADER).
-            // Even if the Firebug.netShowBFCacheResponses is false now, the user could
-            // switch it on later.
+            // Even if 'netShowBFCacheResponses' is false now, the user could switch it on later.
             var xhr = Http.isXHR(request);
             networkContext.post(requestedFile, [request, NetUtils.now(), win, xhr]);
         }

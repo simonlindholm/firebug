@@ -10,6 +10,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
+    "firebug/lib/options",
     "firebug/lib/string",
     "firebug/chrome/reps",
     "firebug/chrome/module",
@@ -20,7 +21,7 @@ define([
     "firebug/console/console",
     "firebug/remoting/debuggerClient",
 ],
-function(Firebug, FBTrace, Obj, Domplate, Locale, Url, Events, Css, Dom, Str,
+function(Firebug, FBTrace, Obj, Domplate, Locale, Url, Events, Css, Dom, Options, Str,
     FirebugReps, Module, Rep, StackFrame, SourceFile, ProfilerEngine, Console,
     DebuggerClient) {
 
@@ -244,19 +245,17 @@ var Profiler = Obj.extend(Module,
         var totalCalls = 0;
         var totalTime = 0;
 
-        var sourceFileMap = context.sourceFileMap;
-
         context.profiling.enumerateScripts({enumerateScript: function(script)
         {
             if (!script.callCount)
                 return;
 
             var fileName = Url.getFileName(script.url);
-            if (Firebug.filterSystemURLs && Url.isSystemURL(fileName))
+            if (Options.get("filterSystemURLs") && Url.isSystemURL(fileName))
                 return;
 
             var sourceLink = SourceFile.getSourceLinkForScript(script, context);
-            if (sourceLink && sourceLink.href in sourceFileMap)
+            if (sourceLink && context.getSourceFile(sourceLink.href))
             {
                 var call = new ProfileCall(script, context, script.funcName,
                     script.callCount, script.totalExecutionTime,
@@ -568,15 +567,7 @@ Profiler.ProfileCall = domplate(Rep,
 
     getTooltip: function(call)
     {
-        try
-        {
-            var fn = StackFrame.getFunctionName(call.script, call.context);
-            return FirebugReps.Func.getTooltip(fn, call.context);
-        }
-        catch (exc)
-        {
-            TraceError.sysout("profiler.getTooltip; EXCEPTION " + exc, exc);
-        }
+        return FirebugReps.Func.getTooltipForScript(call.script);
     },
 
     getContextMenuItems: function(call, target, context)

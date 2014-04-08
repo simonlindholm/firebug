@@ -2,7 +2,6 @@ function runTest()
 {
     FBTest.openNewTab(basePath + "script/6476/issue6476.html", function(win)
     {
-        FBTest.selectPanel("script");
         FBTest.enableScriptPanel(function(win)
         {
             FBTest.click(win.document.getElementById("testButtonEval"));
@@ -15,7 +14,7 @@ function runTest()
                 {
                     verifyLocation("issue6476-dynamic.js");
 
-                    FBTest.testDone("issue4213.DONE");
+                    FBTest.testDone();
                 });
 
                 FBTest.click(win.document.getElementById("testButtonExecute"));

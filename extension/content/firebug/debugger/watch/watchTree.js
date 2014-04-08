@@ -60,7 +60,7 @@ WatchTree.prototype = domplate(BaseTree,
             _domPanel: "$domPanel", onclick: "$onClick", role: "tree"},
             TBODY({role: "presentation"},
                 TAG("$watchNewRow|getWatchNewRowTag"),
-                FOR("member", "$object|memberIterator", 
+                FOR("member", "$object|memberIterator",
                     TAG("$member|getRowTag", {member: "$member"}))
             )
         ),
@@ -128,6 +128,8 @@ WatchTree.prototype = domplate(BaseTree,
         // Disable editing for read only values.
         if (value instanceof Grip)
             member.readOnly = value.readOnly;
+
+        member.deletable = true;
 
         return member;
     }

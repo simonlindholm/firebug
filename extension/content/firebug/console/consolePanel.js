@@ -18,13 +18,14 @@ define([
     "firebug/chrome/searchBox",
     "firebug/chrome/panelNotification",
     "firebug/chrome/activablePanel",
+    "firebug/console/commandLine",
+    "firebug/console/errorMessageObj",
     "firebug/debugger/debuggerLib",
     "firebug/debugger/breakpoints/breakpointStore",
-    "firebug/console/errorMessageObj",
 ],
 function(Firebug, FBTrace, Obj, Domplate, Locale, Events, Css, Dom, Search, Options, Wrapper,
-    Xpcom, Menu, FirebugReps, SearchBox, PanelNotification, ActivablePanel, DebuggerLib,
-    BreakpointStore, ErrorMessageObj) {
+    Xpcom, Menu, FirebugReps, SearchBox, PanelNotification, ActivablePanel, CommandLine,
+    ErrorMessageObj, DebuggerLib, BreakpointStore) {
 
 "use strict";
 
@@ -36,12 +37,9 @@ function(Firebug, FBTrace, Obj, Domplate, Locale, Events, Css, Dom, Search, Opti
 // ********************************************************************************************* //
 // Constants
 
-var {domplate, DIV, SPAN, TD, TR, TABLE, TBODY, P, A} = Domplate;
+var {domplate, DIV, SPAN, TD, TR, TABLE, TBODY} = Domplate;
 
 var reAllowedCss = /^(-moz-)?(background|border|color|font|line|margin|padding|text)/;
-
-const Cc = Components.classes;
-const Ci = Components.interfaces;
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
@@ -213,8 +211,10 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
                 " " + this.context.getName(), state);
 
         this.showCommandLine(true);
-        if (Firebug.chrome.hasFocus())
-            Firebug.CommandLine.focus(this.context);
+
+        // Don't steal the focus if the document is not loaded (see issue 6589).
+        if (this.context.window.document.readyState === "complete")
+            CommandLine.focus(this.context);
 
         this.showToolbarButtons("fbConsoleButtons", true);
 
@@ -230,6 +230,7 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
     showPanel: function(state)
     {
         var wasScrolledToBottom;
+
         if (state)
             wasScrolledToBottom = state.wasScrolledToBottom;
 
@@ -415,16 +416,17 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
                 // xxxsz: There can be two kinds of error and warning messages,
                 // which have one type. So map the type to the classes, which match it.
                 // TODO: Merge different CSS class names for log message types
+
                 var classNames = [type];
-                if (type == "errorMessage")
-                    classNames = ["error"];
-                else if (type == "warning")
+                if (type === "error")
+                    classNames = ["error", "errorMessage"];
+                else if (type === "warning")
                     classNames = ["warn", "warningMessage"];
 
-                for (var i=0, classNamesLen=classNames.length; i<classNamesLen; ++i)
+                for (var i = 0, classNamesLen = classNames.length; i < classNamesLen; i++)
                 {
                     var logRows = panelNode.getElementsByClassName("logRow-" + classNames[i]);
-                    for (var j=0, len=logRows.length; j<len; ++j)
+                    for (var j = 0, len = logRows.length; j < len; j++)
                     {
                         // Mark the groups, in which the log row is located, also as matched
                         for (var group = Dom.getAncestorByClass(logRows[j], "logRow-group"); group;
@@ -845,7 +847,7 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
             var part = parts[i];
             if (part && typeof(part) == "object")
             {
-            	var object = objects[objIndex];
+                var object = objects[objIndex];
                 if (part.type == "%c")
                 {
                     lastStyle = object.toString();
@@ -1034,16 +1036,18 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
 
     showCommandLine: function(shouldShow)
     {
+        var commandEditor = Options.get("commandEditor");
         if (shouldShow)
         {
             Dom.collapse(Firebug.chrome.$("fbCommandBox"), false);
-            Firebug.CommandLine.setMultiLine(Firebug.commandEditor, Firebug.chrome);
+            CommandLine.setMultiLine(commandEditor, Firebug.chrome);
         }
         else
         {
             // Make sure that entire content of the Console panel is hidden when
             // the panel is disabled.
-            Firebug.CommandLine.setMultiLine(false, Firebug.chrome, Firebug.commandEditor);
+            CommandLine.setMultiLine(false, Firebug.chrome, commandEditor);
+            CommandLine.blur(this.context);
             Dom.collapse(Firebug.chrome.$("fbCommandBox"), true);
         }
     },
@@ -1091,14 +1095,22 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
         if (type != "exception")
             return;
 
-        if (!this.shouldBreakOnNext())
+        if (!this.shouldBreakOnNext() && !Options.get("breakOnExceptions"))
+        {
+            Trace.sysout("consolePanel.onDebuggerPaused; Break on error not active.");
             return;
+        }
 
         // Reset the break-on-next-error flag after an exception break happens.
         // xxxHonza: this is how the other BON implementations work, but we could reconsider it.
         // Another problem is that the debugger breaks in every frame by default, which
         // is avoided by reseting of the flag.
-        this.breakOnNext(false)
+        this.breakOnNext(false);
+
+        // At this point, the BON flag is reset and can't be used anymore in |shouldResumeDebugger|.
+        // So add a custom flag in packet.why so we know that the debugger is paused because of
+        // either the Console's "Break On Next" or the Script's "Break On Exceptions" option.
+        packet.why.fbPauseDueToBONError = true;
 
         // Get the exception object.
         var exc = DebuggerLib.getObject(context, packet.why.exception.actor);
@@ -1120,7 +1132,6 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
         // Make sure the break notification popup appears.
         context.breakingCause =
         {
-            title: Locale.$STR("Break on Error"),
             message: error.message,
             copyAction: Obj.bindFixed(FirebugReps.ErrorMessage.copyError,
                 FirebugReps.ErrorMessage, error),
@@ -1147,10 +1158,15 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
         if (!exc)
             return false;
 
-        // If 'break on exceptions' is set don't resume the debugger, the user wants
-        // to break and see where it happens.
-        if (Options.get("breakOnExceptions"))
-            return false;
+        // If 'Break On Exceptions' or 'Break On All Errors' are not set, ignore (return true).
+        // Otherwise, don't resume the debugger. The user wants to break and see
+        // where the error happens.
+        if (!packet.why.fbPauseDueToBONError)
+        {
+            Trace.sysout("consolePanel.shouldResumeDebugger; Do not break, " +
+                "packet.why.fbPauseDueToBONError == false");
+            return true;
+        }
 
         if (BreakpointStore.isBreakpointDisabled(exc.fileName, exc.lineNumber - 1))
         {
@@ -1158,10 +1174,23 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
             return true;
         }
 
-        if (!context.breakingCause)
+        var preview = packet.why.exception.preview;
+        if (!preview)
         {
-            // This is to avoid repeated break-on-error in every frame when an error happens.
-            Trace.sysout("context.breakingCause; No breaking cause, resume debugger");
+            TraceError.sysout("consolePanel.shouldResumeDebugger; ERROR preview info isn't" +
+                "available for the exception", packet);
+            return false;
+        }
+
+        Trace.sysout("consolePanel.shouldResumeDebugger; error preview:", preview);
+
+        // This is to avoid repeated break-on-error in every frame when an error happens.
+        // Break only if the original location of the exception is the same as the
+        // location of the current frame.
+        if (preview.lineNumber != packet.frame.where.line ||
+            preview.columnNumber != packet.frame.where.column)
+        {
+            Trace.sysout("consolePanel.shouldResumeDebugger; Do not break, we did already");
             return true;
         }
 
@@ -1176,7 +1205,7 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
         return this.context.breakOnErrors;
     },
 
-    breakOnNext: function(breaking)
+    breakOnNext: function(breaking, callback)
     {
         Trace.sysout("consolePanel.breakOnNext;");
 
@@ -1184,7 +1213,7 @@ ConsolePanel.prototype = Obj.extend(ActivablePanel,
 
         // Set the flag on the server.
         var tool = this.context.getTool("debugger");
-        tool.updateBreakOnErrors();
+        tool.updateBreakOnErrors(callback);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

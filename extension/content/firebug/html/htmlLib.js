@@ -1,16 +1,18 @@
 /* See license.txt for terms of usage */
 
 define([
+    "firebug/lib/array",
     "firebug/lib/object",
     "firebug/lib/events",
     "firebug/lib/css",
     "firebug/lib/dom",
+    "firebug/lib/options",
     "firebug/lib/search",
     "firebug/lib/xml",
     "firebug/lib/xpath",
     "firebug/lib/string",
 ],
-function(Obj, Events, Css, Dom, Search, Xml, Xpath, Str) {
+function(Arr, Obj, Events, Css, Dom, Options, Search, Xml, Xpath, Str) {
 
 // ********************************************************************************************* //
 // Constants
@@ -64,7 +66,7 @@ var HTMLLib =
                 for (var i = 0, len = nodes.length; i < len; ++i)
                     nodeSet.add(nodes[i]);
 
-                var frames = doc.getElementsByTagName("iframe");
+                var frames = doc.querySelectorAll("frame, iframe");
                 for (var i = 0, len = frames.length; i < len; ++i)
                 {
                     var fr = frames[i];
@@ -96,7 +98,7 @@ var HTMLLib =
                 ++matchCount;
 
                 var node = match.node;
-                var nodeBox = this.openToNode(node, match.isValue);
+                var nodeBox = this.openToNode(node, match.isValue, match.ownerElement);
 
                 this.selectMatched(nodeBox, node, match, reverse);
             }
@@ -148,7 +150,8 @@ var HTMLLib =
                 if (node.nodeType == Node.TEXT_NODE && HTMLLib.isSourceElement(node.parentNode))
                     continue;
 
-                var m = this.checkNode(node, reverse, caseSensitive);
+                var ownerElement = walker.getOwnerElement();
+                var m = this.checkNode(node, reverse, caseSensitive, 0, ownerElement);
                 if (m)
                     return m;
             }
@@ -166,13 +169,17 @@ var HTMLLib =
             {
                 var lastMatchNode = this.lastMatch.node;
                 var lastReMatch = this.lastMatch.match;
-                var m = re.exec(lastReMatch.input, reverse, lastReMatch.caseSensitive, lastReMatch);
+                var lastOwnerElement = this.lastMatch.ownerElement;
+                var m = re.exec(lastReMatch.input, reverse, lastReMatch.caseSensitive,
+                    lastReMatch);
                 if (m)
                 {
                     return {
                         node: lastMatchNode,
+                        ownerElement: lastOwnerElement,
                         isValue: this.lastMatch.isValue,
-                        match: m
+                        match: m,
+                        fullNodeMatch: false
                     };
                 }
 
@@ -180,7 +187,8 @@ var HTMLLib =
                 if (lastMatchNode.nodeType == Node.ATTRIBUTE_NODE &&
                     this.lastMatch.isValue == !!reverse)
                 {
-                    return this.checkNode(lastMatchNode, reverse, caseSensitive, 1);
+                    return this.checkNode(lastMatchNode, reverse, caseSensitive, 1,
+                        lastOwnerElement);
                 }
             }
         };
@@ -190,13 +198,14 @@ var HTMLLib =
          *
          * @private
          */
-        this.checkNode = function(node, reverse, caseSensitive, firstStep)
+        this.checkNode = function(node, reverse, caseSensitive, firstStep, ownerElement)
         {
             if (nodeSet && nodeSet.has(node))
             {
                 // If a selector matches the node, that takes priority.
                 return {
                     node: node,
+                    ownerElement: ownerElement,
                     isValue: false,
                     match: re.fakeMatch(node.localName, reverse, caseSensitive),
                     fullNodeMatch: true
@@ -218,7 +227,7 @@ var HTMLLib =
             }
             else if (node.nodeType == Node.ATTRIBUTE_NODE)
             {
-                checkOrder = [{name: "nodeName", isValue: false}, {name: "nodeValue", isValue: true}];
+                checkOrder = [{name: "nodeName", isValue: false}, {name: "value", isValue: true}];
                 if (reverse)
                     checkOrder.reverse();
             }
@@ -234,8 +243,10 @@ var HTMLLib =
                 if (m) {
                     return {
                         node: node,
+                        ownerElement: ownerElement,
                         isValue: checkOrder[i].isValue,
-                        match: m
+                        match: m,
+                        fullNodeMatch: false
                     };
                 }
             }
@@ -246,7 +257,7 @@ var HTMLLib =
          *
          * @private
          */
-        this.openToNode = function(node, isValue)
+        this.openToNode = function(node, isValue, ownerElement)
         {
             if (node.nodeType == Node.ELEMENT_NODE)
             {
@@ -255,7 +266,7 @@ var HTMLLib =
             }
             else if (node.nodeType == Node.ATTRIBUTE_NODE)
             {
-                var nodeBox = ioBox.openToObject(node.ownerElement);
+                var nodeBox = ioBox.openToObject(ownerElement);
                 if (nodeBox)
                 {
                     var attrNodeBox = HTMLLib.findNodeAttrBox(nodeBox, node.name);
@@ -448,7 +459,8 @@ var HTMLLib =
                     if (!prevNode)
                         prevNode = walker[0].root;
 
-                    while ((prevNode.nodeName || "").toUpperCase() == "IFRAME")
+                    var tagName = (prevNode.nodeName || "").toUpperCase();
+                    while (["FRAME", "IFRAME"].indexOf(tagName) !== -1)
                     {
                         createWalker(prevNode.contentDocument.documentElement);
                         prevNode = getLastAncestor();
@@ -484,13 +496,15 @@ var HTMLLib =
             }
             else
             {
+                var tagName = (currentNode.nodeName || "").toUpperCase();
+
                 // First check attributes
                 var attrs = currentNode.attributes || [];
                 if (attrIndex < attrs.length)
                 {
                     attrIndex++;
                 }
-                else if ((currentNode.nodeName || "").toUpperCase() == "IFRAME")
+                else if (["FRAME", "IFRAME"].indexOf(tagName) !== -1)
                 {
                     // Attributes have completed, check for iframe contents
                     createWalker(currentNode.contentDocument.documentElement);
@@ -527,6 +541,20 @@ var HTMLLib =
         this.currentNode = function()
         {
             return !attrIndex ? currentNode : currentNode.attributes[attrIndex-1];
+        };
+
+        /**
+         * Retrieves the owner element of the current node. For attribute nodes this
+         * is the same as the element that has the attribute, for anything else it is
+         * equal to the node itself. (This information was previously available from
+         * the attribute node itself, but was removed in Firefox 29.)
+         *
+         * @return The owner element of the current node, if not past the beginning
+         * or end of the iteration.
+         */
+        this.getOwnerElement = function()
+        {
+            return currentNode;
         };
 
         /**
@@ -722,7 +750,7 @@ var HTMLLib =
         // we decide not to show the whitespace in the UI.
 
         // XXXsroussey reverted above but added a check for self closing tags
-        if (Firebug.showTextNodesWithWhitespace)
+        if (Options.get("showTextNodesWithWhitespace"))
         {
             return !element.firstChild && Xml.isSelfClosing(element);
         }
@@ -756,7 +784,7 @@ var HTMLLib =
      */
     findNextNodeFrom: function(node)
     {
-        if (Firebug.showTextNodesWithWhitespace)
+        if (Options.get("showTextNodesWithWhitespace"))
         {
             return node;
         }

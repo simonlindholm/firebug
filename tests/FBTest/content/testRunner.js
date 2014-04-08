@@ -278,45 +278,6 @@ FBTestApp.TestRunner = Obj.extend(new Firebug.Listener(),
         this.onFinishCallback = null;
     },
 
-    manualVerify: function(verifyMsg, instructions, cleanupHandler)
-    {
-        if (!this.currentTest)
-            return;
-
-        if (FBTrace.DBG_FBTEST)
-        {
-            FBTrace.sysout("fbtest.TestRunner.Test manualVerify: " + verifyMsg + " " +
-                this.currentTest.path, this.currentTest);
-        }
-
-        // Test is done so, clear the break-timeout.
-        this.clearTestTimeout();
-
-        this.currentTest.isManual = true;
-        this.currentTest.cleanupHandler = cleanupHandler;
-        this.currentTest.end = (new Date()).getTime();
-
-        // If the test is currently opened, append the result directly into the UI.
-        TestList.expandTest(this.currentTest.row);
-
-        var infoBodyRow = this.currentTest.row.nextSibling;
-        var table = Dom.getElementByClass(infoBodyRow, "testResultTable");
-        if (!table)
-            table = TestResultRep.tableTag.replace({}, infoBodyRow.firstChild);
-
-        var tbody = table.firstChild;
-        var verify = TestResultRep.manualVerifyTag.insertRows(
-            {test: this.currentTest, verifyMsg: verifyMsg, instructions: instructions},
-            tbody.lastChild ? tbody.lastChild : tbody)[0];
-
-        var scrollCurrentTestIntoView = Firebug.getPref(FBTestApp.prefDomain,
-            "scrollCurrentTestIntoView");
-        if (scrollCurrentTestIntoView)
-            scrollIntoCenterView(verify, null, true);
-
-        this.currentTest.onManualVerify(verifyMsg, instructions);
-    },
-
     getNextTest: function()
     {
         var randomSelection = Firebug.getPref(FBTestApp.prefDomain, "randomTestSelection");
@@ -513,24 +474,29 @@ FBTestApp.TestRunner = Obj.extend(new Firebug.Listener(),
             return;
         }
 
+        var currentTest = FBTestApp.TestRunner.currentTest;
+
         // Initialize start time.
-        FBTestApp.TestRunner.currentTest.start = (new Date()).getTime();
+        currentTest.start = (new Date()).getTime();
 
         try
         {
             // Initialize test environment.
-            win.FBTest.setToKnownState();
+            win.FBTest.setToKnownState(function()
+            {
+                win.FBTest.testStart(currentTest);
 
-            // Execute test's entry point.
-            if (win.runTest)
-                win.runTest();
-            else
-                throw new Error("FBTest: no runTest() function in "+win.location);
+                // Execute test's entry point.
+                if (win.runTest)
+                    win.runTest();
+                else
+                    throw new Error("FBTest: no runTest() function in " + win.location);
+            });
         }
         catch (exc)
         {
-            FBTestApp.FBTest.sysout("runTest FAILS "+exc, exc);
-            FBTestApp.FBTest.ok(false, "runTest FAILS "+exc);
+            FBTestApp.FBTest.sysout("runTest FAILS " + exc, exc);
+            FBTestApp.FBTest.ok(false, "runTest FAILS " + exc);
             FBTestApp.TestRunner.cleanUp();
 
             FBTestApp.TestRunner.testDone(true);
@@ -547,11 +513,12 @@ FBTestApp.TestRunner = Obj.extend(new Firebug.Listener(),
             FBTestApp.TestRunner.clearTestTimeout();
 
             // Clean-up test environment.
-            FBTestApp.FBTest.setToKnownState();
+            // Done already in FBTest.testDone()
+            //FBTestApp.FBTest.setToKnownState();
 
             // Since the test finished, the test frame must be set to about:blank so,
             // the current test window is unloaded and proper clean up code executed
-            // (eg. registered MutationRecognizers)
+            // (e.g. registered MutationRecognizers)
             Firebug.chrome.$("testFrame").contentWindow.location = "about:blank";
         }
         catch (e)

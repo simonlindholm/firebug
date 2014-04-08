@@ -9,10 +9,11 @@ define([
     "firebug/lib/wrapper",
     "firebug/lib/xpcom",
     "firebug/lib/http",
+    "firebug/lib/options",
     "firebug/lib/string",
     "firebug/lib/xml"
 ],
-function(Firebug, Locale, Events, Url, Firefox, Wrapper, Xpcom, Http, Str, Xml) {
+function(Firebug, Locale, Events, Url, Firefox, Wrapper, Xpcom, Http, Options, Str, Xml) {
 
 // ********************************************************************************************* //
 // Constants
@@ -227,7 +228,7 @@ var NetUtils =
         if (!file.postText)
             return file.postText;
 
-        var limit = Firebug.netDisplayedPostBodyLimit;
+        var limit = Options.get("netDisplayedPostBodyLimit");
         if (file.postText.length > limit && !noLimit)
         {
             return Str.cropString(file.postText, limit,
@@ -456,7 +457,7 @@ var NetUtils =
             stream.setInputStream(inputStream);
             var encodedResponse = btoa(stream.readBytes(stream.available()));
             var dataURI = "data:" + file.request.contentType + ";base64," + encodedResponse;
-        
+
             var tabBrowser = Firefox.getTabBrowser();
             tabBrowser.selectedTab = tabBrowser.addTab(dataURI);
         }

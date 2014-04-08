@@ -1,31 +1,32 @@
 /* See license.txt for terms of usage */
 
 define([
-    "firebug/lib/object",
     "firebug/firebug",
-    "firebug/chrome/firefox",
-    "firebug/lib/domplate",
-    "firebug/chrome/reps",
-    "firebug/lib/xpcom",
-    "firebug/lib/locale",
-    "firebug/lib/events",
-    "firebug/lib/url",
     "firebug/lib/array",
-    "firebug/debugger/script/sourceLink",
-    "firebug/lib/dom",
     "firebug/lib/css",
-    "firebug/lib/xpath",
-    "firebug/lib/string",
+    "firebug/lib/dom",
+    "firebug/lib/domplate",
+    "firebug/lib/events",
     "firebug/lib/fonts",
+    "firebug/lib/locale",
+    "firebug/lib/object",
     "firebug/lib/options",
+    "firebug/lib/string",
+    "firebug/lib/url",
+    "firebug/lib/xpath",
+    "firebug/lib/xpcom",
+    "firebug/chrome/firefox",
+    "firebug/chrome/menu",
+    "firebug/chrome/reps",
     "firebug/css/cssModule",
     "firebug/css/cssPanel",
-    "firebug/chrome/menu",
+    "firebug/css/cssReps",
     "firebug/css/loadHandler",
+    "firebug/debugger/script/sourceLink",
 ],
-function(Obj, Firebug, Firefox, Domplate, FirebugReps, Xpcom, Locale, Events, Url, Arr,
-    SourceLink, Dom, Css, Xpath, Str, Fonts, Options, CSSModule, CSSStyleSheetPanel, Menu,
-    LoadHandler) {
+function(Firebug, Arr, Css, Dom, Domplate, Events, Fonts, Locale, Obj, Options, Str, Url, Xpath,
+    Xpcom, Firefox, Menu, FirebugReps, CSSModule, CSSStyleSheetPanel, CSSReps, LoadHandler,
+    SourceLink) {
 
 // ********************************************************************************************* //
 // Constants
@@ -104,7 +105,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
 
         ruleTag:
             DIV({"class": "cssElementRuleContainer"},
-                TAG(Firebug.CSSStyleRuleTag.tag, {rule: "$rule"}),
+                TAG(CSSReps.CSSStyleRuleTag.tag, {rule: "$rule"}),
                 TAG(FirebugReps.SourceLink.tag, {object: "$rule.sourceLink"})
             ),
 
@@ -161,11 +162,11 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
         if (rules.length || sections.length)
         {
             // This removes overridden properties.
-            if (Firebug.onlyShowAppliedStyles)
+            if (Options.get("onlyShowAppliedStyles"))
                 this.removeOverriddenProps(rules, sections);
 
             // This removes user agent rules
-            if (!Firebug.showUserAgentCSS)
+            if (!Options.get("showUserAgentCSS"))
                 this.removeSystemRules(rules, sections);
         }
 
@@ -617,6 +618,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 "-",
                 {
                     label: "style.option.label.hover",
+                    id: "toggleHoverState",
                     type: "checkbox",
                     checked: self.hasPseudoClassLock(":hover"),
                     tooltiptext: "style.option.tip.hover",
@@ -627,6 +629,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 },
                 {
                     label: "style.option.label.active",
+                    id: "toggleActiveState",
                     type: "checkbox",
                     checked: self.hasPseudoClassLock(":active"),
                     tooltiptext: "style.option.tip.active",
@@ -637,6 +640,7 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
                 },
                 {
                     label: "style.option.label.focus",
+                    id: "toggleFocusState",
                     type: "checkbox",
                     checked: self.hasPseudoClassLock(":focus"),
                     tooltiptext: "style.option.tip.focus",
@@ -651,9 +655,10 @@ CSSStylePanel.prototype = Obj.extend(CSSStyleSheetPanel.prototype,
         return items;
     },
 
-    getContextMenuItems: function(style, target)
+    getContextMenuItems: function(style, target, context, x, y)
     {
-        var items = CSSStyleSheetPanel.prototype.getContextMenuItems.apply(this, [style, target]);
+        var items = CSSStyleSheetPanel.prototype.getContextMenuItems.apply(this,
+            [style, target, context, x, y]);
         var insertIndex = 0;
 
         for (var i = 0; i < items.length; ++i)

@@ -200,6 +200,13 @@ FirebugReps.Text = domplate(Rep,
 
 // ********************************************************************************************* //
 
+FirebugReps.Command = domplate(FirebugReps.Text,
+{
+    groupable: false
+});
+
+// ********************************************************************************************* //
+
 FirebugReps.Caption = domplate(Rep,
 {
     tag: SPAN({"class": "caption"}, "$object")
@@ -230,6 +237,8 @@ FirebugReps.Func = domplate(Rep,
         {
             // XXX use Debugger.Object.displayName here?
             var name = regularFn[1] || fn.displayName || "function";
+            if ((name == "anonymous") && fn.displayName)
+                name = fn.displayName;
             var args = regularFn[2];
             result = name + args;
         }
@@ -276,19 +285,18 @@ FirebugReps.Func = domplate(Rep,
             FBTrace.sysout("reps.function.inspectObject selected sourceLink is ", sourceLink);
     },
 
+    getTooltipForScript: function(script)
+    {
+        return Locale.$STRF("Line", [Url.normalizeURL(script.url), script.startLine]);
+    },
+
     getTooltip: function(fn, context)
     {
         var script = SourceFile.findScriptForFunctionInContext(context, fn);
         if (script)
-        {
-            return Locale.$STRF("Line", [Url.normalizeURL(script.url),
-                script.startLine]);
-        }
-        else
-        {
-            if (fn.toString)
-                return fn.toString();
-        }
+            return this.getTooltipForScript(script);
+        if (fn.toString)
+            return fn.toString();
     },
 
     getTitle: function(fn, context)
@@ -994,7 +1002,7 @@ FirebugReps.Element = domplate(Rep,
 
     getAttrValue: function(attr)
     {
-        var limit = Firebug.displayedAttributeValueLimit;
+        var limit = Options.get("displayedAttributeValueLimit");
         return (limit > 0) ? Str.cropString(attr.value, limit) : attr.value;
     },
 
@@ -1101,14 +1109,14 @@ FirebugReps.Element = domplate(Rep,
     getNodeTextGroups: function(element)
     {
         var text =  element.textContent;
-        if (!Firebug.showFullTextNodes)
+        if (!Options.get("showFullTextNodes"))
         {
             text = Str.cropString(text,50);
         }
 
         var escapeGroups=[];
 
-        if (Firebug.showTextNodesWithWhitespace)
+        if (Options.get("showTextNodesWithWhitespace"))
             escapeGroups.push({
                 "group": "whitespace",
                 "class": "nodeWhiteSpace",
@@ -1119,7 +1127,7 @@ FirebugReps.Element = domplate(Rep,
                 }
             });
 
-        if (Firebug.entityDisplay != "symbols")
+        if (Options.get("entityDisplay") !== "symbols")
             escapeGroups.push({
                 "group": "text",
                 "class": "nodeTextEntity",
@@ -1287,6 +1295,7 @@ FirebugReps.Element = domplate(Rep,
 
         items.push(
         {
+            id: "fbCopyNode",
             label: Locale.$STRF("html.Copy_Node", [type]),
             tooltiptext: Locale.$STRF("html.tip.Copy_Node", [type]),
             command: Obj.bindFixed(this.copyHTML, this, elt),
@@ -1297,6 +1306,7 @@ FirebugReps.Element = domplate(Rep,
         {
             items.push(
             {
+                id: "fbCopyInnerHTML",
                 label: "CopyInnerHTML",
                 tooltiptext: "html.tip.Copy_innerHTML",
                 command: Obj.bindFixed(this.copyInnerHTML, this, elt)
@@ -1392,6 +1402,7 @@ FirebugReps.Element = domplate(Rep,
             items = items.concat([
                 "-",
                 {
+                    id: "fbOpenInNewTab",
                     label: "OpenInTab",
                     tooltiptext: "firebug.tip.Open_In_Tab",
                     command: Obj.bindFixed(this.browseObject, this, elt, context)
@@ -1403,6 +1414,7 @@ FirebugReps.Element = domplate(Rep,
         {
             items = items.concat([
                 {
+                    id: "fbReloadFrame",
                     label: "html.menu.Reload_Frame",
                     tooltiptext: "html.menu.tip.Reload_Frame",
                     command: Obj.bindFixed(this.reloadFrame, this, elt)
@@ -1662,13 +1674,11 @@ FirebugReps.CSSRule = domplate(Rep,
         {
             return "CSSCharsetRule";
         }
-        else if ((window.CSSKeyframesRule && rule instanceof window.CSSKeyframesRule) ||
-            rule instanceof window.MozCSSKeyframesRule)
+        else if (rule instanceof (window.CSSKeyframesRule || window.MozCSSKeyframesRule))
         {
             return "CSSKeyframesRule";
         }
-        else if ((window.CSSKeyframeRule && rule instanceof window.CSSKeyframeRule) ||
-            rule instanceof window.MozCSSKeyframeRule)
+        else if (rule instanceof (window.CSSKeyframeRule || window.MozCSSKeyframeRule))
         {
             return "CSSKeyframeRule";
         }
@@ -1715,13 +1725,11 @@ FirebugReps.CSSRule = domplate(Rep,
         {
             return rule.encoding;
         }
-        else if ((window.CSSKeyframesRule && rule instanceof window.CSSKeyframesRule) ||
-            rule instanceof window.MozCSSKeyframesRule)
+        else if (rule instanceof (window.CSSKeyframesRule || window.MozCSSKeyframesRule))
         {
             return rule.name;
         }
-        else if ((window.CSSKeyframeRule && rule instanceof window.CSSKeyframeRule) ||
-            rule instanceof window.MozCSSKeyframeRule)
+        else if (rule instanceof (window.CSSKeyframeRule || window.MozCSSKeyframeRule))
         {
             return rule.keyText;
         }
@@ -1841,9 +1849,6 @@ FirebugReps.Event = domplate(Rep,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     tag:
-        TAG("$copyEventTag", {object: "$object|copyEvent"}),
-
-    copyEventTag:
         OBJECTLINK("$object|summarizeEvent"),
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -1863,16 +1868,11 @@ FirebugReps.Event = domplate(Rep,
         return info.join("");
     },
 
-    copyEvent: function(event)
-    {
-        return new Dom.EventCopy(event);
-    },
-
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     supportsObject: function(object, type)
     {
-        return object instanceof window.Event || object instanceof Dom.EventCopy;
+        return object instanceof window.Event;
     },
 
     getTitle: function(event, context)
@@ -1935,7 +1935,7 @@ FirebugReps.SourceLink = domplate(Rep,
                     sourceLink.href + "\': " + exc, exc);
         }
 
-        var maxWidth = Firebug.sourceLinkLabelWidth;
+        var maxWidth = Options.get("sourceLinkLabelWidth");
         if (maxWidth > 0)
             fileName = Str.cropString(fileName, maxWidth);
 

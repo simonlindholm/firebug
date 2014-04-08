@@ -1,13 +1,11 @@
 function runTest()
 {
-    FBTest.sysout("cookies.general.cookieClipboard.START");
-
     FBTest.setPref("cookies.filterByPath", false);
 
     FBTest.openNewTab(basePath + "cookies/general/clipboard.php", function(win)
     {
         FBTest.openFirebug(true);
-        FBTestFireCookie.enableCookiePanel(function(win)
+        FBTest.enableCookiesPanel(function(win)
         {
             FBTest.sysout("cookies.general.cookieClipboard; Check clipboard functionality");
 
@@ -15,7 +13,7 @@ function runTest()
             var panelNode = FBTest.selectPanel("cookies").panelNode;
 
             // Copy cookie into the clipboard, get from clipboard again and check.
-            var originalCookie = FBTestFireCookie.getCookieByName(panelNode, "CopyPasteCookie");
+            var originalCookie = FBTest.getCookieByName(panelNode, "CopyPasteCookie");
             FBTest.ok(originalCookie, "There must be 'CopyPasteCookie'.");
             if (!originalCookie)
                 return FBTest.testDone();
@@ -23,19 +21,22 @@ function runTest()
             // Helper shortcut
             var CookieRow = FW.Firebug.CookieModule.CookieReps.CookieRow;
 
-            // Copy & Paste
-            CookieRow.onCopy(originalCookie);
-
             // Expected clipboard value
             var clipboardValue = "CopyPasteCookie=Test+Cookie+Value; expires=Wed, " +
-                "14 Aug 2019 10:25:57 GMT; path=/dir; domain=legoas";
+                "18 May 2033 03:33:20 GMT; path=/dir; domain=" + win.location.host;
 
-            FBTest.waitForClipboard(clipboardValue, function()
+            function copyCookie()
+            {
+                // Copy & Paste
+                CookieRow.onCopy(originalCookie);
+            }
+
+            FBTest.waitForClipboard(clipboardValue, copyCookie, function()
             {
                 CookieRow.onPaste(null);
 
                 // Check the new cookie
-                var newCookie = FBTestFireCookie.getCookieByName(panelNode, "CopyPasteCookie-1");
+                var newCookie = FBTest.getCookieByName(panelNode, "CopyPasteCookie-1");
                 FBTest.ok(newCookie, "There must be 'CopyPasteCookie-1'.");
                 if (!originalCookie || !newCookie)
                     return FBTest.testDone();
@@ -51,10 +52,10 @@ function runTest()
 
                 // Delete the cookie
                 CookieRow.onRemove(newCookie);
-                newCookie = FBTestFireCookie.getCookieByName(panelNode, "CopyPasteCookie-1");
+                newCookie = FBTest.getCookieByName(panelNode, "CopyPasteCookie-1");
                 FBTest.ok(!newCookie, "There must not be 'CopyPasteCookie-1'.");
 
-                return FBTest.testDone("cookies.general.cookieClipboard.DONE");
+                return FBTest.testDone();
             });
         });
     });

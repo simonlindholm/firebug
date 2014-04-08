@@ -1,26 +1,29 @@
 function runTest()
 {
-    FBTest.sysout("issue4384.START");
-
     FBTest.openNewTab(basePath + "console/4384/issue4384.html", function(win)
     {
-        FBTest.openFirebug();
-        FBTest.selectPanel("console");
-
-        FBTest.enableConsolePanel(function(win)
+        FBTest.openFirebug(function()
         {
-            var doc = FW.Firebug.chrome.window.document;
-            var button = doc.getElementById("fbToggleProfiling");
-
-            FBTest.ok(button.disabled, "Profile button should be disabled");
-
-            FBTest.enableScriptPanel();
-
-            FBTest.waitForDebuggerActivation(function()
+            FBTest.enableConsolePanel(function(win)
             {
-                FBTest.ok(!button.disabled, "Profile button should not be disabled");
+                var doc = FW.Firebug.chrome.window.document;
+                var button = doc.getElementById("fbToggleProfiling");
 
-                FBTest.testDone("issue4384.DONE");
+                FBTest.ok(button.disabled, "Profile button should be disabled");
+
+                function onMutationObserve(records)
+                {
+                    mutationObserver.disconnect();
+
+                    FBTest.ok(!button.disabled, "Profile button should not be disabled");
+
+                    FBTest.testDone();
+                }
+
+                var mutationObserver = new MutationObserver(onMutationObserve);
+                mutationObserver.observe(button, {attributes: true});
+
+                FBTest.enableScriptPanel();
             });
         });
     });

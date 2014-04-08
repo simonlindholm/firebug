@@ -2,10 +2,7 @@ function runTest()
 {
     FBTest.openNewTab(basePath + "script/2279/testErrorBreakpoints.html", function(win)
     {
-        FBTest.selectPanel("console");
-
-        FBTest.enableScriptPanel();
-        FBTest.enableConsolePanel(function(win)
+        FBTest.enablePanels(["console", "script"], function(win)
         {
             var config = {tagName: "div", classes: "logRow logRow-errorMessage"};
             FBTest.waitForDisplayedElement("console", config, function(el)
@@ -31,7 +28,7 @@ function runTest()
                     {
                         FBTest.clickContinueButton();
                         FBTest.progress("Break on error!");
-                        FBTest.testDone("exampleScript2.DONE");
+                        FBTest.testDone();
                     });
 
                     FBTest.reload(function(win)

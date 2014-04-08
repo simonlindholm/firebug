@@ -155,13 +155,97 @@ FBTestApp.TestCouchUploader =
         header["FBTest"] = FBTestApp.TestConsole.getVersion();
         header["Firebug"] = Firebug.getVersion();
         header["Locale"] = currLocale;
-        header["OS Detailed Name"] = ""; //xxxHonza todo
-        header["OS Name"] = systemInfo.getProperty("name");
+        header["OS Detailed Name"] = this.getOSName(systemInfo.getProperty("name"),
+            systemInfo.getProperty("version"));
+        header["OS Platform"] = systemInfo.getProperty("name");
         header["OS Version"] = systemInfo.getProperty("version");
+        header["OS Architecture"] = systemInfo.getProperty("arch");
         header["Test Suite"] = FBTestApp.TestConsole.testListPath;
         header["Total Tests"] = this.getTotalTests().toString();
 
         return header;
+    },
+
+    getOSName: function(name, version)
+    {
+        switch (name)
+        {
+            case "Windows_NT":
+                // According to
+                // http://msdn.microsoft.com/en-us/library/windows/desktop/ms724832%28v=vs.85%29.aspx
+                var versions = new Map();
+                versions.set("5.0", "2000");
+                versions.set("5.1", "XP");
+                versions.set("5.2", "XP 64-bit");
+                versions.set("6.0", "Vista");
+                versions.set("6.1", "7");
+                versions.set("6.2", "8");
+                versions.set("6.3", "8.1");
+
+                if (versions.has(version))
+                    return "Windows " + versions.get(version);
+                break;
+
+            case "Darwin":
+                // According to http://en.wikipedia.org/wiki/Darwin_%28operating_system%29
+                var versions = new Map();
+                versions.set("1.3.1", "10.0");
+                versions.set("1.4.1", "10.1");
+                versions.set("5.1", "10.1.1");
+                versions.set("5.5", "10.1.5");
+                versions.set("6.0.1", "10.2");
+                versions.set("6.8", "10.2.8");
+                versions.set("7.0", "10.3");
+                versions.set("7.9", "10.3.9");
+                versions.set("8.0", "10.4");
+                versions.set("8.11", "10.4.11");
+                versions.set("9.0", "10.5");
+                versions.set("9.8", "10.5.8");
+                versions.set("10.0", "10.6");
+                versions.set("10.8", "10.4");
+                versions.set("11.0.0", "10.7");
+                versions.set("11.4.0", "10.7.4");
+                versions.set("11.4.2", "10.7.5");
+                versions.set("12.0.0", "10.8");
+                versions.set("12.3.0", "10.8.2");
+                versions.set("12.4.0", "10.8.4");
+                versions.set("12.5.0", "10.8.5");
+                versions.set("13.0.0", "10.9");
+
+                if (versions.has(version))
+                    return "Mac OS X " + versions.get(version);
+                break;
+                
+            case "Linux":
+                // Check for Fedora
+                var reFedora = /fc(\d+)/;
+                var match = version.match(reFedora);
+                if (match)
+                  return "Fedora " + match[1];
+                break;
+
+                // Check for Ubuntu
+                var reGnome = /^(3\.\d+).*-generic$/;
+
+                var match = version.match(reGnome);
+                if (match)
+                {
+                    // According to http://en.wikipedia.org/wiki/List_of_Ubuntu_releases#Table_of_versions
+                    var versions = new Map();
+                    versions.set("3.0", "11.10");
+                    versions.set("3.2", "12.04 LTS");
+                    versions.set("3.5", "12.10/12.04.2 LTS");
+                    versions.set("3.8", "13.04/12.04.3 LTS");
+                    versions.set("3.11", "13.10/12.04.4 LTS");
+                    versions.set("3.13", "14.04 LTS");
+                    versions.set("3.14", "12.04.5 LTS");
+
+                    if (versions.has(version))
+                        return "Ubuntu " + versions.get(version);
+                }
+        }
+
+        return "";
     },
 
     getUserMessage: function()
@@ -230,6 +314,7 @@ FBTestApp.TestCouchUploader =
         var result = Obj.extend(this.getHeaderDoc(), {type: "user-result"});
 
         result.description = test.desc;
+        result.test = test.uri;
         result.file = test.testPage ? test.testPage : test.uri;
         result.result = test.error ? (test.category == "fails" ? "TEST-KNOWN-FAIL" :
             "TEST-UNEXPECTED-FAIL") : "TEST-PASS";
@@ -281,6 +366,9 @@ var CouchDB =
             data: toJSON(doc),
             complete: function(req)
             {
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("testCouchUploader.saveDoc;", req);
+
                 var resp = parseJSON(req.responseText);
                 if (req.status == 201)
                 {
@@ -291,11 +379,16 @@ var CouchDB =
                 }
                 else if (options.error)
                 {
-                    options.error(req.status, resp.error, resp.reason);
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("testCouchUploader.saveDoc; ERROR " + options.error, req);
+
+                    options.error(req.status, (resp ? resp.error : "unknown"),
+                        (resp ? resp.reason : "unknown"));
                 }
                 else
                 {
-                    alert("The document could not be saved: " + resp.reason);
+                    alert("The document could not be saved: " +
+                        (resp ? resp.reason : "unknown"));
                 }
             }
         });
@@ -315,6 +408,9 @@ var CouchDB =
             data: toJSON(docs),
             complete: function(req)
             {
+                if (FBTrace.DBG_FBTEST)
+                    FBTrace.sysout("testCouchUploader.bulkSave;", req);
+
                 var resp = parseJSON(req.responseText);
                 if (req.status == 201)
                 {
@@ -323,11 +419,16 @@ var CouchDB =
                 }
                 else if (options.error)
                 {
-                    options.error(req.status, resp.error, resp.reason);
+                    if (FBTrace.DBG_ERRORS)
+                        FBTrace.sysout("testCouchUploader.bulkSave; ERROR " + options.error, req);
+
+                    options.error(req.status, (resp ? resp.error : "unknown"),
+                        (resp ? resp.reason : "unknown"));
                 }
                 else
                 {
-                    alert("The document could not be saved: " + resp.reason);
+                    alert("The document could not be saved: " +
+                        (resp ? resp.reason : "unknown"));
                 }
             },
         });

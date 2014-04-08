@@ -208,6 +208,13 @@ DebuggerLib.getThreadActor = function(browser)
     }
 };
 
+DebuggerLib.getThreadDebugger = function(context)
+{
+    var threadActor = this.getThreadActor(context.browser);
+    if (threadActor)
+        return threadActor.dbg;
+};
+
 /**
  * Returns the debugger's Debugger.Object associated with a frame within the
  * passed context. If no frame is specified, the context's current global is used.
@@ -239,7 +246,7 @@ DebuggerLib.getThreadDebuggeeGlobalForFrame = function(frame)
         if (frame.type === "call")
             return frame.callee.global;
 
-        // Even though |frame.this| returns a debuggee window, it is not the Debuggee 
+        // Even though |frame.this| returns a debuggee window, it is not the Debuggee
         // global instance. So rather return |frame.this.global|.
         if (frame.type === "global")
             return frame.this.global;
@@ -251,6 +258,20 @@ DebuggerLib.getThreadDebuggeeGlobalForFrame = function(frame)
     // We've gone through the frame chain, but couldn't get the global object. Abandon.
     TraceError.sysout("DebuggerLib.getThreadDebuggeeGlobalForFrame; can't get the global object");
     return null;
+};
+
+/**
+ * Creates a grips for a given object (value).
+ *
+ * @param {TabContext} context
+ * @param {*} value The object to transform into a grip
+ *
+ * @return {Grip} The grip
+ */
+DebuggerLib.createValueGrip = function(context, value)
+{
+    var actor = DebuggerLib.getThreadActor(context.browser);
+    return actor.createValueGrip(value);
 };
 
 // ********************************************************************************************* //
@@ -358,7 +379,7 @@ DebuggerLib.getNextExecutableLine = function(context, aLocation)
 
 DebuggerLib.isExecutableLine = function(context, location)
 {
-    var threadClient = this.getThreadActor(context.browser);
+    var threadActor = this.getThreadActor(context.browser);
 
     // Use 'innermost' property so, the result is (almost) always just one script object
     // and we can save time in the loop below. See: https://wiki.mozilla.org/Debugger
@@ -368,7 +389,7 @@ DebuggerLib.isExecutableLine = function(context, location)
         innermost: true,
     };
 
-    var scripts = threadClient.dbg.findScripts(query);
+    var scripts = threadActor.dbg.findScripts(query);
     for (var i = 0; i < scripts.length; i++)
     {
         var script = scripts[i];
@@ -378,6 +399,87 @@ DebuggerLib.isExecutableLine = function(context, location)
     }
 
     return false;
+};
+
+/**
+ * xxxHonza: related to issue 1238. This is how we could get executable lines
+ * for pretty printed scripts (based on source maps). WIP
+ *
+ * Source maps terminology:
+ * 1) original (the running ugly code)
+ * 2) generated (the pretty not really running code)
+ *
+ * Notes:
+ * 1) Not optimized and returns all lines
+ * 2) Should be done in a worker probably
+ * 3) Some tracing should be removed
+ */
+DebuggerLib.getExecutableLines = function(context, sourceFile)
+{
+    var lines = new Array();
+    if (!sourceFile.isPrettyPrinted)
+        return;
+
+    var url = sourceFile.href;
+    var threadActor = this.getThreadActor(context.browser);
+
+    var query = {
+        url: url,
+    };
+
+    var scripts = threadActor.dbg.findScripts(query);
+    //FBTrace.sysout("scripts " + url, lines);
+
+    for (var i = 0; i < scripts.length; i++)
+    {
+        var script = scripts[i];
+        var offsets = script.getAllColumnOffsets();
+        for (var j = 0; j < offsets.length; j++)
+        {
+            var offset = offsets[j];
+            var cols = lines[offset.lineNumber];
+            if (!cols)
+                cols = lines[offset.lineNumber] = new Array();
+
+            cols.push(offset.columnNumber);
+        }
+    }
+
+    //FBTrace.sysout("lines " + url, lines);
+
+    var exeLines = new Array();
+    var sources = threadActor.sources;
+
+    var sourceActor = threadActor.threadLifetimePool.get(sourceFile.actor);
+
+    //FBTrace.sysout("_sourceMapsByGeneratedSource[url]", sourceActor._sourceMap);
+
+    for (var i = 0; i < lines.length; i++)
+    {
+        var columns = lines[i];
+        if (!columns)
+            continue;
+
+        for (var j = 0; j < columns.length; j++)
+        {
+            var col = columns[j];
+            var location = {
+                url: url,
+                line: i,
+                column: col,
+            }
+
+            sources.getOriginalLocation(location).then((loc) =>
+            {
+                //FBTrace.sysout("org [" + i + ":" + col + "] -> [" + loc.line + ":" +
+                //    loc.column + "]", loc);
+
+                exeLines[loc.line] = loc.line;
+            });
+        }
+    }
+
+    return exeLines;
 };
 
 // ********************************************************************************************* //
@@ -427,7 +529,6 @@ DebuggerLib.getFrameResultObject = function(context)
 
 // ********************************************************************************************* //
 // Debugger
-
 
 /**
  * Breaks the debugger in the newest frame (if any) or in the debuggee global.
@@ -515,6 +616,38 @@ DebuggerLib.destroyDebuggerForContext = function(context, dbg)
     var ind = context.debuggers.indexOf(dbg);
     if (ind !== -1)
         context.debuggers.splice(ind, 1);
+};
+
+// ********************************************************************************************* //
+// Breakpoints
+
+/**
+ * Used for breakpoint condition evaluation.
+ * xxxHonza: it's rather a hack since:
+ * 1) Firebug customizes the BreakpointActor to workaround Bug 812172
+ * 2) Firebug has custom breakpoint hit handler for dynamic breakpoints
+ * (see: firebug/debugger/script/sourceTool)
+ */
+DebuggerLib.evalBreakpointCondition = function(frame, bp)
+{
+    try
+    {
+        var result = frame.eval(bp.condition);
+
+        if (result.hasOwnProperty("return"))
+        {
+            result = result["return"];
+
+            if (typeof result  == "object")
+                return this.unwrapDebuggeeValue(result);
+            else
+                return result;
+        }
+    }
+    catch (e)
+    {
+        TraceError.sysout("breakpointActor.evalCondition; EXCEPTION " + e, e);
+    }
 };
 
 // ********************************************************************************************* //

@@ -1,21 +1,22 @@
 function runTest()
 {
-    FBTest.sysout("issue6454.START");
-
     FBTest.openNewTab(basePath + "search/6454/issue6454.html", function()
     {
-        FBTest.openFirebug();
-        FBTest.selectPanel("html");
-
-        var tasks = new FBTest.TaskList();
-        tasks.push(searchTest, "testing", false, 10);
-        tasks.push(searchTest, "testing", true, 5);
-        tasks.push(searchTest, "Testing", false, 6);
-        tasks.push(searchTest, "ol li", false, 8);
-        tasks.push(searchTest, "/html/body", true, 2);
-        tasks.run(function()
+        FBTest.openFirebug(function()
         {
-            FBTest.testDone("issue6454.DONE");
+            FBTest.selectPanel("html");
+
+            var tasks = new FBTest.TaskList();
+            tasks.push(searchTest, "testing", false, 15);
+            tasks.push(searchTest, "testing", true, 8);
+            tasks.push(searchTest, "Testing", false, 8);
+            tasks.push(searchTest, "#test div", false, 5);
+            tasks.push(searchTest, "/html/body", true, 4);
+            tasks.push(searchTest, "[class=testing]", true, 1);
+            tasks.run(function()
+            {
+                FBTest.testDone();
+            });
         });
     });
 }
@@ -25,7 +26,8 @@ function searchTest(callback, text, caseSensitive, expectedMatches)
     executeSearchTest(text, false, caseSensitive, function(counter)
     {
         FBTest.compare(expectedMatches, counter, "There must be " + expectedMatches +
-            " matches when searching for \"" + text + "\"");
+            " " + (expectedMatches === 1 ? "match": "matches") + " when searching for '" +
+            text + "'");
         callback();
     });
 }

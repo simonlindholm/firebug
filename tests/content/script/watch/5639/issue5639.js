@@ -1,13 +1,9 @@
 function runTest()
 {
-    FBTest.sysout("issue5639.START");
     FBTest.openNewTab(basePath + "script/watch/5639/issue5639.html", function(win)
     {
-        FBTest.openFirebug();
         FBTest.enableScriptPanel(function(win)
         {
-            FBTest.selectPanel("script");
-
             var panelNode = FBTest.selectSidePanel("watches").panelNode;
             var watchExpressions = ["a", "b"];
             var tasks = new FBTest.TaskList();
@@ -23,7 +19,7 @@ function runTest()
 
             tasks.run(function()
             {
-                FBTest.testDone("issue5639.DONE");
+                FBTest.testDone();
             });
         });
     });
@@ -88,4 +84,3 @@ function addWatches(watchExpressions, callback)
         callback();
     }
 }
-

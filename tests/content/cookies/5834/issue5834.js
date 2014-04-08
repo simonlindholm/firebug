@@ -1,23 +1,23 @@
 function runTest()
 {
-    FBTest.sysout("issue5834.START");
-
     FBTest.openNewTab(basePath + "cookies/5834/issue5834.php", function(win)
     {
-        FBTest.openFirebug();
-        FBTestFireCookie.enableCookiePanel(function(win)
+        FBTest.openFirebug(function()
         {
-            FBTest.selectPanel("cookies");
-
-            var tests = [];
-            tests.push(short);
-            tests.push(shortURLEncoded);
-            tests.push(long);
-            tests.push(longURLEncoded);
-
-            FBTest.runTestSuite(tests, function()
+            FBTest.enableCookiesPanel(function(win)
             {
-                FBTest.testDone("issue5834; DONE");
+                FBTest.selectPanel("cookies");
+
+                var tests = [];
+                tests.push(short);
+                tests.push(shortURLEncoded);
+                tests.push(long);
+                tests.push(longURLEncoded);
+
+                FBTest.runTestSuite(tests, function()
+                {
+                    FBTest.testDone();
+                });
             });
         });
     });
@@ -53,7 +53,7 @@ function longURLEncoded(callback)
 function executeTest(cookieName, expected, callback)
 {
     var panelNode = FBTest.getSelectedPanel().panelNode;
-    var cookie = FBTestFireCookie.getCookieByName(panelNode, cookieName);
+    var cookie = FBTest.getCookieByName(panelNode, cookieName);
     var sizeCol = cookie.row.getElementsByClassName("cookieRawSizeCol").item(0);
 
     var config = {tagName: "table", classes: "sizeInfoTip"};

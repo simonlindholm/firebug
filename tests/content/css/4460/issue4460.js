@@ -1,21 +1,22 @@
 function runTest()
 {
-    FBTest.sysout("issue4460.START");
     FBTest.openNewTab(basePath + "css/4460/issue4460.html", function(win)
     {
-        FBTest.openFirebug();
-        FBTest.selectPanel("html");
-
-        var tests = [];
-        tests.push(test0);
-        tests.push(test1);
-        tests.push(test2);
-
-        FBTest.progress("issue4460; run test suite");
-
-        FBTest.runTestSuite(tests, function()
+        FBTest.openFirebug(function()
         {
-            FBTest.testDone("issue4460; DONE");
+            FBTest.selectPanel("html");
+
+            var tests = [];
+            tests.push(test0);
+            tests.push(test1);
+            tests.push(test2);
+
+            FBTest.progress("issue4460; run test suite");
+
+            FBTest.runTestSuite(tests, function()
+            {
+                FBTest.testDone();
+            });
         });
     });
 }
@@ -42,16 +43,9 @@ function executeTest(element, expectedValue, callback)
 {
     FBTest.progress("issue4460; search for: " + element);
 
-    // Search for the element within the HTML panel, which
-    // automatically expands the tree
-    FBTest.searchInHtmlPanel(element, function(sel)
+    FBTest.selectElementInHtmlPanel(element, function(sel)
     {
         FBTest.progress("issue4460; selection: " + sel);
-
-        // Click on the element to make sure it's selected
-        var nodeLabelBox = FW.FBL.getAncestorByClass(sel.anchorNode, "nodeLabelBox");
-        var nodeTag = nodeLabelBox.querySelector(".nodeTag");
-        FBTest.mouseDown(nodeTag);
 
         var panel = FBTest.selectSidePanel("layout");
         var boxSizing = panel.panelNode.querySelector(".layoutBoxSizing");

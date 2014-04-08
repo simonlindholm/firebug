@@ -7,25 +7,25 @@ const infoTipTypes = {
 
 function runTest()
 {
-    FBTest.sysout("issue5449.START");
-
     FBTest.openNewTab(basePath + "css/computed/5449/issue5449.html", function(win)
     {
-        FBTest.openFirebug();
-        FBTest.setSidePanelWidth(520);
-        FBTest.selectPanel("html");
-
-        FBTest.selectElementInHtmlPanel("element", function(node)
+        FBTest.openFirebug(function()
         {
-            var tests = [];
-            tests.push(fontFamily);
-            tests.push(color);
-            tests.push(gradient);
-            tests.push(image);
+            FBTest.setSidePanelWidth(520);
+            FBTest.selectPanel("html");
 
-            FBTest.runTestSuite(tests, function()
+            FBTest.selectElementInHtmlPanel("element", function(node)
             {
-                FBTest.testDone("issue5449; DONE");
+                var tests = [];
+                tests.push(fontFamily);
+                tests.push(color);
+                tests.push(gradient);
+                tests.push(image);
+
+                FBTest.runTestSuite(tests, function()
+                {
+                    FBTest.testDone();
+                });
             });
         });
     });
@@ -38,13 +38,13 @@ function fontFamily(callback)
 
 function color(callback)
 {
-    executeStylePropTest("background-color", "color", /#8C8CFF/, callback);
+    executeStylePropTest("background-color", "color", /rgb\(140, 140, 255\)/, callback);
 }
 
 function gradient(callback)
 {
     executeMatchedSelectorTest("background-image", "gradient",
-        /-moz-linear-gradient\(135deg,\s*#788CFF,\s*#B4C8FF\)/,
+        /-moz-linear-gradient\(135deg,\s*#788cff,\s*#b4c8ff\)/,
         0, callback);
 }
 

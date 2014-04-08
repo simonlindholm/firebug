@@ -25,6 +25,11 @@ var Trace = FBTrace.to("DBG_DOM");
 var TraceError = FBTrace.toError();
 
 // ********************************************************************************************* //
+// Globals
+
+var dummyElement;
+
+// ********************************************************************************************* //
 // DOM Tree Implementation
 
 function DomPanelTree(context, provider, memberProvider)
@@ -62,9 +67,7 @@ DomPanelTree.prototype = domplate(BaseTree,
             breakpoint: "$member.breakpoint",
             disabledBreakpoint: "$member.disabledBreakpoint"},
             TD({"class": "memberHeaderCell"},
-                DIV({"class": "sourceLine memberRowHeader", onclick: "$onClickBreakpointColumn"},
-                    "&nbsp;"
-               )
+                DIV({"class": "sourceLine memberRowHeader", onclick: "$onClickBreakpointColumn"})
             ),
             TD({"class": "memberLabelCell", style: "padding-left: $member.indent\\px",
                 role: "presentation"},
@@ -74,7 +77,7 @@ DomPanelTree.prototype = domplate(BaseTree,
                 )
             ),
             TD({"class": "memberValueIcon", $readOnly: "$member.readOnly"},
-                DIV("&nbsp;")
+                DIV()
             ),
             TD({"class": "memberValueCell", $readOnly: "$member.readOnly",
                 role: "presentation"},
@@ -111,9 +114,26 @@ DomPanelTree.prototype = domplate(BaseTree,
         // (i.e. return it from this method), and cause the A.repObject (created by
         // OBJECTLINK) to reference it instead of referencing the member.value directly
         // (which points to chrome object).
-        // This has impact on other parts of the UI where object links are used.
-        // (e.g. the Console panel, onPanelClick in firebug/chrome/chrome).
-        return member.value;
+        // This has impact on other parts of the UI where object links are used (e.g. the
+        // Console panel, onPanelClick in firebug/chrome/chrome, and possibly extensions).
+        //
+        // For now, just fail if the object is such a chrome scope object, it's better
+        // than breaking the UI.
+        try
+        {
+            if (!dummyElement)
+            {
+                var doc = Firebug.chrome.getElementById("fbPanelBar1").browser.contentDocument;
+                dummyElement = doc.createElement("dummy");
+            }
+            dummyElement.expando = member.value;
+            return member.value;
+        }
+        catch (exc)
+        {
+            TraceError.sysout("DomPanelTree.getMemberValue FAILS for chrome object " + member.name, exc);
+            return undefined;
+        }
     },
 
     /**

@@ -179,7 +179,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
 
         // xxxHonza: this check should go somewhere else.
         // xxxHonza: this might be also done by removing/adding listeners.
-        // If the Script panel is disabled (not created for the current context,
+        // If the Script panel is disabled (not created for the current context),
         // the debugger should not break.
         if (this.context.getPanel("script") == null)
         {
@@ -201,7 +201,6 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
         this.context.stoppedFrame = frame;
         this.context.currentFrame = frame;
         this.context.currentPacket = packet;
-        this.context.stopped = true;
         this.context.currentPauseActor = packet.actor;
 
         // Notify listeners, about debugger pause event.
@@ -216,12 +215,23 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
         }
 
         // Send event asking whether the debugger should really break. If at least
-        // one listeners returns true, the debugger just continues with pause.
+        // one listeners returns true, the debugger will resume.
         if (!this.dispatch2("shouldBreakDebugger", [this.context, event, packet]))
         {
             Trace.sysout("debuggerTool.paused; Listeners don't want to break the debugger.");
             return doResume(this);
         }
+
+        // Mark the context stopped as soon as we know that we don't want to resume
+        // immediately. See above code where listeners can cause that.
+        // This can save a lot of updates done within this.resumed() since the debugger
+        // didn't really stopped.
+        // Also, this solves recursion problem (see issue 7308), that happens when
+        // evaluation of expression in the {@link WatchPanel} cause exception and the
+        // debugger is set to break on it. The debugger will automatically resumed
+        // and so, the WatchPanel won't try to evaluate again causing the debugger
+        // break again and causing infinite asynchronous loop.
+        this.context.stopped = true;
 
         // Asynchronously initializes ThreadClient's stack frame cache. If you want to
         // sync with the cache handle 'framesadded' and 'framescleared' events.
@@ -344,7 +354,12 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
         Trace.sysout("debuggerTool.resume; limit: " + (limit ? limit.type: "no type"), limit);
 
         // xxxHonza: do not use _doResume. Use stepping methods instead.
-        return this.context.activeThread._doResume(limit, callback);
+        return this.context.activeThread._doResume(limit, (response) =>
+        {
+            if (callback)
+                callback();
+            this.dispatch("onResumeDebugger", [this.context, limit, response]);
+        });
     },
 
     stepOver: function(callback)
@@ -353,7 +368,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
 
         // The callback must be passed into the stepping functions, otherwise there is
         // an exception.
-        return this.context.activeThread.stepOver(function()
+        return this.context.activeThread.stepOver(function(response)
         {
             if (callback)
                 callback();
@@ -364,7 +379,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
     {
         Trace.sysout("debuggerTool.stepInto");
 
-        return this.context.activeThread.stepIn(function()
+        return this.context.activeThread.stepIn(function(response)
         {
             if (callback)
                 callback();
@@ -375,7 +390,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
     {
         Trace.sysout("debuggerTool.stepOut");
 
-        return this.context.activeThread.stepOut(function()
+        return this.context.activeThread.stepOut(function(response)
         {
             if (callback)
                 callback();
@@ -448,7 +463,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
     },
 
     // xxxHonza: used to get boolean result of evaluated breakpoint condition
-    // should be somewhere is an API library so, we can share it. 
+    // should be somewhere is an API library so, we can share it.
     isFalse: function(descriptor)
     {
         if (!descriptor || typeof(descriptor) != "object")
@@ -471,7 +486,7 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Break On Exceptions
 
-    updateBreakOnErrors: function()
+    updateBreakOnErrors: function(callback)
     {
         // Either 'breakOnExceptions' option can be set (from within the Script panel options
         // menu) or 'break on next' (BON) can be activated (on the Console panel).
@@ -482,16 +497,14 @@ DebuggerTool.prototype = Obj.extend(new Tool(),
             ", ignore: " + ignore + ", thread paused: " + this.context.activeThread.paused +
             ", context stopped: " + this.context.stopped);
 
-        return this.context.activeThread.pauseOnExceptions(pause, ignore, function(response)
+        return this.context.activeThread.pauseOnExceptions(pause, ignore, (response) =>
         {
             Trace.sysout("debuggerTool.updateBreakOnErrors; response received:", response);
+            if (callback)
+                callback(this.context, pause, ignore);
         });
     },
 });
-
-// ********************************************************************************************* //
-// Helpers
-
 
 // ********************************************************************************************* //
 // Registration

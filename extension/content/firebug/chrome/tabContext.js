@@ -8,6 +8,7 @@ define([
     "firebug/lib/events",
     "firebug/lib/url",
     "firebug/lib/css",
+    "firebug/lib/options",
     "firebug/lib/wrapper",
     "firebug/lib/promise",
     "arch/compilationunit",
@@ -15,7 +16,7 @@ define([
     "firebug/chrome/plugin",
     "firebug/debugger/debuggerLib",
 ],
-function(Firebug, FBTrace, Obj, Arr, Events, Url, Css, Wrapper, Promise,
+function(Firebug, FBTrace, Obj, Arr, Events, Url, Css, Options, Wrapper, Promise,
     CompilationUnit, Win, Plugin, DebuggerLib) {
 
 "use strict";
@@ -34,6 +35,7 @@ var TraceError = FBTrace.toError();
 var Trace = FBTrace.to("DBG_TABCONTEXT");
 
 // ********************************************************************************************* //
+// TabContext Implementation
 
 function TabContext(win, browser, chrome, persistedState)
 {
@@ -49,7 +51,6 @@ function TabContext(win, browser, chrome, persistedState)
     this.sidePanelNames = {};
 
     this.compilationUnits = {};
-    this.sourceFileByTag = {}; // mozilla only
 
     // New nsITraceableChannel interface (introduced in FF3.0.4) makes possible
     // to re-implement source-cache so that it solves the double-load problem.
@@ -62,13 +63,13 @@ function TabContext(win, browser, chrome, persistedState)
 
     // xxxHonza: remove?
     // Used by chromebug.
-    this.global = win; 
+    this.global = win;
 
     // Initialize context.baseWindow here (modified then by the cd() command).
     this.baseWindow = win;
 
-    // -- Back end support --
-    this.sourceFileMap = {};  // backend
+    // Private member. Should be never used directly.
+    this.sourceFileMap = {};
 }
 
 /**
@@ -170,16 +171,8 @@ TabContext.prototype =
 
     addSourceFile: function(sourceFile)
     {
-        if (!this.sourceFileMap)
-        {
-            FBTrace.sysout("tabContext.addSourceFile; ERROR no source map!");
-            return;
-        }
-
         this.sourceFileMap[sourceFile.href] = sourceFile;
         sourceFile.context = this;
-
-        this.addTags(sourceFile);
 
         var kind = CompilationUnit.SCRIPT_TAG;
         if (sourceFile.compilation_unit_type == "event")
@@ -189,12 +182,12 @@ TabContext.prototype =
             kind = CompilationUnit.EVAL;
 
         var url = sourceFile.href;
-        if (FBTrace.DBG_COMPILATION_UNITS)
-            FBTrace.sysout("onCompilationUnit " + url, [this, url, kind] );
 
-         var compilationUnit = new CompilationUnit(url, this);
-         compilationUnit.kind = kind;
-         this.compilationUnits[url] = compilationUnit;
+        Trace.sysout("tabContext.addSourceFile; " + url, [this, url, kind]);
+
+        var compilationUnit = new CompilationUnit(url, this);
+        compilationUnit.kind = kind;
+        this.compilationUnits[url] = compilationUnit;
 
         //Firebug.connection.dispatch("onCompilationUnit", [this, url, kind]);
 
@@ -212,9 +205,8 @@ TabContext.prototype =
 
     removeSourceFile: function(sourceFile)
     {
-        if (FBTrace.DBG_SOURCEFILES)
-            FBTrace.sysout("tabContext.removeSourceFile " + sourceFile.href + " in context " +
-                sourceFile.context.getName());
+        Trace.sysout("tabContext.removeSourceFile; " + sourceFile.href + " in context " +
+            sourceFile.context.getName());
 
         delete this.sourceFileMap[sourceFile.href];
         delete sourceFile.context;
@@ -222,25 +214,28 @@ TabContext.prototype =
         // ?? Firebug.onSourceFileDestroyed(this, sourceFile);
     },
 
-    addTags: function(sourceFile)
+    getSourceFile: function(href)
     {
-        if (sourceFile.outerScript)
-            this.sourceFileByTag[sourceFile.outerScript.tag] = sourceFile;
-
-        for (var innerTag in sourceFile.innerScripts)
-            this.sourceFileByTag[innerTag] = sourceFile;
-    },
-
-    getSourceFileByTag: function(tag)
-    {
-        return this.sourceFileByTag[tag];
+        // SourceFile should not use URL fragment (issue 7251)
+        // href = Url.normalizeURL(href);
+        return this.sourceFileMap[href];
     },
 
     clearSources: function()
     {
-        this.sourceFileByTag = {};
         this.sourceFileMap = {};
         this.compilationUnits = {};
+    },
+
+    enumerateSourceFiles: function(callback)
+    {
+        for (var url in this.sourceFileMap)
+        {
+            var sourceFile = this.sourceFileMap[url];
+            var result = callback(sourceFile);
+            if (result)
+                return result;
+        }
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
@@ -248,6 +243,8 @@ TabContext.prototype =
 
     getCompilationUnit: function(url)
     {
+        // SourceFile should not use URL fragment (issue 7251)
+        //url = Url.normalizeURL(url);
         return this.compilationUnits[url];
     },
 
@@ -258,7 +255,10 @@ TabContext.prototype =
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-    // backward compat
+    /**
+     * Backward compatibility with extensions
+     * xxxHonza: we might want to remove this at some point.
+     */
     get chrome()
     {
         return Firebug.chrome;
@@ -280,12 +280,15 @@ TabContext.prototype =
 
     destroy: function(state)
     {
-        // All existing timeouts need to be cleared
+        // All existing timeouts need to be cleared. This is why it's recommended
+        // to always create timeouts through the context object. It ensures that
+        // all timeouts and intervals are cleared when the context is destroyed.
         if (this.timeouts)
         {
             for (var timeout of this.timeouts)
                 clearTimeout(timeout);
         }
+
         this.throttleTimeout = 0;
 
         // Also all waiting intervals must be cleared.
@@ -295,7 +298,8 @@ TabContext.prototype =
                 clearInterval(timeout);
         }
 
-        // All deferred objects must be rejected.
+        // All deferred objects must be rejected. Again using promises through
+        // the context object is safe.
         if (this.deferreds)
         {
             for (var deferred of this.deferreds)
@@ -338,8 +342,7 @@ TabContext.prototype =
             this.destroyPanel(panelType, state);
         }
 
-        if (FBTrace.DBG_INITIALIZE)
-            FBTrace.sysout("tabContext.destroy " + this.getName() + " set state ", state);
+        Trace.sysout("tabContext.destroy; " + this.getName() + " set state ", state);
     },
 
     getPanelType: function(panelName)
@@ -353,7 +356,8 @@ TabContext.prototype =
 
         if (panelType && !panelType.prototype)
         {
-            FBTrace.sysout("tabContext.getPanel no prototype " + panelType, panelType);
+            TraceError.sysout("tabContext.getPanelType; ERROR no prototype " +
+                panelType, panelType);
             return null;
         }
 
@@ -379,6 +383,7 @@ TabContext.prototype =
         var panelType = this.getPanelType(panelName);
         if (!panelType)
             return false;
+
         return (!panelType.prototype.isEnabled || panelType.prototype.isEnabled());
     },
 
@@ -414,8 +419,7 @@ TabContext.prototype =
         var panel = new panelType();
         this.panelMap[panel.name] = panel;
 
-        if (FBTrace.DBG_PANELS)
-            FBTrace.sysout("tabContext.createPanel; Panel created: " + panel.name, panel);
+        Trace.sysout("tabContext.createPanel; Panel created: " + panel.name, panel);
 
         Events.dispatch(Firebug.modules, "onCreatePanel", [this, panel, panelType]);
 
@@ -433,7 +437,7 @@ TabContext.prototype =
             else
             {
                 // then our panel map is broken, maybe by an extension failure.
-                TraceError.sysout("tabContext.createPanel panel.mainPanel missing " +
+                TraceError.sysout("tabContext.createPanel; panel.mainPanel missing " +
                     panel.name + " from " + panel.parentPanel.name);
             }
         }
@@ -504,9 +508,9 @@ TabContext.prototype =
             this.invalidPanels = {};
 
         // xxxHonza: this is generating too many traces.
-        //if (FBTrace.DBG_PANELS)
+        //if (Trace.active)
         //{
-        //    FBTrace.sysout("tabContext.invalidatePanels; " +
+        //    Trace.sysout("tabContext.invalidatePanels; " +
         //        Arr.cloneArray(arguments).toString());
         //}
 
@@ -524,7 +528,7 @@ TabContext.prototype =
             delete this.refreshTimeout;
         }
 
-        this.refreshTimeout = this.setTimeout(Obj.bindFixed(function()
+        this.refreshTimeout = this.setTimeout(() =>
         {
             var invalids = [];
 
@@ -552,14 +556,14 @@ TabContext.prototype =
             if (invalids.length)
                 this.invalidatePanels.apply(this, invalids);
 
-        }, this), refreshDelay);
+        }, refreshDelay);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
     // Timeouts
 
     /**
-     * Most of the timeouts in Firebug should be spawned through this method. {@TabContext}
+     * Most of the timeouts in Firebug should be spawned through this method. {@link TabContext}
      * object keeps track of all awaiting timeouts and makes sure to clear them if the
      * current context is destroyed (e.g. the page is refreshed or Firebug deactivated for it).
      */
@@ -569,13 +573,9 @@ TabContext.prototype =
             throw new Error("setTimeout recursion");
 
         // We're using a sandboxed setTimeout function.
-        var self = this;
-        var timeout = setTimeout(function()
+        var timeout = setTimeout(() =>
         {
-            // Make sure to remove the timeout ID from the array of ongoing timeouts, so
-            // the 'setTimeout' caller doesn't have to explicitly do it.
-            if (self.timeouts)
-                delete self.timeouts[timeout];
+            this.timeouts.delete(timeout);
 
             try
             {
@@ -614,9 +614,10 @@ TabContext.prototype =
     setInterval: function(fn, delay)
     {
         // We're using a sandboxed setInterval function.
-        var self = this;
-        var timeout = setInterval(function()
+        var timeout = setInterval(() =>
         {
+            this.intervals.delete(timeout);
+
             try
             {
                 fn();
@@ -687,7 +688,7 @@ TabContext.prototype =
 
         if (!forceDelay)
         {
-            if (!Firebug.throttleMessages)
+            if (!Options.get("throttleMessages"))
             {
                 message.apply(object, args);
                 return false;
@@ -735,7 +736,7 @@ TabContext.prototype =
         var queue = this.throttleQueue;
 
         if (!queue[0])
-            FBTrace.sysout("tabContext.flushThrottleQueue no queue[0]", queue);
+            Trace.sysout("tabContext.flushThrottleQueue; no queue[0]", queue);
 
         var max = throttleFlushCount * 3;
         if (max > queue.length)
