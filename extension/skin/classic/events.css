@@ -73,14 +73,15 @@
     float: right;
 }
 
-.listenerLine.doesNotApply {
-    filter: url(resource://firebugui/filters.svg#grayscale);
-    opacity: 0.4;
+.listenerLine.doesNotApply > .listenerIndent,
+.listenerLine.doesNotApply > .objectLink,
+.listenerLine.doesNotApply > .selector {
+    color: #AAAAAA;
 }
 
-/* remember: source links are position: absolute. use padding-right 150px + width */
-
-.listenerLineGroup.disabled * {
+.listenerLineGroup.disabled > .listenerLine > .listenerIndent,
+.listenerLineGroup.disabled > .listenerLine > .objectLink,
+.listenerLineGroup.disabled > .listenerLine > .selector {
     color: #CCCCCC;
 }
 

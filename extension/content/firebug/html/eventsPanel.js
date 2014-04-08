@@ -4,12 +4,13 @@
 
 // TODO:
 // UI:
-// - clicking elements in headers, probably (though it's problematic with `window` which covers the whole line)
-//  - or else right-clicking elements in headers
-// - clicking event handlers doesn't do anything (are they even in the script panel?)
+// - clicking elements in headers, probably (though it's problematic with `window` which covers the whole line. Maybe exclude the full lines from clicking?)
+//  - or else right-clicking elements in headers should show "Inspect in HTML panel"
+// - clicking event handlers doesn't do anything (are they even in the script panel?) (not until they have run?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
+//   (note: need to gray if out if disabled/not applying)
 // - capture
 // - a11y, RTL...
 // Functionality:
