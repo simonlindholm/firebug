@@ -299,7 +299,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                             // Only show this listener if jQuery runs it on this node, i.e., if the
                             // element or some ancestor of it matches the listener selector.
                             var global = Cu.getGlobalForObject(jq);
-                            var elements = Cu.createArrayIn(global), elementSet = new Set();
+                            var elements = new global.Array(), elementSet = new Set();
                             var cur = element;
                             while (cur)
                             {
