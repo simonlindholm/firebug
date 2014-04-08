@@ -58,6 +58,9 @@ function(Firebug, FBTrace, Dom, Domplate, Events, Locale, Menu, Obj, Options, Wr
 var {domplate, DIV, FOR, TAG, H1, H2, SPAN} = Domplate;
 var Cu = Components.utils;
 
+var Trace = FBTrace.to("DBG_EVENTS");
+var TraceError = FBTrace.toError();
+
 // ********************************************************************************************* //
 // Events Panel (HTML side panel)
 
@@ -185,8 +188,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
     {
         if (!(selection instanceof Element))
             return;
-        if (FBTrace.DBG_EVENTS)
-            FBTrace.sysout("events.updateSelection; " + selection.localName);
+        Trace.sysout("events.updateSelection; " + selection.localName);
 
         try
         {
@@ -204,8 +206,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
         catch (exc)
         {
-            if (FBTrace.DBG_ERRORS)
-                FBTrace.sysout("events.updateSelection FAILS", exc);
+            TraceError.sysout("events.updateSelection FAILS", exc);
         }
     },
 
@@ -218,12 +219,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getDerivedListeners: function(func, type, target)
     {
-        // Try to see if the listener (often from a library) wraps another user-defined listener,
-        // and if so extract the user-defined listener(s). We do this through pattern-matching on
-        // function calls that go through call or apply, which are often used to set 'this' to
-        // something which is reasonable from a library user's point of view, but are rather
-        // uncommon outside of library code. We then use debugger magic to extract the original
-        // functions from the listener's closure.
+        // Try to see if the listener (often from a library) wraps another user-defined
+        // listener, and if so extract the user-defined listener(s). We do this through
+        // pattern-matching on function calls that go through call or apply, which are
+        // often used to set 'this' to something which is reasonable from a library user's
+        // point of view, but are rather uncommon outside of library code. We then use
+        // debugger magic to extract the original functions from the listener's closure.
         var src = func + "";
         var mIndirection = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.(call|apply)/.exec(src);
         if (!mIndirection)
@@ -285,50 +286,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 };
                 if (typeof listener.func !== "function")
                     continue;
-                let selector = e.selector;
 
+                let selector = e.selector;
                 if (typeof selector === "string")
                 {
+                    var needsContext = e.needsContext;
                     listener.selector = selector;
-                    listener.appliesToElement = function(element)
-                    {
-                        try
-                        {
-                            // Only show this listener if jQuery runs it on this node, i.e., if the
-                            // element or some ancestor of it matches the listener selector.
-                            var global = Cu.getGlobalForObject(jq);
-                            var elements = new global.Array(), elementSet = new Set();
-                            var cur = element;
-                            while (cur)
-                            {
-                                elements.push(cur);
-                                elementSet.add(cur);
-                                cur = cur.parentNode;
-                            }
-
-                            var matches;
-                            if (e.needsContext)
-                            {
-                                // Handle selectors like "> a" (for versions >= 1.9).
-                                matches = jq(selector, target).filter(function()
-                                {
-                                    return elementSet.has(this);
-                                });
-                            }
-                            else
-                            {
-                                matches = jq.find(selector, target, null, elements);
-                            }
-
-                            return (matches.length > 0);
-                        }
-                        catch (exc)
-                        {
-                            if (FBTrace.DBG_EVENTS)
-                                FBTrace.sysout("events.getDerivedJqueryListeners.appliesToElement threw an error", exc);
-                            return true;
-                        }
-                    };
+                    listener.appliesToElement = (element) =>
+                        this.jQueryListenerApplies(jq, target, selector, needsContext, element);
                 }
                 ret.push(listener);
             }
@@ -336,9 +301,47 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
         catch (exc)
         {
-            if (FBTrace.DBG_EVENTS)
-                FBTrace.sysout("events.getDerivedJqueryListeners threw an error", exc);
+            Trace.sysout("events.getDerivedJqueryListeners threw an error", exc);
             return null;
+        }
+    },
+
+    jQueryListenerApplies: function(jq, target, selector, needsContext, element)
+    {
+        try
+        {
+            // Only show this listener if jQuery runs it on this node, i.e., if the
+            // element or some ancestor of it matches the listener selector.
+            var global = Cu.getGlobalForObject(jq);
+            var elements = new global.Array(), elementSet = new Set();
+            var cur = element;
+            while (cur)
+            {
+                elements.push(cur);
+                elementSet.add(cur);
+                cur = cur.parentNode;
+            }
+
+            var matches;
+            if (needsContext)
+            {
+                // Handle selectors like "> a" (for versions >= 1.9).
+                matches = jq(selector, target).filter(function()
+                {
+                    return elementSet.has(this);
+                });
+            }
+            else
+            {
+                matches = jq.find(selector, target, null, elements);
+            }
+
+            return (matches.length > 0);
+        }
+        catch (exc)
+        {
+            Trace.sysout("events.getDerivedJqueryListeners.appliesToElement threw an error", exc);
+            return true;
         }
     },
 
