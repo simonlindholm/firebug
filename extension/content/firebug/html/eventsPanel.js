@@ -233,8 +233,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var global = Cu.getGlobalForObject(func);
         var dbgGlobal = DebuggerLib.getThreadDebuggeeGlobalForContext(this.context, global);
         var dbgFunc = dbgGlobal && dbgGlobal.makeDebuggeeValue(func);
-        var env = dbgFunc && dbgFunc.environment;
-        if (!env)
+        var dbgEnv = dbgFunc && dbgFunc.environment;
+        if (!dbgEnv)
             return null;
 
         if (src.charAt(mIndirection.index - 1) === ".")
@@ -243,20 +243,20 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             // jQuery. For reasons of old-IE compat and extensibility, jQuery (and only jQuery)
             // stores all event listeners in a data structure separated from the closure of the
             // listener function. We special-case it only because it is so common.
-            return this.getDerivedJqueryListeners(target, type, env, funcName, src);
+            return this.getDerivedJqueryListeners(target, type, dbgEnv, funcName, src);
         }
 
-        env = env.find(funcName);
-        if (!env || !env.parent)
+        dbgEnv = dbgEnv.find(funcName);
+        if (!dbgEnv || !dbgEnv.parent)
             return null;
-        var dbgDerivedF = env.getVariable(funcName);
+        var dbgDerivedF = dbgEnv.getVariable(funcName);
         var derivedF = DebuggerLib.unwrapDebuggeeValue(dbgDerivedF);
         if (typeof derivedF !== "function")
             return null;
         return [{func: derivedF}];
     },
 
-    getDerivedJqueryListeners: function(target, type, env, funcName, src)
+    getDerivedJqueryListeners: function(target, type, dbgEnv, funcName, src)
     {
         if (funcName !== "handle" && funcName !== "dispatch")
             return null;
@@ -265,8 +265,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             // Pattern match on the occurance of '<minified name>.event.<funcName>.apply'.
             var matches = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.event\.(dispatch|handle)\.apply/.exec(src);
             var jqName = (matches && matches[1]) || "";
-            var env2 = env.find(jqName);
-            var dbgJq = env2 && env2.getVariable(jqName);
+            dbgEnv = dbgEnv.find(jqName);
+            var dbgJq = dbgEnv && dbgEnv.getVariable(jqName);
             if (!dbgJq)
                 return null;
 
@@ -348,16 +348,15 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var context = this.context;
         var listeners = Events.getEventListenersForTarget(target);
         var hasOneHandler = new Set();
-        var self = this;
-        listeners.forEach(function(li)
+        listeners.forEach((li) =>
         {
             li.disabled = false;
             li.target = target;
             li.sourceLink = SourceFile.findSourceForFunction(li.func, context);
 
-            if (self.shouldShowDerivedListeners())
+            if (this.shouldShowDerivedListeners())
             {
-                var derived = self.getDerivedListeners(li.func, li.type, target) || [];
+                var derived = this.getDerivedListeners(li.func, li.type, target) || [];
                 li.derivedListeners = derived.map(function(listener)
                 {
                     return {
