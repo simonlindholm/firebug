@@ -1,37 +1,77 @@
 function runTest()
 {
-    FBTest.sysout("issue5440.START");
-    FBTest.openNewTab(basePath + "html/style/5440/issue5440.html", function(win)
+    FBTest.openNewTab(basePath + "html/events/5440/issue5440.html", function()
     {
-        FBTest.openFirebug();
-        FBTest.selectPanel("html");
-        FBTest.selectSidePanel("css");
-
-        // Catch the first page load and Style panel update.
-        waitForCssRules(function()
+        FBTest.enableScriptPanel(function(win)
         {
-            // Reload the page.
-            FBTest.reload(function()
-            {
-                // Catch the second style update
-                waitForCssRules(function()
-                {
-                    FBTest.testDone("issue5440.DONE");
-                });
-            });
+            FBTest.selectPanel("html");
+
+            var tasks = new FBTest.TaskList();
+            tasks.push(verify, "testdiv");
+            tasks.push(verify, "testspan");
+            tasks.run(FBTest.testDone, 0);
         });
     });
 }
 
-function waitForCssRules(callback)
+function verify(callback, id)
 {
-    var config = {tagName: "div", classes: "cssElementRuleContainer"};
-    FBTest.waitForDisplayedElement("css", config, function(row)
-    {
-        var panel = FBTest.selectSidePanel("css");
-        var nodes = panel.panelNode.querySelectorAll(".cssElementRuleContainer .cssRule");
-        FBTest.ok(nodes.length > 0, "There must be some styles: " + nodes.length);
+    var panelNode = FBTest.selectSidePanel("html-events").panelNode;
 
+    FBTest.selectElementInHtmlPanel(id, () =>
+    {
+        var html = panelNode.innerHTML;
+        var expected = [];
+
+        if (id == "testdiv")
+        {
+            expected.push("noOwnListenersText");
+        }
+        else if (id == "testspan")
+        {
+            expected.push(
+                "mouseover",
+                "function\\(\\)",
+                "listenerCapturing(?![^>]*hidden)",
+                "derivedListener(?![^>]*doesNotApply)"
+            );
+        }
+
+        expected = expected.concat([
+            "#test",
+            "click",
+            "function\\( e \\)",
+            "listenerCapturing[^>]*hidden",
+            "jquery-1.9",
+            "derivedListener(?" + (id == "testdiv" ? "!" : ":") + "[^>]*doesNotApply)",
+            "funA",
+            "&gt; div",
+            "issue5440.html \\(line",
+            "alert",
+            "function\\(\\)",
+            "jquery-1.5",
+            "alert",
+
+            "Document",
+            "issue5440.html",
+            "click",
+            "function\\(\\)",
+            "jquery-1.5",
+            "derivedListener(?![^>]*doesNotApply)",
+            "funA",
+            "#test",
+
+            "Document",
+            "issue5440.html",
+            ">live<",
+
+            "Window",
+            "issue5440.html",
+            ">load<",
+        ]);
+
+        var re = new RegExp(expected.join("[\\w\\W]*"));
+        FBTest.compare(re, html, "Panel content should match");
         callback();
     });
 }
