@@ -989,6 +989,7 @@ var TabProgressListener = Obj.extend(Http.BaseProgressListener,
 // Obsolete
 
 var stateInProgress = false;
+var stateChangeReentered = false;
 var FrameProgressListener = Obj.extend(Http.BaseProgressListener,
 {
     onStateChange: function(progress, request, flag, status)
@@ -996,21 +997,24 @@ var FrameProgressListener = Obj.extend(Http.BaseProgressListener,
         if (stateInProgress)
         {
             FBTrace.sysout("tabWatcher.onStateChange; already IN-PROGRESS")
+            stateChangeReentered = true;
             return;
         }
 
         stateInProgress = true;
+        stateChangeReentered = false;
 
         try
         {
             this.doStateChange(progress, request, flag, status)
         }
-        catch (e)
-        {
-        }
         finally
         {
             stateInProgress = false;
+            if (stateChangeReentered)
+            {
+                this.doStateChange(progress, request, flag, status);
+            }
         }
     },
 
@@ -1052,7 +1056,8 @@ var FrameProgressListener = Obj.extend(Http.BaseProgressListener,
                 // script/3985/issue3985.js fails since the FBTest.reload (i.e. waitForWindowLoad)
                 // doesn't catch "MozAfterPaint" event (issue in FBTest API).
                 // See also issue 7364
-                if (win.parent == win && (win.location.href == aboutBlank))
+                if (win.parent == win && (win.location.href == aboutBlank ||
+                    stateChangeReentered && win.document.readyState == "interactive"))
                 {
                     Firebug.TabWatcher.watchTopWindow(win, win.location.href);
                     return;
