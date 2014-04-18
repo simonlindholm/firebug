@@ -30,6 +30,9 @@ function verify(callback, id)
         else if (id == "testspan")
         {
             expected.push(
+                "mouseout",
+                "onmouseout\\(event\\)",
+                "1\\)",
                 "mouseover",
                 "function\\(\\)",
                 "listenerCapturing(?![^>]*hidden)",
@@ -40,13 +43,13 @@ function verify(callback, id)
         expected = expected.concat([
             "#test",
             "click",
-            "function\\( e \\)",
+            "function\\(e\\)",
             "listenerCapturing[^>]*hidden",
             "jquery-1.9",
             "derivedListener(?" + (id == "testdiv" ? "!" : ":") + "[^>]*doesNotApply)",
             "funA",
             "&gt; div",
-            "issue5440.html \\(line",
+            "issue5440.html \\(",
             "alert",
             "function\\(\\)",
             "jquery-1.5",
