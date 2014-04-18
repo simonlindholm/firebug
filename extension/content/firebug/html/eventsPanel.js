@@ -4,8 +4,6 @@
 
 // TODO:
 // UI:
-// - clicking elements in headers, probably (though it's problematic with `window` which covers the whole line. Maybe exclude the full lines from clicking?)
-//  - or else right-clicking elements in headers should show "Inspect in HTML panel"
 // - clicking event handlers doesn't do anything (are they even in the script panel?) (not until they have run?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
@@ -13,6 +11,7 @@
 //   (note: need to gray if out if disabled/not applying)
 // - capture
 // - a11y, RTL...
+// - all XXX's
 // Functionality:
 // - detect eventbug (maybe)
 
@@ -204,7 +203,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             var firstSection = this.panelNode.getElementsByClassName("listenerSection")[0];
             if (!firstSection.firstChild)
             {
-                var text = Locale.$STR("events.NoEventListeners");
+                var text = Locale.$STR("events.noEventListeners");
                 this.template.noOwnListenersTag.replace({text: text}, firstSection);
             }
         }
@@ -236,7 +235,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         // often used to set 'this' to something which is reasonable from a library user's
         // point of view, but are rather uncommon outside of library code. We then use
         // debugger magic to extract the original functions from the listener's closure.
-        var src = func + "";
+        var src = String(func);
         var mIndirection = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.(call|apply)/.exec(src);
         if (!mIndirection)
             return null;
@@ -439,7 +438,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             if (!list.length)
                 return;
 
-            var label = (inherits && object !== baseElement ? Locale.$STR("events.ListenersFrom") : "");
+            var inherited = (inherits && object !== baseElement);
+            var label = inherited ? Locale.$STR("InheritedFrom") : Locale.$STR("events.otherListeners");
             var tag;
             if (typeof object === "string")
             {
@@ -603,8 +603,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getOptionsMenuItems: function()
     {
-        var label = Locale.$STR("events.option.Show_Derived_Listeners");
-        var tooltip = Locale.$STR("events.option.tip.Show_Derived_Listeners");
+        var label = Locale.$STR("events.option.showDerivedListeners");
+        var tooltip = Locale.$STR("events.option.tip.showDerivedListeners");
         tooltip = Locale.$STRF("script.Script_panel_must_be_enabled", [tooltip]);
         var menuItem = Menu.optionMenu(label, "showDerivedListeners", tooltip);
         menuItem.nol10n = true;
