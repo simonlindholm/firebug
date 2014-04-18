@@ -60,6 +60,7 @@ const clearWhenDeny = "cookies.clearWhenDeny";
 const defaultExpireTime = "cookies.defaultExpireTime";
 const removeConfirmation = "cookies.removeConfirmation";
 const removeSessionConfirmation = "cookies.removeSessionConfirmation";
+const JSONexport = "cookies.jsonClipboardExport";
 
 // Services
 const cookieManager = Xpcom.CCSV("@mozilla.org/cookiemanager;1", "nsICookieManager2");
@@ -978,7 +979,14 @@ Firebug.CookieModule = Obj.extend(ActivableModule,
     onExportForSiteShowTooltip: function(tooltip, context)
     {
         var host = context.window.location.host;
-        tooltip.label = Locale.$STRF("cookies.export.Export_For_Site_Tooltip", [host]);
+        tooltip.label = Locale.$STRF("cookies.export.Export_For_Site_Tooltip2", [host]);
+        return true;
+    },
+
+    onExportJsonForClipboardTooltip: function(tooltip, context)
+    {
+        var host = context.window.location.host;
+        tooltip.label = Locale.$STRF("cookies.export.Export_Json_For_Clipboard_Tooltip", [host]);
         return true;
     },
 
@@ -1024,6 +1032,46 @@ Firebug.CookieModule = Obj.extend(ActivableModule,
         }
     },
 
+    /**
+     * Exports cookies for the current site into clipboard as a JSON array
+     * This action is available in the Cookies panel toolbar.
+     */
+    onExportJsonForClipboard: function(context)
+    {
+        // Much of this was adapted from the "onExportForSite" function
+        try
+        {
+            var panel = context.getPanel(panelName, true);
+            var tbody = Dom.getElementByClass(panel.panelNode, "cookieTable").firstChild;
+            var cookieArray = [];
+
+            for (var row = tbody.firstChild; row; row = row.nextSibling)
+            {
+                if (Css.hasClass(row, "cookieRow") && row.repObject)
+                {
+                    // JSON.stringify was adding a backslash before each quote
+                    // in the JSON output, which is not the intended output
+                    //
+                    // To bypass this, Firebug's .toJSON function is called on each
+                    // cookie as it is inserted into the array and the backslashes
+                    // are removed.
+                    var formattedCookie = row.repObject.toJSON();
+                    formattedCookie = formattedCookie.replace(/\\"/g,'\"');
+                    cookieArray.push(formattedCookie);
+                }
+            }
+
+            // Call toString on the array since all elements are JSON already
+            // Prepend and append square bracked to the string and copy to clipboard
+            System.copyToClipboard("[" + cookieArray.toString() + "]");
+        }
+        catch (err)
+        {
+            if (FBTrace.DBG_COOKIES)
+                FBTrace.sysout("cookies.onExportJsonForClipboard EXCEPTION", err);
+        }
+    },
+
     onFilter: function(context, pref)
     {
         var value = Options.get(pref);
@@ -1051,6 +1099,18 @@ Firebug.CookieModule = Obj.extend(ActivableModule,
         }
 
         return true;
+    },
+
+    /**
+     * Show or Hide JSONexport in Cookie Menu
+     */
+    exportJsonHandler: function(menu, context)
+    {
+        var menuItem = menu.ownerDocument.getElementById("fcExportJsonForClipboard");
+
+        // collapse JSONexport menu option if the preference is false, show if true
+        var showJSONexport = !Options.get(JSONexport)
+        Dom.collapse(menuItem, showJSONexport);
     },
 
     // Custom path filter
@@ -1138,7 +1198,7 @@ Firebug.CookieModule = Obj.extend(ActivableModule,
 
         var cookies = [
             MenuUtils.optionMenu(context, "cookies.showCookieEvents",
-                "cookies.tip.showCookieEvents", Firebug.prefDomain, "cookies.logEvents"),
+                "cookies.tip.showCookieEvents2", Firebug.prefDomain, "cookies.logEvents"),
         ];
 
         // The option is disabled if the panel is disabled.

@@ -11,6 +11,8 @@ define([
 ],
 function (Firebug, FBTrace, Obj, Tool, DebuggerLib, BreakpointStore, DebuggerClient) {
 
+"use strict";
+
 // ********************************************************************************************* //
 // Constants
 
@@ -75,6 +77,14 @@ BreakpointTool.prototype = Obj.extend(new Tool(),
         // related.
         // this.context.breakpointClients = [];
 
+        // Breakpoints need to be disabled on the server side when detach happens
+        // (see also issue 7295).
+        // xxxHonza: this is a workaround for bug:
+        // https://bugzilla.mozilla.org/show_bug.cgi?id=991688
+        var threadActor = DebuggerLib.getThreadActor(this.context.browser);
+        if (threadActor)
+            threadActor.disableAllBreakpoints();
+
         BreakpointStore.removeListener(this);
     },
 
@@ -104,6 +114,9 @@ BreakpointTool.prototype = Obj.extend(new Tool(),
             var correctedLine = bpClient.location.line - 1;
             if (bp.lineNo != correctedLine)
             {
+                Trace.sysout("breakpointTool.onAddBreakpoint; line correction " +
+                    bp.lineNo + " -> " + correctedLine);
+
                 // The breakpoint line is going to be corrected, let's check if there isn't
                 // an existing breakpoint at the new line. Note: This must be done before
                 // the correction, since the value stored in the bp variable is by reference,

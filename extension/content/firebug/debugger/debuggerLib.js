@@ -366,13 +366,19 @@ DebuggerLib.getNextExecutableLine = function(context, aLocation)
 DebuggerLib.isExecutableLine = function(context, location)
 {
     var threadActor = this.getThreadActor(context.browser);
+    if (!threadActor.dbg)
+    {
+        TraceError.sysout("debuggerClient.isExecutableLine; ERROR No debugger, " +
+            "Script panel disabled?");
+        return;
+    }
 
-    // Use 'innermost' property so, the result is (almost) always just one script object
-    // and we can save time in the loop below. See: https://wiki.mozilla.org/Debugger
+    // Set 'innermost' property to false to get any script that is presented
+    // on the specified line (see also issue 7176).
     var query = {
         url: location.url,
         line: location.line,
-        innermost: true,
+        innermost: false,
     };
 
     var scripts = threadActor.dbg.findScripts(query);

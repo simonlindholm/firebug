@@ -35,10 +35,15 @@ var serverURI = driverBaseURI;
  *                              Test, which is not targeted for the current OS is marked as "fails".
  */
 var testList = [
+    {group: "lib/array",          uri: "lib/array/arrayInsert.js",                desc: "Verify Arr.arrayInsert() is working as expected" },
+    {group: "lib/array",          uri: "lib/array/isArrayLike.js",                desc: "Verify Arr.isArrayLike() is working as expected" },
+    {group: "lib/array",          uri: "lib/array/unique.js",                     desc: "Verify Arr.unique() is working as expected" },
     {group: "lib/css",            uri: "lib/css/classes.js",                      desc: "Verify Css.setClass(), Css.hasClass() and Css.removeClass() are working as expected" },
+    {group: "lib/dom",            uri: "lib/dom/getElementsByAttribute.js",       desc: "Verify Dom.getElementsByAttribute() is working as expected" },
     {group: "lib/search",         uri: "lib/search/literalRegExp.js",             desc: "Verify Search.LiteralRegExp() is working as expected" },
     {group: "lib/search",         uri: "lib/search/textSearch.js",                desc: "Verify Search.TextSearch() is working as expected", testPage: "lib/search/textSearch.htm" },
     {group: "lib/storage",        uri: "lib/storage/storageService.js",           desc: "Verify modules/storageService is working as expected" },
+    {group: "lib/string",         uri: "lib/string/cropString.js",                desc: "Verify Str.cropString() is working as expected" },
     {group: "lib/string",         uri: "lib/string/formatTime.js",                desc: "Verify Str.formatTime() is working as expected" },
     {group: "lib/string",         uri: "lib/string/formatSize.js",                desc: "Verify Str.formatSize() is working as expected" },
     {group: "lib/url",            uri: "lib/url/absoluteURL.js",                  desc: "Verify Url.absoluteURLs() is working as expected" },
@@ -124,6 +129,7 @@ var testList = [
     {group: "console",            uri: "console/5026/issue5026.js",               desc: "RegExp source isn't shown", testPage: "console/5026/issue5026.html"},
     {group: "console",            uri: "console/5033/issue5033.js",               desc: "Return value from a function executed on the command line is not displayed.", testPage: "console/5033/issue5033.html"},
     {group: "console",            uri: "console/5135/issue5135.js",               desc: "Display window.postMessage() calls in console", testPage: "console/5135/issue5135.html"},
+    {group: "console",            uri: "console/5216/issue5216.js",               desc: "\"Break On This Error\" missing from the context menu", testPage: "console/5216/issue5216.html" },
     {group: "console",            uri: "console/5235/issue5235.js",               desc: "Don't allow to inspect computed style in CSS panel", testPage: "console/5235/issue5235.html" },
     {group: "console",            uri: "console/5359/issue5359.js",               desc: "Use displayName in profiler", testPage: "console/5359/issue5359.html"},
     {group: "console",            uri: "console/5382/issue5382.js",               desc: "Console.log display bug with nested arrays", testPage: "console/5382/issue5382.html"},
@@ -341,6 +347,7 @@ var testList = [
     {group: "script/breakpoints", uri: "script/breakpoints/5291/issue5291.js",    desc: "Issue 5291: Breakpoint condition auto-completion should use variables in scope", testPage: "script/breakpoints/5291/issue5291.html"},
     {group: "script/breakpoints", uri: "script/breakpoints/5525/issue5525.js",    desc: "Setting error breakpoints causes error in Breakpoints side panel", testPage: "script/breakpoints/5525/issue5525.html"},
     {group: "script/breakpoints", uri: "script/breakpoints/6253/issue6253.js",    desc: "Issue 6253: Auto-correction of breakpoints location", testPage: "script/breakpoints/6253/issue6253.html" },
+    {group: "script/breakpoints", uri: "script/breakpoints/7295/issue7295.js",    desc: "Detaching and attaching backend thread without page-reload disables breakpoints", testPage: "script/breakpoints/7295/issue7295.html" },
     {group: "script/callstack",   uri: "script/callstack/1811/issue1811.js",      desc: "Issue 1811: Add prettyName/displayName support to Profiler output and Stacks", testPage: "script/callstack/1811/issue1811.html"},
     {group: "script/callstack",   uri: "script/callstack/3596/issue3596.js",      desc: "Issue 3596: Stack trace forgets where it is", testPage: "script/callstack/3596/issue3596.html"},
     {group: "script/callstack",   disabled: "See issue 6789", uri: "script/callstack/3645/issue3645.js",      desc: "Issue 3645: _firebugRerun and friends need to be elided from the panel status path", testPage: "script/callstack/3645/issue3645.html"},

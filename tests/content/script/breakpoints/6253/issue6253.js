@@ -38,7 +38,25 @@ function runTest()
                         FBTest.ok(breakpointHasMoved,
                             "Breakpoint must be set at line 11 now");
 
-                        FBTest.testDone();
+                        // Go to breakpoints side panel.
+                        FBTest.selectPanel("script");
+                        var breakpointsPanel = FBTest.selectSidePanel("breakpoints");
+
+                        // Make sure the breakpoint is displayed in breakpoint side panel
+                        var breakpointRow = breakpointsPanel.panelNode.
+                            getElementsByClassName("breakpointRow");
+                        FBTest.compare(breakpointRow.length, 1, "There must be " +
+                            "a breakpoint row in the Breakpoints side panel");
+
+                        // Realod the page and wait for the script execution to
+                        // halt on the breakpoint at line 11.
+                        FBTest.waitForBreakInDebugger(null, 11, true, () =>
+                        {
+                            FBTest.progress("Breakpoint gets hint at line 11");
+                            FBTest.clickContinueButton();
+                            FBTest.testDone();
+                        });
+                        FBTest.reload();
                     });
                 }
             });

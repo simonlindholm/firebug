@@ -133,6 +133,13 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         Firebug.unregisterUIListener(this);
 
+        // Stop marking executable lines.
+        if (this.context.markExeLinesTimeout)
+        {
+            this.context.clearTimeout(this.context.markExeLinesTimeout);
+            this.context.markExeLinesTimeout = null;
+        }
+
         BasePanel.destroy.apply(this, arguments);
     },
 
@@ -188,9 +195,9 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         // These buttons are visible only, if debugger is enabled.
         this.showToolbarButtons("fbBonButtons", active);
-        this.showToolbarButtons("fbLocationSeparator", active);
-        this.showToolbarButtons("fbDebuggerButtons", active);
+        this.showToolbarButtons("fbLocationSeparator", false);
         this.showToolbarButtons("fbLocationButtons", active);
+        this.showToolbarButtons("fbDebuggerButtons", active);
         this.showToolbarButtons("fbScriptButtons", active);
         this.showToolbarButtons("fbStatusButtons", active);
         this.showToolbarButtons("fbLocationList", active);
@@ -718,7 +725,7 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
                 return true;
 
             var lineNo = +m[1];
-            if (!isNaN(lineNo) && 0 < lineNo && lineNo <= this.editor.getLineCount())
+            if (!isNaN(lineNo) && 0 < lineNo && lineNo <= this.scriptView.editor.getLineCount())
             {
                 this.scrollToLine(lineNo, {highlight: true});
                 return true;
@@ -1584,9 +1591,6 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
             this.syncCommands(this.context);
             this.syncListeners(this.context);
-
-            // Update Break on Next lightning
-            //Firebug.Breakpoint.updatePanelTab(this, false);
 
             // issue 3463 and 4213
             Firebug.chrome.syncPanel("script");
