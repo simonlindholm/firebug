@@ -587,7 +587,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             return;
 
         var header = Dom.getAncestorByClass(target, "listenerInheritHeader");
-        if (header)
+        if (header && !Dom.getAncestorByClass(target, "objectLink"))
         {
             this.toggleGroup(header.parentNode);
             Events.cancelEvent(event);
