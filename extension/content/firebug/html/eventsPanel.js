@@ -514,11 +514,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         addSection(win, winInherited, true);
         addSection(doc, docOwn, false);
         addSection(win, winOwn, false);
-        var apc = win && win.applicationCache;
-        // XXX localize
-        if (apc)
-            addSection("Application Cache", this.getListeners(apc), false);
-
         return ret;
     },
 
