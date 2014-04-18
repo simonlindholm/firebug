@@ -4,7 +4,6 @@
 
 // TODO:
 // UI:
-// - clicking event handlers doesn't do anything (are they even in the script panel?) (not until they have run?)
 // - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
@@ -27,10 +26,8 @@
 
 // Testing TODO:
 // - disabling event listener, event handlers, attribute event handlers
-// - jquery filtering by descendant selector
 // - duplicate listeners and such
-// - derived listeners (jQuery and others)
-// - capture, source links
+// - capture
 
 define([
     "firebug/firebug",
@@ -141,7 +138,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             if (!listener.selector)
                 return "";
-            // XXX Localize
+            // XXX RTL
             return " (" + listener.selector + ")";
         },
     }),
