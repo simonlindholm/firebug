@@ -436,7 +436,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 return;
 
             var inherited = (inherits && object !== baseElement);
-            var label = inherited ? Locale.$STR("InheritedFrom") : Locale.$STR("events.otherListeners");
+            var label = inherited ? Locale.$STR("events.listenersFrom") : Locale.$STR("events.otherListeners");
             var tag;
             if (typeof object === "string")
             {
