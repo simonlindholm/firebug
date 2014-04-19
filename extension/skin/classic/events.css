@@ -16,6 +16,7 @@
     position: relative;
     -moz-user-select: none;
     cursor: pointer;
+    margin-bottom: 2px;
 }
 
 .listenerInheritLabel {

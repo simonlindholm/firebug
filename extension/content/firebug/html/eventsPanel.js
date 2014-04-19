@@ -4,7 +4,6 @@
 
 // TODO:
 // UI:
-// - collapsed headers shouldn't have spacing between them
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
 //   (note: need to gray if out if disabled/not applying)
