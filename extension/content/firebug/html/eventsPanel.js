@@ -10,6 +10,7 @@
 // - a11y...
 // Functionality:
 // - detect eventbug (maybe)
+// - objects with "handleEvent"?
 
 // Other:
 // - see if there are more extra event targets?

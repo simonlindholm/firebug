@@ -16,7 +16,9 @@
         </header>
         <div>
             <div id="test">
-                <div id="testdiv">div</div> <span id="testspan" onmouseout="this.style.color = 'black';">span</span>
+                <span id="testspan" onmouseout="this.style.color = 'black';">span</span>
+                <div id="testdiv">div</div>
+                <code id="testcode">code</code>
             </div>
 
             <section id="description">
@@ -49,6 +51,14 @@ jq19("#test").on("click", "> div", funA);
 jq19("#test").on("click", funB);
 jq15("#test").live("click", funA);
 jq15("#test").bind("click", funB);
+
+document.getElementById("testcode").addEventListener("click", {
+    handleEvent: function() { alert("hi"); }
+});
+document.getElementById("testcode").addEventListener("mousedown", {}); // invalid
+document.getElementById("testcode").addEventListener("mouseup", {
+    handleEvent: "invalid"
+});
 </script>
     </body>
 </html>
