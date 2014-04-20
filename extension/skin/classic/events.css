@@ -20,7 +20,7 @@
 }
 
 .listenerInheritLabel {
-    margin-left: 14px;
+    margin-left: 12px;
     font-weight: bold;
 }
 .listenerInheritLabel::after {
