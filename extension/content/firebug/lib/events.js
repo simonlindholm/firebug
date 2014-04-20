@@ -634,22 +634,36 @@ Events.getEventListenersForTarget = function(target)
     for (var i = 0; i < listeners.length; i++)
     {
         var rawListener = listeners[i];
-        var listener = {
+        var listenerObject = rawListener.listenerObject;
+        if (!listenerObject)
+            continue;
+
+        // For simplicity of use, extract actual listener functions from objects that
+        // implement the EventListener interface (i.e. that have "handleEvent" methods).
+        var func = listenerObject;
+        if (func && typeof func === "object")
+        {
+            try
+            {
+                func = func.handleEvent;
+            }
+            catch (exc) {}
+        }
+        if (typeof func !== "function")
+            func = null;
+
+        // Skip chrome event listeners.
+        if (rawListener.inSystemEventGroup || Wrapper.isChromeObject(listenerObject, window))
+            continue;
+
+        ret.push({
             type: rawListener.type,
-            func: rawListener.listenerObject,
+            listenerObject: listenerObject,
+            func: func,
             capturing: rawListener.capturing,
             allowsUntrusted: rawListener.allowsUntrusted,
             target: target,
-        };
-
-        // Skip chrome event listeners.
-        if (!listener.func || rawListener.inSystemEventGroup)
-            continue;
-
-        if (Wrapper.isChromeObject(listener.func, window))
-            continue;
-
-        ret.push(listener);
+        });
     }
 
     return ret;

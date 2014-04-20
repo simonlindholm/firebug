@@ -10,7 +10,6 @@
 // - a11y...
 // Functionality:
 // - detect eventbug (maybe)
-// - objects with "handleEvent"?
 
 // Other:
 // - see if there are more extra event targets?
@@ -355,6 +354,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var context = this.context;
         var listeners = Events.getEventListenersForTarget(target);
         var hasOneHandler = new Set();
+        listeners = listeners.filter((li) => li.func !== null);
         listeners.forEach((li) =>
         {
             li.disabled = false;
@@ -396,7 +396,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             {
                 // Standard event listener
                 var uwTarget = Wrapper.unwrapObject(target);
-                var args = [li.type, li.func, li.capturing, li.allowsUntrusted];
+                var args = [li.type, li.listenerObject, li.capturing, li.allowsUntrusted];
                 li.enable = function()
                 {
                     uwTarget.addEventListener.apply(uwTarget, args);

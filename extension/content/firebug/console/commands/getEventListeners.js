@@ -302,7 +302,7 @@ function getListenerMap(listeners)
             map[li.type] = [];
 
         map[li.type].push({
-            listener: li.func,
+            listener: li.listenerObject,
             useCapture: li.capturing,
             target: li.target,
         });
