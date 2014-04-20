@@ -7,7 +7,6 @@
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
 //   (note: need to gray if out if disabled/not applying)
-// - capture
 // - a11y, RTL...
 // - all XXX's
 // Functionality:
@@ -112,7 +111,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 DIV({"class": "listenerLine originalListener"},
                     SPAN({"class": "listenerIndent", "role": "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
-                    SPAN({"class": "listenerCapturing", "hidden": "$listener|capturingHidden"}, "C"), // XXX
+                    SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden",
+                        title: Locale.$STR("events.capturingTooltip")}),
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
                 FOR("derivedListener", "$listener.derivedListeners",
                     DIV({"class": "listenerLine derivedListener", $doesNotApply: "$derivedListener.doesNotApply"},

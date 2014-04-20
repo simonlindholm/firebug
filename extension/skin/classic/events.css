@@ -69,6 +69,16 @@
     background: transparent url(chrome://firebug/skin/disable.svg) no-repeat 2px 1px;
 }
 
+.listenerCapturing {
+    background: transparent url(chrome://firebug/skin/capturing.png) no-repeat 2px 0px;
+    padding-left: 16px;
+    cursor: help;
+}
+
+.listenerLineGroup.disabled > .originalListener > .listenerCapturing {
+    opacity: 0.25;
+}
+
 .listenerLine > .objectLink-sourceLink {
     position: static;
     float: right;
