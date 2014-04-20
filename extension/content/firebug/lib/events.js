@@ -429,7 +429,7 @@ Events.attachAllListeners = function(object, listener)
 {
     for (var family in eventTypes)
     {
-        if (family !== "mutation" || Firebug.attachMutationEvents)
+        if (family !== "mutation")
             this.attachFamilyListeners(family, object, listener);
     }
 };
@@ -438,7 +438,7 @@ Events.detachAllListeners = function(object, listener)
 {
     for (var family in eventTypes)
     {
-        if (family !== "mutation" || Firebug.attachMutationEvents)
+        if (family !== "mutation")
             this.detachFamilyListeners(family, object, listener);
     }
 };
