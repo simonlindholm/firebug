@@ -7,8 +7,7 @@
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
 //   (note: need to gray if out if disabled/not applying)
-// - a11y, RTL...
-// - all XXX's
+// - a11y...
 // Functionality:
 // - detect eventbug (maybe)
 
@@ -137,7 +136,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             if (!listener.selector)
                 return "";
-            // XXX RTL
             return " (" + listener.selector + ")";
         },
     }),
