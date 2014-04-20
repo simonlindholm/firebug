@@ -384,15 +384,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             else
             {
                 // Standard event listener
-                var uwTarget = Wrapper.unwrapObject(target);
                 var args = [li.type, li.listenerObject, li.capturing, li.allowsUntrusted];
                 li.enable = function()
                 {
-                    uwTarget.addEventListener.apply(uwTarget, args);
+                    target.addEventListener.apply(target, args);
                 };
                 li.disable = function()
                 {
-                    uwTarget.removeEventListener.apply(uwTarget, args);
+                    target.removeEventListener.apply(target, args);
                 };
             }
         });
