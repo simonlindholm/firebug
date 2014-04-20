@@ -9,22 +9,11 @@
 //   (note: need to gray if out if disabled/not applying)
 // - a11y...
 // Functionality:
-// - detect eventbug (maybe)
-
-// Other:
-// - see if there are more extra event targets?
-// - new issue about having source code as title
-// - dynamic updates for jQuery listeners will be awful. watch('length') technically works, but timeouts are probably a better idea.
-// - source links should work even without script panel
-// - derived listeners on Google Code:
-//  - one listener is "function(ev) { otherfunction(ev); }"
-//  - another has two steps of indirection, and the second is very non-trivial (jQuery-like)...
-//  - generally I am seeing a lot of double indirection, if it could be handled through the same code-path it would be great
+// - detect eventbug?
 
 // Testing TODO:
 // - disabling event listener, event handlers, attribute event handlers
 // - duplicate listeners and such
-// - capture
 
 define([
     "firebug/firebug",
