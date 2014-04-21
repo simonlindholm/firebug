@@ -210,7 +210,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         return context.listenerDisabledMap;
     },
 
-    getDerivedListeners: function(func, type, target)
+    getDerivedListeners: function(listener)
     {
         // Try to see if the listener (often from a library) wraps another user-defined
         // listener, and if so extract the user-defined listener(s). We do this through
@@ -218,6 +218,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         // often used to set 'this' to something which is reasonable from a library user's
         // point of view, but are rather uncommon outside of library code. We then use
         // debugger magic to extract the original functions from the listener's closure.
+        var func = listener.func;
         var src = String(func);
         var mIndirection = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.(call|apply)/.exec(src);
         if (!mIndirection)
@@ -237,6 +238,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             // jQuery. For reasons of old-IE compat and extensibility, jQuery (and only jQuery)
             // stores all event listeners in a data structure separated from the closure of the
             // listener function. We special-case it only because it is so common.
+            var target = listener.target;
+            var type = listener.type;
             return this.getDerivedJqueryListeners(target, type, dbgEnv, funcName, src);
         }
 
@@ -333,7 +336,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
         catch (exc)
         {
-            Trace.sysout("events.getDerivedJqueryListeners.appliesToElement threw an error", exc);
+            Trace.sysout("events.jQueryListenerApplies threw an error", exc);
             return true;
         }
     },
@@ -350,9 +353,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             li.target = target;
             li.sourceLink = SourceFile.findSourceForFunction(li.func, context);
 
+            var handlerName = "on" + li.type;
+            li.isEventHandler = (target[handlerName] === li.listenerObject &&
+                !hasOneHandler.has(handlerName) && !li.capturing &&
+                handlerName in Object.getPrototypeOf(target));
+
             if (this.shouldShowDerivedListeners())
             {
-                var derived = this.getDerivedListeners(li.func, li.type, target) || [];
+                var derived = this.getDerivedListeners(li) || [];
                 li.derivedListeners = derived.map(function(listener)
                 {
                     return {
@@ -364,11 +372,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 });
             }
 
-            var handlerName = "on" + li.type;
-            if (handlerName in Object.getPrototypeOf(target) &&
-                !hasOneHandler.has(handlerName) &&
-                !li.capturing &&
-                target[handlerName] === li.listenerObject)
+            if (li.isEventHandler)
             {
                 // Inline event handler
                 hasOneHandler.add(handlerName);
