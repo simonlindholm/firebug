@@ -400,10 +400,27 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getListeners: function(target)
     {
-        // List first normal listeners, then disabled ones.
         var normal = this.getNormalEventListeners(target);
         var disabled = this.getDisabledMap(this.context).get(target, []);
-        return normal.concat(disabled);
+
+        // Try to insert the disabled listeners at their previous positions. This will be
+        // wrong in case listeners have been removed since those positions were recorded,
+        // but hopefully that should happen only rarely.
+        var ret = [];
+        var normalInd = 0, disabledInd = 0;
+        for (var i = 0; i < normal.length + disabled.length; i++)
+        {
+            var useDisabled = (normalInd === normal.length ||
+                (disabledInd < disabled.length && disabled[disabledInd].index === i));
+            var li;
+            if (useDisabled)
+                li = disabled[disabledInd++];
+            else
+                li = normal[normalInd++];
+            li.index = i;
+            ret.push(li);
+        }
+        return ret;
     },
 
     getOwnSection: function(element)
@@ -511,9 +528,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var shouldDisable = !listener.disabled;
         listener.disabled = shouldDisable;
 
-        // Change the disabled styling. N.B.: When the panel is refreshed, this
-        // row will be placed to the bottom. We don't move it there yet though,
-        // because that would be confusing.
         if (shouldDisable)
             row.classList.add("disabled");
         else
@@ -534,7 +548,33 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         {
             var index = map.indexOf(listener);
             map.splice(index, 1);
+
+            // Disable and enable all event listeners at higher indices, so that the listener
+            // gets inserted in the correct place. Fetch the listener list again for this, so
+            // that we don't accidentally enable any listeners that were removed after the UI
+            // was created. (This could end up inserting the listener a few positions earlier
+            // than wanted if listeners are removed before it, but that should be uncommon
+            // and it's not a big deal.)
+            var listenerSection = Dom.getAncestorByClass(row, "listenerSection");
+            var lineGroups = listenerSection.getElementsByClassName("listenerLineGroup");
+            var knownListeners = [].map.call(lineGroups, (gr) => gr.listenerObject);
+            var actualListeners = this.getNormalEventListeners(target);
+
+            var normalInd = 0;
+            for (let li of knownListeners)
+            {
+                if (li === listener)
+                    break;
+                if (!li.disabled)
+                    normalInd++;
+            }
+
             listener.enable();
+            for (var i = normalInd; i < actualListeners.length; i++)
+            {
+                actualListeners[i].disable();
+                actualListeners[i].enable();
+            }
         }
     },
 
