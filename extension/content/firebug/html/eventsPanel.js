@@ -222,7 +222,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var src = String(func);
         var mIndirection = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\.(call|apply)/.exec(src);
         if (!mIndirection)
-            return null;
+        {
+            // Okay, one more try. If this is an inline event handler which simply delegates
+            // to another function, use the other function.
+            if (!listener.isEventHandler)
+                return null;
+            var re = ("^function [\\w$]* \\([^\\)]*\\) \\{ " +
+                "(?:return\\s+)?([\\w$]+) \\([^\\)]*\\);? " +
+                "\\}$").replace(" ", "\\s*", "g");
+            mIndirection = new RegExp(re).exec(src);
+            if (!mIndirection)
+                return null;
+        }
         var funcName = mIndirection[1];
 
         var global = Cu.getGlobalForObject(func);
@@ -244,7 +255,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
 
         dbgEnv = dbgEnv.find(funcName);
-        if (!dbgEnv || !dbgEnv.parent)
+        if (!dbgEnv)
             return null;
         var dbgDerivedF = dbgEnv.getVariable(funcName);
         var derivedF = DebuggerLib.unwrapDebuggeeValue(dbgDerivedF);
