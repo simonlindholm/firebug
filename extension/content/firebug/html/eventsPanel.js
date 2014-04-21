@@ -368,7 +368,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             if (handlerName in Object.getPrototypeOf(target) &&
                 !hasOneHandler.has(handlerName) &&
                 !li.capturing &&
-                target[handlerName] === li.func)
+                target[handlerName] === li.listenerObject)
             {
                 // Inline event handler
                 hasOneHandler.add(handlerName);
