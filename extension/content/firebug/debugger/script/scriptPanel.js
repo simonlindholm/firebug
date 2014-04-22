@@ -575,8 +575,9 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     {
         Trace.sysout("scriptPanel.framesadded;", stackTrace);
 
-        // Invoke breadcrumbs update.
+        // Invoke synchronous breadcrumbs update.
         Firebug.chrome.syncStatusPath();
+        StatusPath.flush();
 
         // Do not use: Firebug.chrome.select(this.context.currentFrame, "script");
         // at this moment. Since it invokes updateSelection, showStackFrame and
@@ -1157,10 +1158,22 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
         if (bp.href != url)
             return;
 
-        Trace.sysout("scriptPanel.onBreakpointRemoved;", bp);
+        var bps = [];
+        this.getBreakpoints(bps);
+
+        // Don't remove the icon from the breakpoint column if there is still
+        // a breakpoint in the store (see also issue 7372).
+        for (var tempBp of bps)
+        {
+            if (tempBp.lineNo == bp.lineNo)
+                return;
+        }
 
         // Remove breakpoint from the UI.
         this.scriptView.removeBreakpoint(bp);
+
+        Trace.sysout("scriptPanel.onBreakpointRemoved;", bp);
+
         var editor = this.scriptView.getInternalEditor();
         if (editor && editor.debugLocation == bp.lineNo)
             this.scriptView.setDebugLocation(bp.lineNo, true);
