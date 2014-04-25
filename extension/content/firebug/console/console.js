@@ -14,15 +14,24 @@ define([
     "firebug/chrome/panelNotification",
     "firebug/chrome/activableModule",
     "firebug/console/consoleBase",
+    "firebug/debugger/script/sourceLink",
+    "firebug/debugger/stack/stackFrame",
+    "firebug/debugger/stack/stackTrace",
+    "firebug/dom/domBaseTree",
     "firebug/remoting/debuggerClient",
 ],
 function(Firebug, FBTrace, Obj, Events, Locale, Search, Xml, Options, Win, Firefox,
-    PanelNotification, ActivableModule, ConsoleBase, DebuggerClient) {
+    PanelNotification, ActivableModule, ConsoleBase, SourceLink, StackFrame, StackTrace,
+    DomBaseTree, DebuggerClient) {
 
 "use strict";
 
 // ********************************************************************************************* //
 // Constants
+
+var Cu = Components.utils;
+var scope = Cu.import("resource://gre/modules/devtools/Loader.jsm", {});
+var {ConsoleAPIListener} = scope.devtools.require("devtools/toolkit/webconsole/utils");
 
 // Note: createDefaultReturnValueInstance() is a local helper (see below).
 var defaultReturnValue = createDefaultReturnValueInstance();
@@ -112,6 +121,11 @@ var Console = Obj.extend(ActivableConsole,
 
             context.consoleOnDOMWindowCreated = null;
         }
+        if (context && context.consoleApiListener)
+        {
+            context.consoleApiListener.destroy();
+            context.consoleApiListener = null;
+        }
     },
 
     /**
@@ -124,6 +138,17 @@ var Console = Obj.extend(ActivableConsole,
      */
     attachConsoleToWindows: function(context)
     {
+        if (context.consoleApiListener)
+            return;
+
+        // Setup a listener for the built-in console API, to catch console API
+        // calls from web workers.
+        var processApiCall = this.processConsoleApiCall.bind(this, context);
+        context.consoleApiListener = new ConsoleAPIListener(context.window, {
+            onConsoleAPICall: processApiCall
+        });
+        context.consoleApiListener.init();
+
         // Attach the Console for the window and its iframes.
         Win.iterateWindows(context.window, function(win)
         {
@@ -137,10 +162,129 @@ var Console = Obj.extend(ActivableConsole,
             context.consoleOnDOMWindowCreated = function(ev)
             {
                 if (ev && ev.target)
-                    Firebug.Console.injector.attachConsoleInjector(context, ev.target.defaultView);
+                    Console.injector.attachConsoleInjector(context, ev.target.defaultView);
             };
             context.browser.addEventListener("DOMWindowCreated", context.consoleOnDOMWindowCreated);
         }
+    },
+
+    processConsoleApiCall: function(context, ev)
+    {
+        Trace.sysout("console.processConsoleApiCall", ev);
+        var level = ev.level, args = ev.arguments;
+
+        var sourceLink = ev.filename ? new SourceLink(ev.filename, ev.lineNumber, "js") : null;
+        var frontend = Firebug.ConsoleExposed.frontend;
+
+        function getTrace()
+        {
+            if (!ev.stacktrace)
+                return null;
+            var trace = new StackTrace();
+            for (let fr of ev.stacktrace)
+            {
+                trace.frames.push(new StackFrame({href: fr.filename},
+                    fr.lineNumber, fr.functionName, [], null, null, context));
+            }
+            return trace;
+        }
+
+        switch (level)
+        {
+        case "log":
+        case "info":
+        case "warn":
+        case "debug":
+            var logArgs = this.convertApiCallArguments(args, ev.styles);
+            frontend.log(context, logArgs, level, sourceLink);
+            break;
+
+        case "time":
+            // Do nothing - we'll act on timeEnd.
+            break;
+
+        case "timeEnd":
+            // XXX: timers always have 0 duration in web workers, for some reason,
+            // so ignore those for now. I suppose we could work around it by
+            // comparing ev.timeStamp between "time" and "timeEnd", but it wouldn't
+            // be as accurate.
+            if (ev.timer && ev.timer.duration)
+                frontend.timeEnd(context, ev.timer.name, ev.timer.duration, sourceLink);
+            break;
+
+        case "error":
+        case "exception":
+        case "assert":
+            var type = (level === "assert" ? "assert" : "error");
+            var logArgs = args.map(this.convertApiCallArgument.bind(this));
+            frontend.logError(context, logArgs, type, ev.filename, ev.lineNumber, getTrace());
+            break;
+
+        case "trace":
+            frontend.trace(context, getTrace());
+            break;
+
+        case "group":
+        case "groupCollapsed":
+            frontend.group(context, args, (level === "group"), sourceLink);
+            break;
+
+        case "groupEnd":
+            frontend.groupEnd(context);
+            break;
+
+        case "dir":
+            frontend.dir(context, args[0]);
+            break;
+
+        case "count":
+            var key = args[0];
+            var strKey = (key == null ? "" : String(key));
+            frontend.count(context, strKey, sourceLink);
+            break;
+
+        default:
+            Trace.sysout("console.processConsoleApiCall; unhandled console API " + level);
+        }
+    },
+
+    convertApiCallArguments: function(args, styles)
+    {
+        if (!args.length)
+            return args;
+        var formatStr = "";
+        var res = [];
+        for (var i = 0; i < styles.length; i++)
+        {
+            if (styles[i])
+            {
+                formatStr += "%c";
+                res.push(styles[i]);
+            }
+            var thing = args[i];
+            if (typeof thing === "string")
+                formatStr += "%s";
+            else
+                formatStr += "%o";
+            res.push(args[i]);
+        }
+        res.unshift(formatStr);
+
+        for (var i = styles.length; i < args.length; i++)
+            res.push(this.convertApiCallArgument(args[i]));
+
+        return res;
+    },
+
+    convertApiCallArgument: function(val)
+    {
+        // For the web worker console, some complex objects 'obj' get converted
+        // into new String(obj.toString()). There is not much we can do about
+        // this, but at least convert it back to a string so that the display
+        // doesn't look horrendous.
+        if (typeof val === "object" && Object.prototype.toString.call(val) === "[object String]")
+            return String(val);
+        return val;
     },
 
     togglePersist: function(context)

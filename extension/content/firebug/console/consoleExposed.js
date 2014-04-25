@@ -550,7 +550,8 @@ var Frontend = {
 
 Firebug.ConsoleExposed =
 {
-    createFirebugConsole: createFirebugConsole
+    createFirebugConsole: createFirebugConsole,
+    frontend: Frontend,
 };
 
 return Firebug.ConsoleExposed;
