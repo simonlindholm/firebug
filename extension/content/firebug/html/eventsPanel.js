@@ -11,10 +11,6 @@
 // Functionality:
 // - detect eventbug?
 
-// Testing TODO:
-// - disabling event listener, event handlers, attribute event handlers
-// - duplicate listeners and such
-
 define([
     "firebug/firebug",
     "firebug/lib/trace",
