@@ -8,6 +8,11 @@
         <script>jq15 = jQuery.noConflict(true);</script>
         <script src="jquery-1.9.js"></script>
         <script>jq19 = jQuery.noConflict(true);</script>
+        <style>
+            img {
+                margin: 6px 0;
+            }
+        </style>
     </head>
     <body>
         <header>
@@ -24,10 +29,12 @@
             <section id="description">
                 <h3>Steps to reproduce</h3>
                 <ol>
-                    <li>Open Firebug</li>
-                    <li>Switch to the <em>HTML</em> panel and there to the <em>Style</em> side panel</li>
-                    <li>Refresh the page by pressing F5. Make sure mouse cursor is not on the page.</li>
-                    <li>Check out the Style panel. It should display some styles.</li>
+                    <li>Open Firebug, and enable the Script panel</li>
+                    <li>Switch to the <em>HTML</em> panel and there to the <em>Events</em> side panel</li>
+                    <li>Inspect the #testdiv element, and confirm that the Events panel shows the following:
+                    <div><img src="testdiv.png"></div></li>
+                    <li>Inspect the #testspan element, and confirm that the Events panel shows the following:
+                    <div><img src="testspan.png"></div></li>
                 </ol>
             </section>
             <footer>Simon Lindholm, simon.lindholm10@gmail.com</footer>
