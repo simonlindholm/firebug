@@ -66,6 +66,9 @@ document.getElementById("testcode").addEventListener("mousedown", {}); // invali
 document.getElementById("testcode").addEventListener("mouseup", {
     handleEvent: "invalid"
 });
+document.getElementById("testcode").addEventListener("mouseup", function(msg) {
+    alert(msg);
+}.bind(null, "hi"));
 </script>
     </body>
 </html>
