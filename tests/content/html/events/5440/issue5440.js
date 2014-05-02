@@ -31,36 +31,40 @@ function verify(callback, id)
         {
             expected.push(
                 "mouseout",
-                "onmouseout\\(event\\)",
-                "1\\)",
+                "onmouseout(event)",
                 "mouseover",
-                "function\\(\\)",
-                "listenerCapturing(?![^>]*hidden)",
-                "derivedListener(?![^>]*doesNotApply)"
+                "function()",
+                "listenerCapturing",
+                "NOT hidden",
+                "derivedListener",
+                "NOT doesNotApply"
             );
         }
 
         expected = expected.concat([
             "#test",
             "click",
-            "function\\(e\\)",
-            "listenerCapturing[^>]*hidden",
+            "function(e)",
+            "listenerCapturing",
+            "hidden",
             "jquery-1.9",
-            "derivedListener(?" + (id == "testdiv" ? "!" : ":") + "[^>]*doesNotApply)",
+            "derivedListener",
+            (id === "testdiv" ? "NOT " : "") + "doesNotApply",
             "funA",
             "&gt; div",
-            "issue5440.html \\(",
+            "issue5440.html (",
             "alert",
-            "function\\(\\)",
+            "function()",
             "jquery-1.5",
             "alert",
 
             "Document",
             "issue5440.html",
             "click",
-            "function\\(\\)",
+            "function()",
             "jquery-1.5",
-            "derivedListener(?![^>]*doesNotApply)",
+            "derivedListener",
+            "NOT doesNotApply",
             "funA",
             "#test",
 
@@ -73,8 +77,28 @@ function verify(callback, id)
             ">load<",
         ]);
 
-        var re = new RegExp(expected.join("[\\w\\W]*"));
-        FBTest.compare(re, html, "Panel content should match");
+        var index = 0;
+        for (var i = 0; i < expected.length; i++)
+        {
+            var part = expected[i];
+            if (part.startsWith("NOT "))
+            {
+                part = part.substr(4);
+                var ind = html.indexOf(">", index);
+                FBTest.ok(ind !== -1, "Panel should contain: >");
+                var ind2 = html.indexOf(part, index);
+                FBTest.ok(ind2 === -1 || ind2 > ind, "Tag should not contain: " + part + ": " +
+                    html.slice(index, ind));
+                index = ind;
+            }
+            else
+            {
+                var ind = html.indexOf(part, index);
+                FBTest.ok(ind !== -1, "Panel should contain: " + part);
+                if (ind !== -1)
+                    index = ind;
+            }
+        }
         callback();
     });
 }
