@@ -673,10 +673,13 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
             var options = sourceLink.getOptions();
 
             // Make sure the current execution line is marked if the current frame
-            // is coming from the same location.
+            // is coming from the same location. Otherwise the 'debug location' flag
+            // must be removed.
             var frame = this.context.currentFrame;
             if (frame && frame.href == this.location.href)
                 this.setDebugLocation(frame.line - 1, true);
+            else
+                options.debugLocation = false;
 
             // If the location object is SourceLink automatically scroll to the
             // specified line. Otherwise make sure to reset the scroll position
@@ -694,7 +697,7 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
     {
         Trace.sysout("debugger.SourceLoaded; " + sourceFile.href);
 
-        if (this.location.href != sourceFile.href)
+        if (!this.location || this.location.href != sourceFile.href)
             return;
 
         this.scriptView.showSource(sourceFile.lines.join(""), "js");
@@ -1357,7 +1360,12 @@ ScriptPanel.prototype = Obj.extend(BasePanel,
 
         var sourceFile = this.getSourceFile();
         var category = sourceFile.getCategory();
-        if (category == "js")
+
+        // Pretty printing can be done only for source files that have
+        // corresponding server side script actor. Note that dynamic scripts
+        // are currently collected on the client side (a workaround) since
+        // RDP doesn't support it yet.
+        if (category === "js" && sourceFile.actor)
         {
             items.push("-",
             {

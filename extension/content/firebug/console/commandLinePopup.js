@@ -15,19 +15,22 @@ define([
 ],
 function(Firebug, FBTrace, Obj, Css, Dom, Str, Xml, Events, Options, Module, CommandLine) {
 
-// ************************************************************************************************
+"use strict";
+
+// ********************************************************************************************* //
 // Constants
 
 var Trace = FBTrace.to("DBG_COMMANDLINE");
 var TraceError = FBTrace.toError();
 
-// ************************************************************************************************
+// ********************************************************************************************* //
 // Implementation
 
 /**
  * @module Command Line availability in other panels.
  */
 var CommandLinePopup = Obj.extend(Module,
+/** @lends CommandLinePopup */
 {
     dispatchName: "commandLinePopup",
 
@@ -110,7 +113,7 @@ var CommandLinePopup = Obj.extend(Module,
             this.showPopupPanel(panel.context);
     },
 
-    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+    // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
     setPopupBrowserStyle: function(chrome)
     {
@@ -134,10 +137,17 @@ var CommandLinePopup = Obj.extend(Module,
         if (panel && panel.name == "console")
             return;
 
+        // If the Console panel is disabled bail out
+        var consolePanelType = Firebug.getPanelType("console");
+        if (!consolePanelType.prototype.isEnabled())
+            return;
+
         Trace.sysout("commandLinePopup.toggle;");
 
         var newState = !this.isVisible();
-        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleCommandPopup", "checked", newState);
+        Firebug.chrome.setGlobalAttribute("cmd_firebug_toggleCommandPopup",
+            "checked", newState);
+
         Options.set("alwaysShowCommandLine", newState);
 
         this.updateVisibility(newState, context, {isToggle: true});
@@ -148,10 +158,14 @@ var CommandLinePopup = Obj.extend(Module,
 
     showPopupPanel: function(context)
     {
+        Trace.sysout("commandLinePopup.showPopupPanel; visible: " + this.isVisible());
+
         // If the the console panel is opened on another panel, simulate show event for it.
+        // If the Console panel isn't initialized yet, it'll be now (this is why the
+        // second argument to |getPanel| is false).
         if (this.isVisible())
         {
-            var panel = context.getPanel("console", true);
+            var panel = context.getPanel("console", false);
             if (panel)
             {
                 var state = Firebug.getPanelState(panel);
@@ -191,6 +205,7 @@ var CommandLinePopup = Obj.extend(Module,
             if (visible)
             {
                 this.lastFocused = document.commandDispatcher.focusedElement;
+
                 // Focus and select the whole text when displaying the Command Line Popup.
                 commandLine.select();
             }
@@ -213,12 +228,15 @@ var CommandLinePopup = Obj.extend(Module,
 
     isVisible: function()
     {
-        var checked = Firebug.chrome.getGlobalAttribute("cmd_firebug_toggleCommandPopup", "checked");
+        var checked = Firebug.chrome.getGlobalAttribute(
+            "cmd_firebug_toggleCommandPopup", "checked");
         return (checked == "true") ? true : false;
     },
 
     reattach: function(context)
     {
+        Trace.sysout("commandLinePopup.reattach;");
+
         if (!context)
         {
             TraceError.sysout("commandLinePopup.reattach; ERROR No context");
@@ -228,7 +246,7 @@ var CommandLinePopup = Obj.extend(Module,
         var consolePanelType = Firebug.getPanelType("console");
         var doc = Firebug.chrome.getPanelDocument(consolePanelType);
 
-        // Console doesn't have to be available (e.g. disabled)
+        // Console doesn't have to be available (i.e. disabled).
         var panel = context.getPanel("console", true);
         if (panel)
             panel.reattach(doc);
@@ -261,5 +279,5 @@ CommandLine.Popup = CommandLinePopup;
 
 return CommandLinePopup;
 
-// ************************************************************************************************
+// ********************************************************************************************* //
 });
