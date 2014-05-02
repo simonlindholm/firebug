@@ -35,7 +35,6 @@
 
 .listenerCategory {
     margin: 1em 0 0 6px;
-    font-family: monospace;
     color: #000000;
 }
 
@@ -70,9 +69,8 @@
 }
 
 .listenerCapturing {
-    background: transparent url(chrome://firebug/skin/capturing.png) no-repeat 2px 0px;
+    background: transparent url(chrome://firebug/skin/capturing.svg) no-repeat 2px 0px;
     padding-left: 16px;
-    cursor: help;
 }
 
 .listenerLineGroup.disabled > .originalListener > .listenerCapturing {
@@ -82,6 +80,11 @@
 .listenerLine > .objectLink-sourceLink {
     position: static;
     float: right;
+    margin-right: 1px;
+}
+
+.listenerLine > .selector {
+    font-family: monospace;
 }
 
 .listenerLine.doesNotApply > .listenerIndent,
