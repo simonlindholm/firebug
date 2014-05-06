@@ -460,9 +460,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 {
                     // For non-inherited listeners, filtering by the current node doesn't make sense.
                     if (inherits && li.appliesToElement)
+                    {
                         li.doesNotApply = !li.appliesToElement(baseElement);
+                    }
                     else
+                    {
                         li.doesNotApply = false;
+                        li.selector = "";
+                    }
                 }
             }
 
