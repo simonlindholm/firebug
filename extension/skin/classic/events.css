@@ -87,12 +87,6 @@
     font-family: monospace;
 }
 
-.listenerLine.doesNotApply > .listenerIndent,
-.listenerLine.doesNotApply > .objectLink,
-.listenerLine.doesNotApply > .selector {
-    color: #AAAAAA;
-}
-
 .listenerLineGroup.disabled > .listenerLine > .listenerIndent,
 .listenerLineGroup.disabled > .listenerLine > .objectLink,
 .listenerLineGroup.disabled > .listenerLine > .selector {

@@ -99,7 +99,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                         title: Locale.$STR("events.capturingTooltip")}),
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
                 FOR("derivedListener", "$listener.derivedListeners",
-                    DIV({"class": "listenerLine derivedListener", $doesNotApply: "$derivedListener.doesNotApply"},
+                    DIV({"class": "listenerLine derivedListener"},
                         SPAN({"class": "listenerIndent", "role": "presentation"}),
                         TAG(FirebugReps.Func.tag, {object: "$derivedListener.func"}),
                         SPAN({"class": "selector"}, "$derivedListener|getSelectorText"),
@@ -456,19 +456,22 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             {
                 if (!listener.derivedListeners)
                     continue;
+                var derived = [];
                 for (let li of listener.derivedListeners)
                 {
                     // For non-inherited listeners, filtering by the current node doesn't make sense.
                     if (inherits && li.appliesToElement)
                     {
-                        li.doesNotApply = !li.appliesToElement(baseElement);
+                        if (!li.appliesToElement(baseElement))
+                            continue;
                     }
                     else
                     {
-                        li.doesNotApply = false;
                         li.selector = "";
                     }
+                    derived.push(li);
                 }
+                listener.derivedListeners = derived;
             }
 
             ret.push({
