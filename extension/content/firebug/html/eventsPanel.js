@@ -7,7 +7,6 @@
 // - styling of event groups, collapsible?, headery
 // - replace derived listener right arrow symbol by image, for cross-platform stability
 //   (note: need to gray if out if disabled/not applying)
-// - a11y...
 // Functionality:
 // - detect eventbug?
 
@@ -50,6 +49,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 {
     name: "html-events",
     parentPanel: "html",
+    enableA11y: true,
     order: 4,
 
     template: domplate(
@@ -63,7 +63,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
                         DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.opened"},
-                            H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem"},
+                            H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem",
+                                    "aria-expanded": "$section.opened", tabindex: "0"},
                                 DIV({"class": "twisty", role: "presentation"}),
                                 SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                                 TAG("$section.tag", {object: "$section.object"})
@@ -91,8 +92,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         listenerTag:
             DIV({"class": "listenerLineGroup", $disabled: "$listener.disabled",
-                _listenerObject: "$listener"},
-                DIV({"class": "listenerLine originalListener"},
+                    _listenerObject: "$listener"},
+                DIV({"class": "listenerLine originalListener focusRow", role: "listitem",
+                        tabindex: "0", "aria-checked": "not|$listener.disabled"},
                     SPAN({"class": "listenerIndent", "role": "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden"},
@@ -111,6 +113,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             DIV({"class": "noOwnListenersText"}, "$text"),
 
         emptyTag: SPAN(),
+
+        not: (x) => !x,
 
         capturingHidden: function(listener)
         {
@@ -588,16 +592,23 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     // XXX(simon): This is almost identical to code in css/computedPanel, css/selectorPanel,
     // and debugger/breakpoints/breakpointReps - we should share it somehow.
-    toggleGroup: function(node)
+    toggleGroup: function(header)
     {
+        var node = header.parentNode;
         node.classList.toggle("opened");
+
         if (node.classList.contains("opened"))
         {
+            header.setAttribute("aria-expanded", "true");
             var offset = Dom.getClientOffset(node);
             var titleAtTop = offset.y < this.panelNode.scrollTop;
 
             Dom.scrollTo(node, this.panelNode, null,
                 node.offsetHeight > this.panelNode.clientHeight || titleAtTop ? "top" : "bottom");
+        }
+        else
+        {
+            header.setAttribute("aria-expanded", "false");
         }
     },
 
@@ -615,7 +626,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         var header = Dom.getAncestorByClass(target, "listenerInheritHeader");
         if (header && !Dom.getAncestorByClass(target, "objectLink"))
         {
-            this.toggleGroup(header.parentNode);
+            this.toggleGroup(header);
             Events.cancelEvent(event);
         }
         else if (target.classList.contains("listenerIndent") &&
