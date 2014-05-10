@@ -1397,6 +1397,16 @@ Firebug.A11yModel = Obj.extend(Module,
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
     // Events Panel
 
+    modifyEventsRow: function(panel, row, inTabOrder)
+    {
+        var panelA11y = this.getPanelA11y(panel);
+        if (!panelA11y || !row)
+            return;
+
+        if (this.isOuterFocusRow(row, true))
+            this.makeFocusable(row, inTabOrder);
+    },
+
     onEventsKeyPress: function(event)
     {
         var target = event.target;
@@ -1413,7 +1423,6 @@ Firebug.A11yModel = Obj.extend(Module,
         {
             var row = Dom.getAncestorByClass(target, "listenerLineGroup");
             panel.toggleDisableRow(row);
-            target.setAttribute("aria-checked", !row.classList.contains("disabled"));
             Events.cancelEvent(event);
         }
 
@@ -1623,8 +1632,8 @@ Firebug.A11yModel = Obj.extend(Module,
         //no refocus needed, just make first rule the panel's tab stop
         row = rootNode.getElementsByClassName("focusRow").item(0);
         this.modifyPanelRow(panel, row, true);
-        return;
     },
+
     //applies a11y changes (keyboard and screen reader related) to an individual row
     //To improve performance, this only happens when absolutely necessary, e.g. when the user navigates to the row in question
 
@@ -1669,7 +1678,6 @@ Firebug.A11yModel = Obj.extend(Module,
                     row.textContent);
             }
         }
-        return;
     },
 
     onCSSPanelContextMenu: function(event)
@@ -2613,7 +2621,6 @@ Firebug.A11yModel = Obj.extend(Module,
                 }
             }, this);
         }
-        else return;
     },
 
     getNetAncestorRow: function(elem, useSubRow)
@@ -2863,6 +2870,10 @@ Firebug.A11yModel = Obj.extend(Module,
 
             case "net":
                 this.modifyNetRow(panel, row, inTabOrder);
+                break;
+
+            case "html-events":
+                this.modifyEventsRow(panel, row, inTabOrder);
                 break;
         }
         Css.setClass(row, "a11yModified");

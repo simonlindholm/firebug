@@ -64,7 +64,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     FOR("section", "$inherited",
                         DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.opened"},
                             H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem",
-                                    "aria-expanded": "$section.opened", tabindex: "0"},
+                                    "aria-expanded": "$section.opened"},
                                 DIV({"class": "twisty", role: "presentation"}),
                                 SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                                 TAG("$section.tag", {object: "$section.object"})
@@ -94,7 +94,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             DIV({"class": "listenerLineGroup", $disabled: "$listener.disabled",
                     _listenerObject: "$listener"},
                 DIV({"class": "listenerLine originalListener focusRow", role: "listitem",
-                        tabindex: "0", "aria-checked": "not|$listener.disabled"},
+                        "aria-checked": "$listener|checked"},
                     SPAN({"class": "listenerIndent", "role": "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden"},
@@ -114,7 +114,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         emptyTag: SPAN(),
 
-        not: (x) => !x,
+        checked: (li) => String(!li.disabled),
 
         capturingHidden: function(listener)
         {
@@ -536,6 +536,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     toggleDisableRow: function(row)
     {
+        var header = row.getElementsByClassName("originalListener")[0];
         var listener = row.listenerObject;
         var shouldDisable = !listener.disabled;
         listener.disabled = shouldDisable;
@@ -544,6 +545,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             row.classList.add("disabled");
         else
             row.classList.remove("disabled");
+        header.setAttribute("aria-checked", String(!shouldDisable));
 
         var target = listener.target;
         var disabledMap = this.getDisabledMap(this.context);
