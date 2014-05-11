@@ -8,15 +8,16 @@
     padding-bottom: 6px;
 }
 
-.listenerLabeledSection:not(.opened) > .listenerSection {
+.listenerLabeledSection:not(.opened) > .listenerSection,
+.listenerCategory:not(.opened) > .listenerLineGroup {
     display: none;
 }
 
-.listenerInheritHeader {
+.listenerInheritHeader, .listenerCategoryHeader {
     margin: 0;
 }
 
-.listenerInheritLabel {
+.listenerInheritLabel, .listenerCategoryLabel {
     margin-left: 12px;
     font-weight: bold;
 }
@@ -25,13 +26,14 @@
 }
 
 .listenerCategoryHeader {
-    margin: 0;
-    font-size: inherit;
-    font-weight: bold;
+    padding: 0 0 0 4px;
+    background: none;
 }
-
+.listenerCategoryHeader > .twisty {
+    margin-top: -1px;
+}
 .listenerCategory {
-    margin: 1em 0 0 6px;
+    margin-top: 1em;
     color: #000000;
 }
 
@@ -54,6 +56,10 @@
 .listenerLine {
     position: relative;
     overflow: hidden; /* contain the floats */
+}
+
+.listenerLineGroup {
+    margin-left: 6px;
 }
 
 .listenerLineGroup.disabled > .originalListener > .listenerIndent {

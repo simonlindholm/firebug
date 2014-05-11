@@ -83,9 +83,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             ),
 
         categoryTag:
-            DIV({"class": "listenerCategory"},
-                H2({"class": "listenerCategoryHeader focusRow", role: "listitem"},
-                    "$category.type"),
+            DIV({"class": "listenerCategory foldableGroup opened"},
+                H2({"class": "listenerCategoryHeader groupHeader focusRow",
+                        role: "listitem", "aria-expanded": "true"},
+                    DIV({"class": "twisty", role: "presentation"}),
+                    SPAN({"class": "listenerCategoryLabel"}, "$category.type")
+                ),
                 FOR("listener", "$category.list",
                     TAG("$listenerTag", {listener: "$listener"})
                 )
@@ -630,7 +633,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         if (!Events.isLeftClick(event))
             return;
 
-        var header = Dom.getAncestorByClass(target, "listenerInheritHeader");
+        var header = Dom.getAncestorByClass(target, "groupHeader");
         if (header && !Dom.getAncestorByClass(target, "objectLink"))
         {
             this.toggleGroup(header);
