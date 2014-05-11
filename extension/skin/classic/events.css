@@ -13,10 +13,7 @@
 }
 
 .listenerInheritHeader {
-    position: relative;
-    -moz-user-select: none;
-    cursor: pointer;
-    margin-bottom: 0;
+    margin: 0;
 }
 
 .listenerInheritLabel {
@@ -43,7 +40,7 @@
 }
 
 .listenerIndent {
-    padding-left: 2em; /* perhaps split into padding: size of button, margin: rest */
+    padding-left: 2em;
     cursor: pointer;
     line-height: 1.4;
 }
