@@ -95,16 +95,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     _listenerObject: "$listener"},
                 DIV({"class": "listenerLine originalListener focusRow", role: "listitem",
                         "aria-checked": "$listener|checked"},
-                    SPAN({"class": "listenerIndent", "role": "presentation"}),
+                    SPAN({"class": "listenerIndent", role: "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden"},
                         " " + Locale.$STR("events.capturing")),
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
                 FOR("wrappedListener", "$listener.wrappedListeners",
                     DIV({"class": "listenerLine wrappedListener"},
-                        SPAN({"class": "listenerIndent", "role": "presentation"}),
+                        SPAN({"class": "listenerIndent", role: "presentation",
+                            title: Locale.$STR("events.tip.wrappedFunction")}),
                         TAG(FirebugReps.Func.tag, {object: "$wrappedListener.func"}),
-                        SPAN({"class": "selector"}, "$wrappedListener|getSelectorText"),
+                        SPAN({"class": "selector", title: "$wrappedListener|getSelectorTooltip"},
+                            "$wrappedListener|getSelectorText"),
                         TAG(FirebugReps.SourceLink.tag, {object: "$wrappedListener.sourceLink"}))
                 )
             ),
@@ -123,9 +125,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         getSelectorText: function(listener)
         {
-            if (!listener.selector)
-                return "";
-            return " (" + listener.selector + ")";
+            return listener.selector ? " (" + listener.selector + ")" : "";
+        },
+
+        getSelectorTooltip: function(listener)
+        {
+            return listener.selector ? Locale.$STR("events.tip.jQuerySelectorFilter") : undefined;
         },
     }),
 
