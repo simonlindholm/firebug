@@ -1419,10 +1419,9 @@ Firebug.A11yModel = Obj.extend(Module,
         if (!panelA11y)
             return;
 
-        if (keyCode === KeyEvent.DOM_VK_SPACE && target.classList.contains("originalListener"))
+        if (keyCode === KeyEvent.DOM_VK_SPACE && target.classList.contains("listenerLineGroup"))
         {
-            var row = Dom.getAncestorByClass(target, "listenerLineGroup");
-            panel.toggleDisableRow(row);
+            panel.toggleDisableRow(target);
             Events.cancelEvent(event);
         }
 

@@ -84,17 +84,18 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
         categoryTag:
             DIV({"class": "listenerCategory"},
-                H2({"class": "listenerCategoryHeader"}, "$category.type"),
+                H2({"class": "listenerCategoryHeader focusRow", role: "listitem"},
+                    "$category.type"),
                 FOR("listener", "$category.list",
                     TAG("$listenerTag", {listener: "$listener"})
                 )
             ),
 
         listenerTag:
-            DIV({"class": "listenerLineGroup", $disabled: "$listener.disabled",
-                    _listenerObject: "$listener"},
-                DIV({"class": "listenerLine originalListener focusRow", role: "listitem",
-                        "aria-checked": "$listener|checked"},
+            DIV({"class": "listenerLineGroup focusRow", role: "listitem",
+                    $disabled: "$listener.disabled", _listenerObject: "$listener",
+                    "aria-checked": "$listener|checked"},
+                DIV({"class": "listenerLine originalListener"},
                     SPAN({"class": "listenerIndent", role: "presentation"}),
                     TAG(FirebugReps.Func.tag, {object: "$listener.func"}),
                     SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden"},
@@ -541,7 +542,6 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     toggleDisableRow: function(row)
     {
-        var header = row.getElementsByClassName("originalListener")[0];
         var listener = row.listenerObject;
         var shouldDisable = !listener.disabled;
         listener.disabled = shouldDisable;
@@ -550,7 +550,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             row.classList.add("disabled");
         else
             row.classList.remove("disabled");
-        header.setAttribute("aria-checked", String(!shouldDisable));
+        row.setAttribute("aria-checked", String(!shouldDisable));
 
         var target = listener.target;
         var disabledMap = this.getDisabledMap(this.context);
