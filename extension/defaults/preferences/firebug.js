@@ -96,7 +96,7 @@ pref("extensions.firebug.computedStylesDisplay", "grouped");
 pref("extensions.firebug.showMozillaSpecificStyles", false);
 
 // Events
-pref("extensions.firebug.showDerivedListeners", true);
+pref("extensions.firebug.showWrappedListeners", true);
 
 // Script
 pref("extensions.firebug.breakOnErrors", false);

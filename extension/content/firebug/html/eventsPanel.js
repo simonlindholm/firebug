@@ -5,7 +5,7 @@
 // TODO:
 // UI:
 // - styling of event groups, collapsible?, headery
-// - replace derived listener right arrow symbol by image, for cross-platform stability
+// - replace wrapped listener right arrow symbol by image, for cross-platform stability
 //   (note: need to gray if out if disabled/not applying)
 // Functionality:
 // - detect eventbug?
@@ -100,12 +100,12 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     SPAN({"class": "listenerCapturing", hidden: "$listener|capturingHidden"},
                         " " + Locale.$STR("events.capturing")),
                     TAG(FirebugReps.SourceLink.tag, {object: "$listener.sourceLink"})),
-                FOR("derivedListener", "$listener.derivedListeners",
-                    DIV({"class": "listenerLine derivedListener"},
+                FOR("wrappedListener", "$listener.wrappedListeners",
+                    DIV({"class": "listenerLine wrappedListener"},
                         SPAN({"class": "listenerIndent", "role": "presentation"}),
-                        TAG(FirebugReps.Func.tag, {object: "$derivedListener.func"}),
-                        SPAN({"class": "selector"}, "$derivedListener|getSelectorText"),
-                        TAG(FirebugReps.SourceLink.tag, {object: "$derivedListener.sourceLink"}))
+                        TAG(FirebugReps.Func.tag, {object: "$wrappedListener.func"}),
+                        SPAN({"class": "selector"}, "$wrappedListener|getSelectorText"),
+                        TAG(FirebugReps.SourceLink.tag, {object: "$wrappedListener.sourceLink"}))
                 )
             ),
 
@@ -159,14 +159,14 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         return this.context.isPanelEnabled("script") && this.context.activeThread;
     },
 
-    shouldShowDerivedListeners: function()
+    shouldShowWrappedListeners: function()
     {
-        return Options.get("showDerivedListeners") && this.isDebuggerEnabled();
+        return Options.get("showWrappedListeners") && this.isDebuggerEnabled();
     },
 
     updateOption: function(name)
     {
-        if (name === "showDerivedListeners")
+        if (name === "showWrappedListeners")
             this.refresh();
     },
 
@@ -210,7 +210,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         return context.listenerDisabledMap;
     },
 
-    getDerivedListeners: function(listener)
+    getWrappedListeners: function(listener)
     {
         // Try to see if the listener (often from a library) wraps another user-defined
         // listener, and if so extract the user-defined listener(s). We do this through
@@ -240,20 +240,20 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
             // listener function. We special-case it only because it is so common.
             var target = listener.target;
             var type = listener.type;
-            return this.getDerivedJqueryListeners(target, type, dbgEnv, funcName, src);
+            return this.getWrappedJqueryListeners(target, type, dbgEnv, funcName, src);
         }
 
         dbgEnv = dbgEnv.find(funcName);
         if (!dbgEnv || !dbgEnv.parent)
             return null;
-        var dbgDerivedF = dbgEnv.getVariable(funcName);
-        var derivedF = DebuggerLib.unwrapDebuggeeValue(dbgDerivedF);
-        if (typeof derivedF !== "function")
+        var dbgWrappedF = dbgEnv.getVariable(funcName);
+        var wrappedF = DebuggerLib.unwrapDebuggeeValue(dbgWrappedF);
+        if (typeof wrappedF !== "function")
             return null;
-        return [{func: derivedF}];
+        return [{func: wrappedF}];
     },
 
-    getDerivedJqueryListeners: function(target, type, dbgEnv, funcName, src)
+    getWrappedJqueryListeners: function(target, type, dbgEnv, funcName, src)
     {
         if (funcName !== "handle" && funcName !== "dispatch")
             return null;
@@ -297,7 +297,7 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
         }
         catch (exc)
         {
-            Trace.sysout("events.getDerivedJqueryListeners threw an error", exc);
+            Trace.sysout("events.getWrappedJqueryListeners threw an error", exc);
             return null;
         }
     },
@@ -358,10 +358,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 !hasOneHandler.has(handlerName) && !li.capturing &&
                 handlerName in Object.getPrototypeOf(target));
 
-            if (this.shouldShowDerivedListeners())
+            if (this.shouldShowWrappedListeners())
             {
-                var derived = this.getDerivedListeners(li) || [];
-                li.derivedListeners = derived.map(function(listener)
+                var wrapped = this.getWrappedListeners(li) || [];
+                li.wrappedListeners = wrapped.map(function(listener)
                 {
                     return {
                         func: listener.func,
@@ -458,10 +458,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
             for (let listener of list)
             {
-                if (!listener.derivedListeners)
+                if (!listener.wrappedListeners)
                     continue;
-                var derived = [];
-                for (let li of listener.derivedListeners)
+                var wrapped = [];
+                for (let li of listener.wrappedListeners)
                 {
                     // For non-inherited listeners, filtering by the current node doesn't make sense.
                     if (inherits && li.appliesToElement)
@@ -473,9 +473,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                     {
                         li.selector = "";
                     }
-                    derived.push(li);
+                    wrapped.push(li);
                 }
-                listener.derivedListeners = derived;
+                listener.wrappedListeners = wrapped;
             }
 
             ret.push({
@@ -642,10 +642,10 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
 
     getOptionsMenuItems: function()
     {
-        var label = Locale.$STR("events.option.showDerivedListeners");
-        var tooltip = Locale.$STR("events.option.tip.showDerivedListeners");
+        var label = Locale.$STR("events.option.showWrappedListeners");
+        var tooltip = Locale.$STR("events.option.tip.showWrappedListeners");
         tooltip = Locale.$STRF("script.Script_panel_must_be_enabled", [tooltip]);
-        var menuItem = Menu.optionMenu(label, "showDerivedListeners", tooltip);
+        var menuItem = Menu.optionMenu(label, "showWrappedListeners", tooltip);
         menuItem.nol10n = true;
         menuItem.disabled = !this.isDebuggerEnabled();
 

@@ -48,7 +48,7 @@
     line-height: 1.4;
 }
 
-.derivedListener > .listenerIndent::after {
+.wrappedListener > .listenerIndent::after {
     content: "→";
     padding-left: 1px;
     padding-right: calc(1ch - 1px);
