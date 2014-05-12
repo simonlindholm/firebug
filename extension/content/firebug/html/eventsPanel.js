@@ -2,12 +2,6 @@
 /*jshint esnext:true, curly:false, loopfunc:true*/
 /*global Components:1, define:1, Element:1*/
 
-// TODO:
-// UI:
-// - styling of event groups, collapsible?, headery
-// Functionality:
-// - detect eventbug?
-
 define([
     "firebug/firebug",
     "firebug/lib/trace",
