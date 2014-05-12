@@ -5,8 +5,6 @@
 // TODO:
 // UI:
 // - styling of event groups, collapsible?, headery
-// - replace wrapped listener right arrow symbol by image, for cross-platform stability
-//   (note: need to gray if out if disabled/not applying)
 // Functionality:
 // - detect eventbug?
 

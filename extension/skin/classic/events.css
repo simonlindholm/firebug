@@ -47,10 +47,13 @@
     line-height: 1.4;
 }
 
+.listenerLineGroup.disabled > .wrappedListener > .listenerIndent {
+    opacity: 0.25;
+}
 .wrappedListener > .listenerIndent::after {
-    content: "→";
-    padding-left: 1px;
-    padding-right: calc(1ch - 1px);
+    content: "";
+    padding-right: 2ch;
+    background: transparent url(chrome://firebug/skin/wrappedListener.svg) no-repeat 3px 3px;
 }
 
 .listenerLine {
