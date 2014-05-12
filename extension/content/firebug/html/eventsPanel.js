@@ -55,8 +55,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 DIV({role: "list", "aria-label": Locale.$STR("a11y.labels.inherited_event_listeners")},
                     FOR("section", "$inherited",
                         DIV({"class": "listenerLabeledSection foldableGroup", $opened: "$section.opened"},
-                            H1({"class": "listenerInheritHeader groupHeader focusRow", role: "listitem",
-                                    "aria-expanded": "$section.opened"},
+                            H1({"class": "listenerInheritHeader groupHeader focusRow",
+                                    role: "listitem", "aria-expanded": "$section.opened"},
                                 DIV({"class": "twisty", role: "presentation"}),
                                 SPAN({"class": "listenerInheritLabel"}, "$section.label"),
                                 TAG("$section.tag", {object: "$section.object"})
@@ -444,7 +444,9 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 return;
 
             var inherited = (inherits && object !== baseElement);
-            var label = inherited ? Locale.$STR("events.listenersFrom") : Locale.$STR("events.otherListeners");
+            var label = inherited ?
+                Locale.$STR("events.listenersFrom") :
+                Locale.$STR("events.otherListeners");
             var tag;
             if (typeof object === "string")
             {
@@ -464,7 +466,8 @@ EventsPanel.prototype = Obj.extend(Firebug.Panel,
                 var wrapped = [];
                 for (let li of listener.wrappedListeners)
                 {
-                    // For non-inherited listeners, filtering by the current node doesn't make sense.
+                    // For non-inherited listeners, filtering by the current node
+                    // doesn't make sense.
                     if (inherits && li.appliesToElement)
                     {
                         if (!li.appliesToElement(baseElement))
