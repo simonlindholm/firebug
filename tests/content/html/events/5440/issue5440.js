@@ -36,11 +36,11 @@ function verify(callback, id)
                 "function()",
                 "listenerCapturing",
                 "NOT hidden",
-                "derivedListener",
-                "NOT doesNotApply"
+                "wrappedListener"
             );
         }
 
+        var hasFunA = (id === "testdiv" ? "" : "NOT ");
         expected = expected.concat([
             "#test",
             "click",
@@ -48,11 +48,10 @@ function verify(callback, id)
             "listenerCapturing",
             "hidden",
             "jquery-1.9",
-            "derivedListener",
-            (id === "testdiv" ? "NOT " : "") + "doesNotApply",
-            "funA",
-            "&gt; div",
-            "issue5440.html (",
+            "wrappedListener",
+            hasFunA + "funA",
+            hasFunA + "&gt; div",
+            hasFunA + "issue5440.html (",
             "alert",
             "function()",
             "jquery-1.5",
@@ -63,8 +62,7 @@ function verify(callback, id)
             "click",
             "function()",
             "jquery-1.5",
-            "derivedListener",
-            "NOT doesNotApply",
+            "wrappedListener",
             "funA",
             "#test",
 
@@ -78,25 +76,29 @@ function verify(callback, id)
         ]);
 
         var index = 0;
+        var nots = [];
         for (var i = 0; i < expected.length; i++)
         {
             var part = expected[i];
             if (part.startsWith("NOT "))
             {
-                part = part.substr(4);
-                var ind = html.indexOf(">", index);
-                FBTest.ok(ind !== -1, "Panel should contain: >");
-                var ind2 = html.indexOf(part, index);
-                FBTest.ok(ind2 === -1 || ind2 > ind, "Tag should not contain: " + part + ": " +
-                    html.slice(index, ind));
-                index = ind;
+                nots.push(part.substr(4));
             }
             else
             {
                 var ind = html.indexOf(part, index);
                 FBTest.ok(ind !== -1, "Panel should contain: " + part);
                 if (ind !== -1)
+                {
+                    var between = html.slice(index, ind);
                     index = ind;
+                    for (var j = 0; j < nots.length; j++)
+                    {
+                        var part2 = nots[j];
+                        FBTest.ok(!between.contains(part2), "Panel should NOT contain: " + part2);
+                    }
+                    nots = [];
+                }
             }
         }
         callback();
