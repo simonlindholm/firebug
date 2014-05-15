@@ -52,6 +52,7 @@
 }
 .wrappedListener > .listenerIndent::after {
     content: "";
+    margin-left: 1ch;
     padding-right: 2ch;
     background: transparent url(chrome://firebug/skin/wrappedListener.svg) no-repeat 3px 3px;
 }
