@@ -41,17 +41,6 @@ toolbarbutton[type="menu"] > .toolbarbutton-icon:not([src]) {
 /*************************************************************************************************/
 /* Buttons */
 
-.toolbarbutton-iconic {
-    -moz-appearance: none;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-}
-
-.toolbarbutton-iconic > .toolbarbutton-icon {
-    padding: 0;
-}
-
 #fbSearchButtons {
     margin-bottom: 2px;
 }
@@ -125,8 +114,15 @@ toolbarbutton[type="menu"] > .toolbarbutton-icon:not([src]) {
 
 /* Set proper height of window buttons (close, min, detach) */
 #fbWindowButtons.innerToolbar {
-    margin-right: 4px;
     padding: 4px 0 6px 0;
+}
+
+#fbWindowButtons.innerToolbar:-moz-locale-dir(ltr) {
+    margin-right: 4px;
+}
+
+#fbWindowButtons.innerToolbar:-moz-locale-dir(rtl) {
+    margin-left: 4px;
 }
 
 #fbWindowButtons > toolbarbutton {
@@ -250,22 +246,11 @@ panelTab[selected="true"] > panelTabMenu {
 /* Ancestor path */ 
 
 #fbPanelStatus {
-    margin: 0 5px 0 0;
+    margin-top: 0;
+    -moz-margin-end: 5px;
+    margin-bottom: 0
+    -moz-margin-start: 0;
     overflow: hidden;
-}
-
-.panelStatusSeparator {
-    width: 5px;
-    height: 7px;
-}
-
-#fbPanelStatus[direction="left"] > .panelStatusSeparator {
-    background: url(chrome://firebug/skin/statusPathSeparator.svg) no-repeat center;
-    transform: scaleX(-1);
-}
-
-#fbPanelStatus[direction="right"] > .panelStatusSeparator {
-    background: url(chrome://firebug/skin/statusPathSeparator.svg) no-repeat center;
 }
 
 /************************************************************************************************/
