@@ -2,10 +2,11 @@
 
 define([
     "firebug/firebug",
+    "firebug/lib/wrapper",
     "firebug/console/console",
     "firebug/console/consoleExposed",
 ],
-function(Firebug, Console, ConsoleExposed) {
+function(Firebug, Wrapper, Console, ConsoleExposed) {
 
 // ********************************************************************************************* //
 // Constants
@@ -39,21 +40,17 @@ Firebug.Console.injector =
             var console = ConsoleExposed.createFirebugConsole(context, win);
 
             // Create a content-owned "console" object, to be exported into the page.
-            var exposedConsole = new win.Object();
-            exposedConsole = XPCNativeWrapper.unwrap(exposedConsole);
+            // We need to use unsafeCloneFunctionIntoContentScope here, since we don't
+            // want `console.log(crossOriginWindow)` to throw.
+            var sandbox = Cu.Sandbox(win, {wantXrays: false});
+            var exposedConsole = Wrapper.unwrapObject(new win.Object());
             for (var prop in console)
             {
-                if (typeof console[prop] !== "function")
+                if (!console.hasOwnProperty(prop) || typeof console[prop] !== "function")
                     continue;
-                var desc = {
-                    writable: true,
-                    configurable: true,
-                    enumerable: true,
-                    value: console[prop]
-                };
-                Object.defineProperty(exposedConsole, prop, desc);
+                exposedConsole[prop] =
+                    Wrapper.unsafeCloneFunctionIntoContentScope(win, sandbox, console[prop]);
             }
-            Cu.makeObjectPropsNormal(exposedConsole);
 
             // Store the context and the exposedConsole in a WeakMap.
             wmExposedConsoles.set(winDoc, {
