@@ -225,14 +225,10 @@ SourceTool.prototype = Obj.extend(new Tool(),
         // as the breakpoint.
         for (var parentScript of sourceFile.scripts)
         {
-            var childScripts = parentScript.getChildScripts();
-
-            var scripts = [parentScript];
-            [].push.apply(scripts, childScripts);
-
-            for (var script of scripts)
+            var line = bp.lineNo + parentScript.startLine;
+            forDescendantScriptsAtLine(parentScript, line, function(script)
             {
-                var offsets = script.getLineOffsets(bp.lineNo + parentScript.startLine);
+                var offsets = script.getLineOffsets(line);
                 if (offsets.length > 0)
                 {
                     // Clear first to avoid duplicities.
@@ -241,7 +237,7 @@ SourceTool.prototype = Obj.extend(new Tool(),
 
                     Trace.sysout("sourceTool.onAddBreakpoint; set dynamic handler;", script);
                 }
-            }
+            });
         }
     },
 
@@ -269,17 +265,13 @@ SourceTool.prototype = Obj.extend(new Tool(),
 
         for (var parentScript of scripts)
         {
-            var childScripts = parentScript.getChildScripts();
-
-            scripts = [parentScript];
-            [].push.apply(scripts, childScripts);
-
-            for (var script of scripts)
+            var line = bp.lineNo + parentScript.startLine;
+            forDescendantScriptsAtLine(parentScript, line, function(script)
             {
-                var offsets = script.getLineOffsets(bp.lineNo + parentScript.startLine);
+                var offsets = script.getLineOffsets(line);
                 if (offsets.length > 0)
                     script.clearBreakpoint(bp.params.dynamicHandler);
-            }
+            });
         }
     },
 });
@@ -460,20 +452,20 @@ DynamicSourceCollector.prototype =
         // Restore breakpoints in dynamic scripts (including child scripts).
         // As above, we do this asynchronously for eval scripts in Firefox 30 because of
         // issue 7359. This might mean that some breakpoints don't get hit on page load,
-        // but better that than malfunctioning scripts.
-        this.restoreBreakpoints(script);
+        // but better that than malfunctioning scripts. We skip recursive traversal
+        // in that case, because it's not worth fixing.
         if (fx30 && script.source.introductionType === "eval")
         {
+            this.restoreBreakpoints(script, true);
             this.context.setTimeout(() =>
             {
                 for (var s of script.getChildScripts())
-                    this.restoreBreakpoints(s);
+                    this.restoreBreakpoints(s, true);
             }, 0);
         }
         else
         {
-            for (var s of script.getChildScripts())
-                this.restoreBreakpoints(s);
+            this.restoreBreakpoints(script);
         }
 
         // New source file created, so let the rest of the system to deal with it just
@@ -505,21 +497,37 @@ DynamicSourceCollector.prototype =
             this.sourceTool.onAddBreakpoint(bp);
     },
 
-    restoreBreakpoints: function(script)
+    restoreBreakpoints: function(script, noRecurse)
     {
         var threadActor = DebuggerLib.getThreadActor(this.context.browser);
         if (!threadActor._allowSource(script.url))
             return false;
 
-        var endLine = script.startLine + script.lineCount - 1;
-        for (var bp of threadActor.breakpointStore.findBreakpoints({url: script.url}))
+        var bps = threadActor.breakpointStore.findBreakpoints({url: script.url});
+        var rec = function(script)
         {
-            if (bp.line >= script.startLine && bp.line <= endLine)
-                threadActor._setBreakpoint(bp);
-        }
+            var startLine = script.startLine, endLine = startLine + script.lineCount - 1;
+            var endLine = script.startLine + script.lineCount - 1;
+            var any = false;
+            for (var bp of bps)
+            {
+                if (bp.line >= startLine && bp.line <= endLine)
+                {
+                    any = true;
+                    threadActor._setBreakpoint(bp);
+                }
+            }
 
+            if (any && !noRecurse)
+            {
+                for (var s of script.getChildScripts())
+                    rec(s);
+            }
+        };
+
+        rec(script);
         return true;
-    }
+    },
 };
 
 // ********************************************************************************************* //
@@ -705,14 +713,23 @@ function hasChildScript(scripts, script)
     for (var parentScript of scripts)
     {
         var childScripts = parentScript.getChildScripts();
-        if (!childScripts.length)
-            continue;
-
-        if (hasChildScript(childScripts, script))
+        if (childScripts.length > 0 && hasChildScript(childScripts, script))
             return true;
     }
 
     return false;
+}
+
+function forDescendantScriptsAtLine(script, line, callback)
+{
+    var startLine = script.startLine, endLine = startLine + script.lineCount - 1;
+    if (line < startLine || line > endLine)
+        return;
+
+    callback(script);
+
+    for (var s of script.getChildScripts())
+        forDescendantScriptsAtLine(s, line, callback);
 }
 
 function computeDynamicUrl(script, context)
