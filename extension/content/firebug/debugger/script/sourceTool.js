@@ -326,13 +326,25 @@ DynamicSourceCollector.prototype =
         var dbg = DebuggerLib.getThreadDebugger(context);
 
         var introType = script.source.introductionType;
-        var original = this.originalOnNewScript;
+
+        var threadActor = DebuggerLib.getThreadActor(context.browser);
+        var original =
+            function (aScript, aGlobal) {
+                function rec(sc)
+                {
+                    threadActor._addScript(sc);
+                    for (let s of sc.getChildScripts())
+                        rec(s);
+                }
+                rec(aScript);
+                threadActor.sources.sourcesForScript(aScript);
+            };
+
         if (fx30 && introType === "eval")
         {
             // Work around issue 7359 (variables references inside functions inside
             // direct eval getting miscompiled) by postponing 'getChildScripts'
             // until after we return.
-            var threadActor = DebuggerLib.getThreadActor(context.browser);
             original = function()
             {
                 threadActor._addScript(script);
