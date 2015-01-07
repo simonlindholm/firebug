@@ -2416,24 +2416,11 @@ FirebugReps.Description = domplate(Rep,
 
         var rootNode = this.tag.replace(params, parentNode, this);
 
-        var parser = Xpcom.CCIN("@mozilla.org/xmlextras/domparser;1", "nsIDOMParser");
-        var doc = parser.parseFromString("<div>" + text + "</div>", "text/xml");
-        var root = doc.documentElement;
+        // Allow a restricted subset of HTML, consisting of only <a> start and end tags.
+        // This is coming from localizations, so it's really rather safe.
+        text = text.replace(/<(?!\/?a>)/g, "&lt;");
+        rootNode.innerHTML = text;
 
-        // Error handling
-        var nsURI = "http://www.mozilla.org/newlayout/xml/parsererror.xml";
-        if (root.namespaceURI == nsURI && root.nodeName == "parsererror")
-        {
-            FBTrace.sysout("reps.Description; parse ERROR " + root.firstChild.nodeValue, root);
-
-            return FirebugReps.Warning.tag.replace({object: "css.EmptyElementCSS"},
-                parentNode, FirebugReps.Warning);
-        }
-
-        // Nodes from external documents need to be imported.
-        root = rootNode.ownerDocument.importNode(root, true);
-
-        rootNode.appendChild(root);
         return rootNode;
     }
 });
