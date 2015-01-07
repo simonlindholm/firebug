@@ -968,12 +968,8 @@ Firebug.NetMonitor.NetInfoBody = domplate(Rep, new EventSource(),
 
     getParamValueIterator: function(param)
     {
-        // This value is inserted into CODE element and so, make sure the HTML isn't escaped (1210).
-        // This is why the second parameter is true.
-        // The CODE (with style white-space:pre) element preserves whitespaces so they are
-        // displayed the same, as they come from the server (1194).
-        // In case of a long header values of post parameters the value must be wrapped (2105).
-        return Str.wrapText(param.value, true);
+        // (For historical reference, see issues 1210, 1194, 2105.)
+        return Str.wrapText(param.value);
     },
 
     // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

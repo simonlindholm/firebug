@@ -581,50 +581,54 @@ Str.endsWith = function(str, suffix)
 // ********************************************************************************************* //
 // HTML Wrap
 
-Str.wrapText = function(text, noEscapeHTML)
+Str.wrapText = function(text)
 {
     var reNonAlphaNumeric = /[^A-Za-z_$0-9'"-]/;
 
-    var html = [];
     var wrapWidth = Options.get("textWrapWidth");
 
-    // Split long text into lines and put every line into a <code> element (only in case
-    // if noEscapeHTML is false). This is useful for automatic scrolling when searching
-    // within response body (in order to scroll we need an element).
-    // Don't use <pre> elements since this adds additional new line endings when copying
-    // selected source code using Firefox->Edit->Copy (Ctrl+C) (issue 2093).
     var lines = Str.splitLines(text);
+    if (isNaN(wrapWidth) || wrapWidth <= 0)
+        return lines;
+
+    var output = [];
     for (var i = 0; i < lines.length; ++i)
     {
         var line = lines[i];
-
-        if (wrapWidth > 0)
+        while (line.length > wrapWidth)
         {
-            while (line.length > wrapWidth)
-            {
-                var m = reNonAlphaNumeric.exec(line.substr(wrapWidth, 100));
-                var wrapIndex = wrapWidth + (m ? m.index : 0);
-                var subLine = line.substr(0, wrapIndex);
-                line = line.substr(wrapIndex);
-
-                if (!noEscapeHTML) html.push("<code class=\"wrappedText focusRow\" role=\"listitem\">");
-                html.push(noEscapeHTML ? subLine : escapeForTextNode(subLine));
-                if (!noEscapeHTML) html.push("</code>");
-            }
+            var m = reNonAlphaNumeric.exec(line.substr(wrapWidth, 100));
+            var wrapIndex = wrapWidth + (m ? m.index : 0);
+            output.push(line.substr(0, wrapIndex));
+            line = line.substr(wrapIndex);
         }
-
-        if (!noEscapeHTML) html.push("<code class=\"wrappedText focusRow\" role=\"listitem\">");
-        html.push(noEscapeHTML ? line : escapeForTextNode(line));
-        if (!noEscapeHTML) html.push("</code>");
+        output.push(line);
     }
 
-    return html;
+    return output;
 };
 
-Str.insertWrappedText = function(text, textBox, noEscapeHTML)
+Str.insertWrappedText = function(text, textBox)
 {
-    var html = Str.wrapText(text, noEscapeHTML);
-    textBox.innerHTML = "<pre role=\"list\">" + html.join("") + "</pre>";
+    // Create an element for each line, so we can programatically scroll to search matches.
+    // Use <code> instead of <pre> to avoid additional newlines using Ctrl+C (issue 2093).
+    var doc = textBox.ownerDocument;
+    var list = doc.createElement("pre");
+    list.setAttribute("role", "list");
+
+    var lines = Str.wrapText(text);
+    for (var i = 0; i < lines.length; i++)
+    {
+        var el = doc.createElement("code");
+        el.classList.add("wrappedText");
+        el.classList.add("focusRow");
+        el.setAttribute("role", "listitem");
+        el.textContent = lines[i];
+        list.appendChild(el);
+    }
+
+    textBox.textContent = "";
+    textBox.appendChild(list);
 };
 
 // ********************************************************************************************* //
