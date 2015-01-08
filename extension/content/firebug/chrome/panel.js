@@ -12,10 +12,12 @@ define([
     "firebug/lib/events",
     "firebug/lib/wrapper",
     "firebug/chrome/eventSource",
+    "firebug/chrome/remoteDom",
+    "firebug/chrome/remoteDomServer",
     "firebug/chrome/searchBox",
 ],
 function(Firebug, FBTrace, Obj, Css, Url, Options, Promise, Dom, Events, Wrapper, EventSource,
-    SearchBox) {
+    RemoteDom, RemoteDomServer, SearchBox) {
 
 "use strict";
 
@@ -69,15 +71,16 @@ var Panel = Obj.extend(new EventSource(),
     {
         if (!context.browser)
         {
-            TraceError.sysout("attempt to create panel with dud context!");
+            TraceError.sysout("attempt to create panel with dead context!");
             return false;
         }
 
         this.context = context;
-        this.document = doc;
 
-        this.panelNode = doc.createElement("div");
+        this.remoteDomServer = RemoteDomServer.create(doc);
+        this.panelNode = RemoteDom.createPanelNode(this.remoteDomServer);
         this.panelNode.ownerPanel = this;
+        this.document = this.paneNode.ownerDocument;
 
         Css.setClass(this.panelNode, "panelNode panelNode-" + this.name + " contextUID=" +
             context.uid);
@@ -95,7 +98,7 @@ var Panel = Obj.extend(new EventSource(),
         if (typeof(this.persistContent) == "undefined")
             this.persistContent = Options.get(this.name + ".defaultPersist");
 
-        doc.body.appendChild(this.panelNode);
+        this.remoteDomServer.addPanelNode(this.panelNode._identity, doc.body);
 
         // Update panel's tab in case the break-on-next (BON) is active.
         var shouldBreak = this.shouldBreakOnNext();
@@ -162,14 +165,11 @@ var Panel = Obj.extend(new EventSource(),
     // This is how a panel in one window reappears in another window; lazily called
     reattach: function(doc)
     {
-        this.document = doc;
-
         if (this.panelNode)
         {
             var scrollTop = this.panelNode.scrollTop;
-            this.panelNode = doc.adoptNode(this.panelNode, true);
             this.panelNode.ownerPanel = this;
-            doc.body.appendChild(this.panelNode);
+            this.remoteDomServer.addPanelNode(this.panelNode._identity, doc.body);
             this.panelNode.scrollTop = scrollTop;
         }
     },

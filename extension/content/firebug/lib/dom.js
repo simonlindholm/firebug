@@ -744,6 +744,10 @@ Dom.scrollTo = function(element, scrollBox, alignmentX, alignmentY, scrollWhenVi
     if (!element)
         return;
 
+    // Avoid readback from the DOM by delegating to the parent process.
+    if (element._remoteScrollTo)
+        return element._remoteScrollTo(scrollBox, alignmentX, alignmentY, scrollWhenVisible);
+
     if (!scrollBox)
         scrollBox = Dom.getOverflowParent(element);
 
