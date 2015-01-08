@@ -30,7 +30,6 @@ function DomplateLoop()
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-var womb = null;
 var uid = 0;
 
 // xxxHonza: the only global should be Firebug object.
@@ -1095,24 +1094,17 @@ var Renderer =
         var html = this.renderHTML(args, outputs, self);
 
         var doc = after.ownerDocument;
-        var table = doc.createElement("table");
-        table.innerHTML = html;
 
-        var tbody = table.firstChild;
         var localName = after.localName.toLowerCase();
         var parent = (localName == "tr") ? after.parentNode : after;
         var referenceElement = (localName == "tr") ? after.nextSibling : null;
 
-        var firstRow = tbody.firstChild;
-        var lastRow = null;
-        while (tbody.firstChild)
-        {
-            lastRow = tbody.firstChild;
-            if (referenceElement)
-                parent.insertBefore(lastRow, referenceElement);
-            else
-                parent.appendChild(lastRow);
-        }
+        var frag = parseToHTML(doc, html);
+
+        var firstRow = frag.firstChild;
+        var lastRow = frag.lastChild;
+
+        parent.insertBefore(frag, referenceElement);
 
         // To save the next poor soul:
         // In order to properly apply properties and event handlers on elements
@@ -1176,16 +1168,7 @@ var Renderer =
         if (FBTrace.DBG_DOMPLATE)
             FBTrace.sysout("domplate.insertNode html: "+html+"\n");
 
-        var range = doc.createRange();
-
-        // if doc starts with a Text node, domplate fails because the fragment starts
-        // with a text node. That must be a gecko bug, but let's just workaround it since
-        // we want to switch to innerHTML anyway
-        var aDiv = doc.getElementsByTagName("div").item(0);
-        range.setStartBefore(aDiv);
-
-        // TODO replace with standard innerHTML
-        var frag = range.createContextualFragment(html);
+        var frag = parseToHTML(doc, html);
 
         var root = frag.firstChild;
         root = inserter(frag) || root;
@@ -1214,7 +1197,9 @@ var Renderer =
         var root;
         if (parent.nodeType == Node.ELEMENT_NODE)
         {
-            parent.innerHTML = html;
+            parent.textContent = "";
+            var frag = parseToHTML(parent.ownerDocument, html);
+            parent.appendChild(frag);
             root = parent.firstChild;
         }
         else
@@ -1222,12 +1207,8 @@ var Renderer =
             if (!parent || parent.nodeType != Node.DOCUMENT_NODE)
                 parent = document;
 
-            if (!womb || womb.ownerDocument != parent)
-                womb = parent.createElement("div");
-            womb.innerHTML = html;
-
-            root = womb.firstChild;
-            //womb.removeChild(root);
+            var frag = parseToHTML(parent, html);
+            root = frag.firstChild;
         }
 
         var domArgs = [root, this.tag.context, 0];
@@ -1268,13 +1249,8 @@ var Renderer =
         if (FBTrace.DBG_DOMPLATE)
             FBTrace.sysout("domplate.append html: "+html+"\n");
 
-        if (!womb || womb.ownerDocument != parent.ownerDocument)
-            womb = parent.ownerDocument.createElement("div");
-        womb.innerHTML = html;
-
-        var root = womb.firstChild;
-        while (womb.firstChild)
-            parent.appendChild(womb.firstChild);
+        var frag = parseToHTML(parent.ownerDocument, html);
+        parent.appendChild(frag);
 
         var domArgs = [root, this.tag.context, 0];
         domArgs.push.apply(domArgs, this.tag.domArgs);
@@ -1290,6 +1266,23 @@ var Renderer =
 };
 
 // ********************************************************************************************* //
+
+// Parse HTML into a DocumentFragment, as if parsed by an XML parser. We use this instead of
+// innerHTML to avoid mismatches between what domplate thinks the DOM should look like,
+// versus what an HTML parser would spit out. For instance, the latter will not support
+// nested <a> tags. (See issue #98 in the firebug.next repo.)
+function parseToHTML(doc, html)
+{
+    var xhtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + html + "</html>";
+    var parser = new doc.defaultView.DOMParser();
+    var newDoc = parser.parseFromString(xhtml, "text/xml");
+    var root = doc.adoptNode(newDoc.documentElement);
+
+    var frag = doc.createDocumentFragment();
+    for (var node = root.firstChild; node; node = node.nextSibling)
+        frag.appendChild(node);
+    return frag;
+}
 
 function defineTags()
 {
