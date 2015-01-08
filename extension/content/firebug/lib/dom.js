@@ -270,45 +270,6 @@ Dom.addScriptAsync = function(doc, src, successCallback)
     doc.documentElement.appendChild(script);
 };
 
-Dom.setOuterHTML = function(element, html)
-{
-    try
-    {
-        var fragment = Dom.markupToDocFragment(html, element);
-
-        var first = fragment.firstChild;
-        var last = fragment.lastChild;
-        element.parentNode.replaceChild(fragment, element);
-        return [first, last];
-    }
-    catch (e)
-    {
-        return [element, element];
-    }
-};
-
-Dom.markupToDocFragment = function(markup, parent)
-{
-    var doc = parent.ownerDocument;
-    var range = doc.createRange();
-    range.selectNode(parent || doc.documentElement);
-
-    return range.createContextualFragment(markup);
-};
-
-Dom.appendInnerHTML = function(element, html, referenceElement)
-{
-    var doc = element.ownerDocument;
-    var range = doc.createRange();  // a helper object
-    range.selectNodeContents(element); // the environment to interpret the html
-
-    var fragment = range.createContextualFragment(html);  // parse
-    var firstChild = fragment.firstChild;
-    element.insertBefore(fragment, referenceElement);
-
-    return firstChild;
-};
-
 Dom.insertTextIntoElement = function(element, text)
 {
     var command = "cmd_insertText";
