@@ -313,8 +313,7 @@ HTMLPanel.prototype = Obj.extend(WalkingPanel,
                     if (FBTrace.DBG_CSS)
                     {
                         FBTrace.sysout("html panel updateSelection sourceLink.line=" +
-                            sourceLink.line + " sourceRow=" +
-                            (sourceRow ? sourceRow.innerHTML : "undefined"));
+                            sourceLink.line, sourceRow);
                     }
 
                     if (sourceRow)
