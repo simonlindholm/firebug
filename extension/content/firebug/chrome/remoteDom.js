@@ -496,6 +496,14 @@ RemoteDocumentFragment.prototype.appendChild = function(ch)
     this._list.push(ch);
 };
 
+Object.defineProperty(RemoteDocumentFragment.prototype, "firstChild", {
+    get: function() { return this._list[0] || null; },
+});
+
+Object.defineProperty(RemoteDocumentFragment.prototype, "lastChild", {
+    get: function() { return this._list[this._list.length-1] || null; },
+});
+
 
 // ********************************************************************************************* //
 // Class list (i.e. DOMTokenList)
