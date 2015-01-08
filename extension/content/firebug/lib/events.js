@@ -584,6 +584,8 @@ Events.addEventListener = function(parent, eventId, listener, capturing)
 
 Events.removeEventListener = function(parent, eventId, listener, capturing)
 {
+    if (!listener)
+        return;
     try
     {
         parent.removeEventListener(eventId, listener, capturing);
