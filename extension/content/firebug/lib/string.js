@@ -126,14 +126,14 @@ var entityConversionRegexes =
 
 var escapeEntitiesRegEx =
 {
-    normal : function(list)
+    normal: function(list)
     {
         var chars = [];
         for (var ch in list)
             chars.push(ch);
         return new RegExp("([" + chars.join("") + "])", "gm");
     },
-    reverse : function(list)
+    reverse: function(list)
     {
         var chars = [];
         for (var ch in list)
@@ -180,16 +180,16 @@ function createSimpleEscape(name, direction)
     return function(value)
     {
         var list = entityConversionLists[direction][name];
-        return String(value).replace(
-                getEscapeRegexp(direction, {
-                    group : name,
-                    list : list
-                }),
-                function(ch)
-                {
-                    return list[ch];
-                }
-            );
+        var regex = getEscapeRegexp(direction, {
+            group: name,
+            list: list
+        });
+        return String(value).replace(regex,
+            function(ch)
+            {
+                return list[ch];
+            }
+        );
     };
 }
 
@@ -367,6 +367,8 @@ var escapeForTextNode = Str.escapeForTextNode = createSimpleEscape("text", "norm
 var escapeForElementAttribute = Str.escapeForElementAttribute = createSimpleEscape("attributes", "normal");
 Str.escapeForHtmlEditor = createSimpleEscape("editor", "normal");
 Str.escapeForCss = createSimpleEscape("css", "normal");
+
+Str.unescapeForElementAttribute = createSimpleEscape("attributes", "reverse");
 
 // deprecated compatibility functions
 Str.deprecateEscapeHTML = createSimpleEscape("text", "normal");
