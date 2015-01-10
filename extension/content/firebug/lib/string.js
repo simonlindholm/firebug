@@ -78,7 +78,7 @@ var e = addEntityMapToList,
 e(0x0000, "#0", text, attr, css, editor);
 e(0x0022, "quot", attr, css);
 e(0x0026, "amp", attr, text, css);
-e(0x0027, "apos", css);
+e(0x0027, "apos", attr, css);
 e(0x003c, "lt", attr, text, css);
 e(0x003e, "gt", attr, text, css);
 e(0xa9, "copy", text, editor);
