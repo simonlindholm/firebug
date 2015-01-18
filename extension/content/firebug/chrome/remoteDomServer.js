@@ -126,10 +126,11 @@ function doHandleEvent(server, event)
 function RemoteDomServer(doc)
 {
     this._doc = doc;
-    this._nextClientId = 0;
     this._idMap = new Map();
     this._idRevMap = new Map();
     this._rawClientReference = null;
+    this._addId(0, doc.defaultView);
+    this._addId(1, doc);
     this.handleEvent = doHandleEvent.bind(null, this);
 }
 
@@ -140,9 +141,13 @@ RemoteDomServer.prototype.setRawClientReference = function(obj)
 
 RemoteDomServer.prototype.addPanelNode = function(id, where)
 {
+    // TODO: Probably transfer event listeners from the old document, and add them to the new one,
+    // or else make the client aware that they have stopped working.
     var node = this._lookup(id);
     where.appendChild(node);
     this._doc = where.ownerDocument;
+    this._addId(0, this._doc.defaultView);
+    this._addId(1, this._doc);
 };
 
 RemoteDomServer.prototype.handleMessage = function(id, signal, data)

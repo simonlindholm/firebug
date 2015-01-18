@@ -78,13 +78,60 @@ RemoteDom.handleEvent = function({type, target})
 
 
 // ********************************************************************************************* //
+// Node
+
+function RemoteEventTarget(dom, eventParent)
+{
+    this._dom = dom;
+    this._eventParent = eventParent;
+    this._eventListeners = {};
+    this._id = 0;
+}
+
+RemoteEventTarget.prototype._send = function(signal, data = {}, sync = true)
+{
+    if (!this._id)
+        throw new Error("used a removed node");
+    for (var p in data)
+    {
+        if (data[p] instanceof RemoteEventTarget)
+            data[p] = data[p]._id;
+    }
+    var ret = this._dom._server.handleMessage(this._id, signal, data);
+    if (sync)
+        return ret;
+};
+
+RemoteEventTarget.prototype.addEventListener = function(type, fn, capturing)
+{
+    if (!this._eventListeners.hasOwnProperty(type))
+        this._eventListeners[type] = new Map();
+    var el = this._eventListeners[type];
+    if (el.has(fn))
+        return;
+    this._send("addListener", {type});
+    el.set(fn, {capturing});
+};
+
+RemoteEventTarget.prototype.removeEventListener = function(type, fn)
+{
+    var el = this._eventListeners[type];
+    if (!el || !el.has(fn))
+        return;
+    this._send("removeListener", {type});
+    el.delete(fn);
+};
+
+
+// ********************************************************************************************* //
 // Window
 
 function RemoteWindow(dom)
 {
-    this._dom = dom;
-    this._eventParent = null;
+    RemoteEventTarget.call(this, dom, null);
 }
+
+RemoteWindow.prototype = Object.create(RemoteEventTarget.prototype);
 
 
 // ********************************************************************************************* //
@@ -92,11 +139,12 @@ function RemoteWindow(dom)
 
 function RemoteDocument(win)
 {
-    this._dom = win._dom;
-    this._eventParent = win;
+    RemoteEventTarget.call(this, win._dom, win);
 
     this.defaultView = win;
 }
+
+RemoteDocument.prototype = Object.create(RemoteEventTarget.prototype);
 
 RemoteDocument.prototype.createElement = function(tagName)
 {
@@ -219,48 +267,35 @@ RemoteDocument.prototype._parseXMLToFragment = function(input)
 
 
 // ********************************************************************************************* //
-// Node
+// ChildNode
 
-function RemoteNode(doc)
+function RemoteChildNode(doc)
 {
-    this._dom = doc._dom;
-    this._eventParent = doc;
-    this._id = 0;
+    RemoteEventTarget.call(this, doc._dom, doc);
+
     this.parentNode = null;
     this.ownerDocument = doc;
 }
 
-RemoteNode.prototype._removeFromServer = function()
+RemoteChildNode.prototype = Object.create(RemoteEventTarget.prototype);
+
+RemoteChildNode.prototype._removeFromServer = function()
 {
     this._send("removeNodeFromCache");
     this._dom._destroyId(this);
 };
 
-RemoteNode.prototype._forSubtree = function(callback)
+RemoteChildNode.prototype._forSubtree = function(callback)
 {
     callback(this);
 };
 
-RemoteNode.prototype._removeSubtreeFromServer = function()
+RemoteChildNode.prototype._removeSubtreeFromServer = function()
 {
     this._forSubtree((node) => node._removeFromServer());
 };
 
-RemoteNode.prototype._send = function(signal, data = {}, sync = true)
-{
-    if (!this._id)
-        throw new Error("used a removed node");
-    for (var p in data)
-    {
-        if (data[p] instanceof RemoteNode)
-            data[p] = data[p]._id;
-    }
-    var ret = this._dom._server.handleMessage(this._id, signal, data);
-    if (sync)
-        return ret;
-};
-
-RemoteNode.prototype._silentRemove = function()
+RemoteChildNode.prototype._silentRemove = function()
 {
     var par = this.parentNode;
     if (!par || par === this.ownerDocument)
@@ -273,7 +308,7 @@ RemoteNode.prototype._silentRemove = function()
     this._eventParent = this.ownerDocument;
 };
 
-Object.defineProperty(RemoteNode.prototype, "previousSibling", {
+Object.defineProperty(RemoteChildNode.prototype, "previousSibling", {
     get: function()
     {
         var ch = this.parentNode.childNodes;
@@ -281,7 +316,7 @@ Object.defineProperty(RemoteNode.prototype, "previousSibling", {
     }
 });
 
-Object.defineProperty(RemoteNode.prototype, "nextSibling", {
+Object.defineProperty(RemoteChildNode.prototype, "nextSibling", {
     get: function()
     {
         var ch = this.parentNode.childNodes;
@@ -289,7 +324,7 @@ Object.defineProperty(RemoteNode.prototype, "nextSibling", {
     }
 });
 
-Object.defineProperty(RemoteNode.prototype, "previousElementSibling", {
+Object.defineProperty(RemoteChildNode.prototype, "previousElementSibling", {
     get: function()
     {
         var el = this;
@@ -300,7 +335,7 @@ Object.defineProperty(RemoteNode.prototype, "previousElementSibling", {
     }
 });
 
-Object.defineProperty(RemoteNode.prototype, "nextElementSibling", {
+Object.defineProperty(RemoteChildNode.prototype, "nextElementSibling", {
     get: function()
     {
         var el = this;
@@ -317,11 +352,11 @@ Object.defineProperty(RemoteNode.prototype, "nextElementSibling", {
 
 function RemoteTextNode(doc, text)
 {
-    RemoteNode.call(this, doc);
+    RemoteChildNode.call(this, doc);
     this.data = text;
 }
 
-RemoteTextNode.prototype = Object.create(RemoteNode.prototype);
+RemoteTextNode.prototype = Object.create(RemoteChildNode.prototype);
 
 RemoteTextNode.prototype._createOnServer = function()
 {
@@ -336,8 +371,7 @@ RemoteTextNode.prototype.nodeType = 3;
 
 function RemoteElement(doc, tagName)
 {
-    RemoteNode.call(this, doc);
-    this._eventListeners = {};
+    RemoteChildNode.call(this, doc);
     this._attrs = new Map();
     this._text = "";
     this._value = "";
@@ -348,7 +382,7 @@ function RemoteElement(doc, tagName)
     this.classList = new RemoteClassList(this);
 }
 
-RemoteElement.prototype = Object.create(RemoteNode.prototype);
+RemoteElement.prototype = Object.create(RemoteChildNode.prototype);
 
 RemoteElement.prototype._createOnServer = function()
 {
@@ -362,26 +396,6 @@ RemoteElement.prototype._forSubtree = function(callback)
     callback(this);
     for (var i = 0; i < this.childNodes.length; i++)
         this.childNodes[i]._forSubtree(callback);
-};
-
-RemoteElement.prototype.addEventListener = function(type, fn, capturing)
-{
-    if (!this._eventListeners.hasOwnProperty(type))
-        this._eventListeners[type] = new Map();
-    var el = this._eventListeners[type];
-    if (el.has(fn))
-        return;
-    this._send("addListener", {type});
-    el.set(fn, {capturing});
-};
-
-RemoteElement.prototype.removeEventListener = function(type, fn)
-{
-    var el = this._eventListeners[type];
-    if (!el || !el.has(fn))
-        return;
-    this._send("removeListener", {type});
-    el.delete(fn);
 };
 
 RemoteElement.prototype.removeChild = function(ch)
@@ -404,7 +418,7 @@ RemoteElement.prototype.appendChild = function(ch)
         return;
     }
 
-    if (!(ch instanceof RemoteNode))
+    if (!(ch instanceof RemoteChildNode))
         throw new Error("tried to append a non-node");
     if (!ch._id)
         throw new Error("tried to reinsert a removed element, not supported");
@@ -418,11 +432,11 @@ RemoteElement.prototype.appendChild = function(ch)
 
 RemoteElement.prototype.insertBefore = function(ch, before)
 {
-    if (!(ch instanceof RemoteNode || ch instanceof RemoteDocumentFragment))
-        throw new Error("tried to append a non-element");
+    if (!(ch instanceof RemoteChildNode || ch instanceof RemoteDocumentFragment))
+        throw new Error("tried to insert a non-node");
     if (!ch._id)
-        throw new Error("tried to reinsert a removed element, not supported");
-    if (before && !(before instanceof RemoteNode))
+        throw new Error("tried to reinsert a removed node, not supported");
+    if (before && !(before instanceof RemoteChildNode))
         throw new Error("second argument to insertBefore must be a node or null");
     if (before && before.parentNode !== this)
         throw new Error("second argument to insertBefore must be a child node");
@@ -729,6 +743,8 @@ function createPanelNode(server)
     var dom = new RemoteDom(server);
     var win = new RemoteWindow(dom);
     var doc = new RemoteDocument(win);
+    dom._allocateId(win);
+    dom._allocateId(doc);
     var el = doc.createElement("div");
     el.parentNode = doc;
     server.setRawClientReference(dom);
