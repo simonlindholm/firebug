@@ -98,7 +98,7 @@ var Panel = Obj.extend(new EventSource(),
         if (typeof(this.persistContent) == "undefined")
             this.persistContent = Options.get(this.name + ".defaultPersist");
 
-        this.remoteDomServer.addPanelNode(this.panelNode._identity, doc.body);
+        this.remoteDomServer.addPanelNode(this.panelNode._id, doc.body);
 
         // Update panel's tab in case the break-on-next (BON) is active.
         var shouldBreak = this.shouldBreakOnNext();
@@ -169,7 +169,7 @@ var Panel = Obj.extend(new EventSource(),
         {
             var scrollTop = this.panelNode.scrollTop;
             this.panelNode.ownerPanel = this;
-            this.remoteDomServer.addPanelNode(this.panelNode._identity, doc.body);
+            this.remoteDomServer.addPanelNode(this.panelNode._id, doc.body);
             this.panelNode.scrollTop = scrollTop;
         }
     },
