@@ -2,7 +2,10 @@
 /*jshint esnext:true*/
 /*global define:1*/
 
-define([], function() {
+define([
+    "firebug/lib/string",
+],
+function(Str) {
 
 "use strict";
 
@@ -105,6 +108,113 @@ RemoteDocument.prototype.createTextNode = function(text)
 {
     var node = new RemoteTextNode(this, text);
     node._createOnServer();
+};
+
+RemoteDocument.prototype.createDocumentFragment = function()
+{
+    return new RemoteDocumentFragment(this);
+};
+
+RemoteDocument.prototype._parseXMLToFragment = function(input)
+{
+    function assert(cond, msg)
+    {
+        if (!cond)
+            throw new Error("invalid markup (" + msg + ")");
+    }
+    function unescapeHtmlEntities(text)
+    {
+        // This fails for random named entities, and numeric ones, but it should be
+        // good enough for domplate (which uses Str.escapeForElementAttribute).
+        if (!text)
+            return "";
+        return Str.unescapeForElementAttribute(text);
+    }
+
+    var frag = this.createDocumentFragment();
+    var stack = [frag];
+    var ind = 0, ind2;
+    var len = input.length;
+    var reChar = /[a-zA-Z]/;
+    while (ind < len)
+    {
+        ind2 = input.indexOf("<", ind);
+        if (ind2 === -1)
+            ind2 = len;
+        var dec = unescapeHtmlEntities(input.substring(ind, ind2));
+        if (ind2 + 1 < len && input[ind2 + 1] === "/")
+        {
+            // End tag, skip until next ">" and add the text contents.
+            ind = input.indexOf(">", ind2 + 1) + 1;
+            assert(ind !== 0 && stack.length > 1, "too many end tags");
+            var target = stack.pop();
+            if (dec)
+            {
+                if (target.childNodes.length > 0)
+                    target.appendChild(this.createTextNode(dec));
+                else
+                    target.textContent = dec;
+            }
+        }
+        else
+        {
+            // Start tag (or end of input), add text contents and push tag to stack.
+            var par = stack[stack.length-1];
+            if (dec)
+                par.appendChild(this.createTextNode(dec));
+            if (ind2 === input.length)
+            {
+                ind = ind2;
+            }
+            else
+            {
+                ind = ind2 = ind2 + 1;
+                while (ind2 < input.length && reChar.test(input[ind2]))
+                    ind2++;
+
+                var tagName = input.substring(ind, ind2);
+                var el = this.createElement(tagName);
+                par.appendChild(el);
+                stack.push(el);
+
+                // Parse attributes
+                for (;;)
+                {
+                    while (ind2 < input.length && input[ind2] === " ")
+                        ind2++;
+                    assert(ind2 !== input.length, "no end of tag");
+                    if (input[ind2] === ">")
+                        break;
+                    if (input[ind2] === "/")
+                    {
+                        // Self-closing tag.
+                        assert(input[ind2 + 1] === ">", "unexpected /");
+                        ind2++;
+                        stack.pop();
+                        break;
+                    }
+
+                    // An attribute!
+                    var eqInd = input.indexOf("=", ind2);
+                    assert(eqInd !== -1, "missing attribute value");
+                    var attr = input.substring(ind2, eqInd);
+                    ind2 = eqInd + 1;
+                    var q = input[ind2];
+                    assert(q === "\"" || q === "'", "unquoted attribute value");
+                    ind2++;
+                    var endInd = input.indexOf(q, ind2);
+                    assert(endInd !== -1, "no end of attribute value");
+                    var attrValue = input.substring(ind2, endInd);
+                    ind2 = endInd + 1;
+                    el.setAttribute(attr, attrValue);
+                }
+                ind = ind2 + 1;
+            }
+        }
+    }
+    if (stack.length !== 1)
+        throw new Error("invalid markup (too many start tags)");
+    return frag;
 };
 
 
@@ -455,6 +565,13 @@ Object.defineProperty(RemoteElement.prototype, "textContent", {
             this.removeChild(this.childNodes[i]);
         this._text = value;
         this._send("setTextContent", {value});
+    },
+});
+
+Object.defineProperty(RemoteElement.prototype, "innerHTML", {
+    set: function(value) {
+        this.textContent = "";
+        this.appendChild(this.ownerDocument._parseXMLToFragment(value));
     },
 });
 

@@ -1273,6 +1273,8 @@ var Renderer =
 // nested <a> tags. (See issue #98 in the firebug.next repo.)
 function parseToHTML(doc, html)
 {
+    if (doc._parseXMLToFragment)
+        return doc._parseXMLToFragment(html);
     var xhtml = "<html xmlns=\"http://www.w3.org/1999/xhtml\">" + html + "</html>";
     var parser = new doc.defaultView.DOMParser();
     var newDoc = parser.parseFromString(xhtml, "text/xml");
